@@ -1292,7 +1292,7 @@ export function createPluginRegistry(registryParams: PluginRegistryParams) {
     record: PluginRecord,
     hookName: K,
     handler: PluginHookHandlerMap[K],
-    opts?: { priority?: number },
+    opts?: { priority?: number; mode?: "sync" | "async"; timeoutMs?: number },
     policy?: PluginTypedHookPolicy,
   ) => {
     if (!isPluginHookName(hookName)) {
@@ -1357,6 +1357,8 @@ export function createPluginRegistry(registryParams: PluginRegistryParams) {
       handler: effectiveHandler,
       priority: opts?.priority,
       source: record.source,
+      mode: opts?.mode,
+      timeoutMs: opts?.timeoutMs,
     } as TypedPluginHookRegistration);
   };
 
