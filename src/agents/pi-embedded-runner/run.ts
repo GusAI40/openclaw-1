@@ -751,6 +751,8 @@ export async function runEmbeddedPiAgent(
         let accumulatedReplayState = createEmbeddedRunReplayState();
         // Hoisted so the retry-limit error path can use the most recent API total.
         let lastTurnTotal: number | undefined;
+        // Carry forward the llm_output block retry count across attempts.
+        let llmOutputRetryCountCarry = 0;
         while (true) {
           if (runLoopIterations >= MAX_RUN_LOOP_ITERATIONS) {
             const message =
@@ -891,6 +893,7 @@ export async function runEmbeddedPiAgent(
             resolvedApiKey: resolvedStreamApiKey,
             authProfileId: lastProfileId,
             authProfileIdSource: lockedProfileId ? "user" : "auto",
+            llmOutputRetryCount: llmOutputRetryCountCarry,
             initialReplayState: accumulatedReplayState,
             authStorage,
             modelRegistry,
@@ -1397,13 +1400,15 @@ export async function runEmbeddedPiAgent(
           // we let the rest of this turn run normally so the replacement
           // assistant text is delivered as a completed turn (no error).
           if (promptErrorSource === "hook:llm_output" && !aborted) {
+            // Update carry so the next attempt knows how many retries were consumed.
+            llmOutputRetryCountCarry = attempt.llmOutputRetryCount ?? 0;
             if (attempt.llmOutputRetryRequested) {
               // Clear the error and re-invoke the LLM. The rejected response
               // has been scrubbed from the transcript by the hook handler.
               promptError = null;
               promptErrorSource = null;
               log.debug(
-                `[hook:llm_output] block requested retry — re-invoking attempt (count=${attempt.llmOutputRetryCount ?? 0})`,
+                `[hook:llm_output] block requested retry — re-invoking attempt (count=${llmOutputRetryCountCarry})`,
               );
               continue;
             }

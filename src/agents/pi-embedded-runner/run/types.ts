@@ -32,6 +32,8 @@ export type EmbeddedRunAttemptParams = EmbeddedRunAttemptBase & {
   authProfileId?: string;
   /** Source for the resolved auth profile (user-locked or automatic). */
   authProfileIdSource?: "auto" | "user";
+  /** Carry forward the retry count from prior attempts for `llm_output` block retries. */
+  llmOutputRetryCount?: number;
   provider: string;
   modelId: string;
   /** Session-pinned embedded harness id. Prevents runtime hot-switching. */
