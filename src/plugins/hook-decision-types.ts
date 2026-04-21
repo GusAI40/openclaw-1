@@ -18,44 +18,62 @@
  * Core is outcome-agnostic — it handles the mechanics of each outcome
  * without knowing *why* the decision was made.
  */
-export type HookDecision =
-  | HookDecisionPass
-  | HookDecisionBlock
-  | HookDecisionRedact
-  | HookDecisionAsk;
+export type HookDecision = HookDecisionPass | HookDecisionBlock | HookDecisionAsk;
 
 /** Content is fine. Proceed normally. */
 export type HookDecisionPass = {
   outcome: "pass";
 };
 
+/** Default user-facing replacement message when a `block` decision omits one. */
+export const DEFAULT_BLOCK_MESSAGE = "This response was blocked by policy";
+
+/** Default upper bound on retries when `block.retry === true`. */
+export const DEFAULT_BLOCK_MAX_RETRIES = 3;
+
 /**
- * Content is blocked. Do not proceed.
- * Core will prevent execution and surface the `userMessage` to the user.
- * `reason` is internal (logged, not shown). `userMessage` is user-facing.
+ * Content is blocked. Core handles the mechanics:
+ *  - For `llm_output`: replace the assistant response text with `message`
+ *    (or the default message) and end the turn normally — NOT an error.
+ *    If `retry` is true, the LLM is asked to try again until `maxRetries`
+ *    is exhausted, after which the turn ends with the block message.
+ *  - For `before_agent_run`: terminate the run before submitting the prompt
+ *    and surface `message` to the user. `retry` is not meaningful here
+ *    (the prompt has not changed) and is ignored.
+ *  - For `after_tool_call`: log + surface `message` (when wired) so the
+ *    blocked tool result is replaced with the policy text.
+ *
+ * `reason` is internal (logged, not shown). `message` is user-facing.
  */
 export type HookDecisionBlock = {
   outcome: "block";
   /** Internal reason for logging/observability. Never shown to user. */
   reason: string;
-  /** Message shown to the user. Should be helpful, not scary. */
+  /**
+   * Optional user-facing replacement text. Defaults to
+   * `DEFAULT_BLOCK_MESSAGE` when not provided.
+   * Preferred over the deprecated `userMessage` field.
+   */
+  message?: string;
+  /**
+   * @deprecated Prefer `message`. Retained for backwards compatibility with
+   * pre-merge callers; readers must fall back to `message` when both are
+   * absent.
+   */
   userMessage?: string;
+  /**
+   * If true, retry the LLM call (same model, same prompt) instead of
+   * terminating the turn. Only meaningful for `llm_output`. Default: false.
+   */
+  retry?: boolean;
+  /**
+   * Upper bound on retries when `retry` is true. Defaults to
+   * `DEFAULT_BLOCK_MAX_RETRIES` (3) — guard against infinite loops.
+   */
+  maxRetries?: number;
   /** Plugin-defined category for analytics (e.g. "violence", "pii", "cost_limit"). */
   category?: string;
   /** Opaque metadata for the plugin's own use. Core persists but doesn't interpret. */
-  metadata?: Record<string, unknown>;
-};
-
-/**
- * Content should be redacted. The pipeline may have already executed
- * (e.g. a streamed response), so core will retroactively scrub.
- */
-export type HookDecisionRedact = {
-  outcome: "redact";
-  reason: string;
-  /** Message to replace the redacted content with, if any. */
-  replacementMessage?: string;
-  category?: string;
   metadata?: Record<string, unknown>;
 };
 
@@ -86,6 +104,14 @@ export type HookDecisionAsk = {
   metadata?: Record<string, unknown>;
 };
 
+/**
+ * Resolve the user-facing message for a block decision, honoring the
+ * deprecated `userMessage` field as a fallback before defaulting.
+ */
+export function resolveBlockMessage(decision: HookDecisionBlock): string {
+  return decision.message ?? decision.userMessage ?? DEFAULT_BLOCK_MESSAGE;
+}
+
 // ---------------------------------------------------------------------------
 // Decision outcome priority for merging (most-restrictive-wins)
 // ---------------------------------------------------------------------------
@@ -95,12 +121,11 @@ export const HOOK_DECISION_SEVERITY: Record<HookDecision["outcome"], number> = {
   pass: 0,
   ask: 1,
   block: 2,
-  redact: 3,
 };
 
 /**
  * Merge two HookDecisions using most-restrictive-wins semantics.
- * `redact > block > ask > pass`
+ * `block > ask > pass`
  */
 export function mergeHookDecisions(a: HookDecision | undefined, b: HookDecision): HookDecision {
   if (!a) {
@@ -117,9 +142,7 @@ export function isHookDecision(value: unknown): value is HookDecision {
     return false;
   }
   const v = value as Record<string, unknown>;
-  return (
-    v.outcome === "pass" || v.outcome === "block" || v.outcome === "redact" || v.outcome === "ask"
-  );
+  return v.outcome === "pass" || v.outcome === "block" || v.outcome === "ask";
 }
 
 // ---------------------------------------------------------------------------
@@ -130,7 +153,7 @@ export function isHookDecision(value: unknown): value is HookDecision {
 export type InputGateDecision = HookDecisionPass | HookDecisionBlock | HookDecisionAsk;
 
 /** Outcomes valid for output gates (llm_output, after_tool_call). */
-export type OutputGateDecision = HookDecision; // all four are valid
+export type OutputGateDecision = HookDecision;
 
 /**
  * A gate hook decision paired with the pluginId that produced it.
@@ -162,7 +185,7 @@ export type HookDecisionEvent = {
   senderId?: string;
   /** Duration of the hook handler execution. */
   hookDurationMs: number;
-  /** Whether channel retraction was attempted and succeeded (redact only). */
+  /** Whether channel retraction was attempted and succeeded. */
   channelRetractionResult?: "success" | "fallback" | "not_attempted";
 };
 
@@ -183,7 +206,7 @@ export type HookDecisionEvent = {
 export type HookController = {
   /** Aborted when the intervention window closes (timeout or pipeline cleanup). */
   signal: AbortSignal;
-  /** Intervene in the running pipeline. Always stops + redacts. */
+  /** Intervene in the running pipeline. Always stops + replaces persisted content. */
   intervene(decision: HookDecision): void;
 };
 

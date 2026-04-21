@@ -940,8 +940,6 @@ export async function runEmbeddedPiAgent(
           const {
             aborted,
             externalAbort,
-            promptError,
-            promptErrorSource,
             preflightRecovery,
             timedOut,
             idleTimedOut,
@@ -950,6 +948,11 @@ export async function runEmbeddedPiAgent(
             lastAssistant: sessionLastAssistant,
             currentAttemptAssistant,
           } = attempt;
+          // promptError / promptErrorSource may be cleared by lifecycle-hook
+          // handling below (e.g. `hook:llm_output` block decisions are policy
+          // decisions, not LLM failures, and must not enter the failover path).
+          let promptError = attempt.promptError;
+          let promptErrorSource = attempt.promptErrorSource;
           bootstrapPromptWarningSignaturesSeen =
             attempt.bootstrapPromptWarningSignaturesSeen ??
             (attempt.bootstrapPromptWarningSignature
@@ -1385,6 +1388,28 @@ export async function runEmbeddedPiAgent(
                 error: { kind, message: errorText },
               },
             };
+          }
+
+          // Lifecycle hook (`llm_output`) `block` decisions are not LLM/transport
+          // failures — they are policy decisions made on a successful response.
+          // They must NOT enter the failover/model-rotation logic below; either
+          // we retry (when the plugin asked for it and the budget allows), or
+          // we let the rest of this turn run normally so the replacement
+          // assistant text is delivered as a completed turn (no error).
+          if (promptErrorSource === "hook:llm_output" && !aborted) {
+            // Clear the error marker so downstream logic treats this attempt
+            // as a normal completion (replacement text already populated by
+            // the hook handler) rather than an LLM failure to surface.
+            promptError = null;
+            promptErrorSource = null;
+            if (attempt.llmOutputRetryRequested) {
+              log.debug(
+                `[hook:llm_output] block requested retry — re-invoking attempt (count=${attempt.llmOutputRetryCount ?? 0})`,
+              );
+              continue;
+            }
+            // Fall through: the prompt loop's normal payload path will assemble
+            // the replacement text from `attempt.assistantTexts`.
           }
 
           if (promptError && !aborted && promptErrorSource !== "compaction") {

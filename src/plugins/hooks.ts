@@ -640,11 +640,13 @@ export function createHookRunner(
         }
         return merged;
       },
-      // ask does NOT short-circuit — keep running so other plugins can escalate to block/redact
-      shouldStop: (result) => result.outcome === "redact" || result.outcome === "block",
+      // ask does NOT short-circuit — keep running so other plugins can escalate to block
+      shouldStop: (result) => result.outcome === "block",
       terminalLabel: "gate-decision",
     });
-    if (!decision) return undefined;
+    if (!decision) {
+      return undefined;
+    }
     return { decision, pluginId: winningPluginId ?? "unknown" };
   }
 
@@ -825,34 +827,29 @@ export function createHookRunner(
     ctx: PluginHookAgentContext,
   ): Promise<GateHookResult | undefined> {
     let winningPluginId: string | undefined;
-    const decision = await runModifyingHook<"before_agent_run", HookDecision>("before_agent_run", event, ctx, {
-      mergeResults: (_acc, next, reg) => {
-        if (!isHookDecision(next)) {
-          return _acc ?? next;
-        }
-        // redact is invalid for input gates — treat as block with a warning
-        if (next.outcome === "redact") {
-          logger?.warn?.(
-            `[hooks] before_agent_run received 'redact' outcome from plugin — treating as 'block' (redact is only valid for output gates)`,
-          );
-          const redactDecision = next;
-          next = {
-            outcome: "block",
-            reason: redactDecision.reason,
-            category: redactDecision.category,
-          };
-        }
-        const merged = mergeHookDecisions(_acc, next);
-        if (merged === next) {
-          winningPluginId = reg.pluginId;
-        }
-        return merged;
+    const decision = await runModifyingHook<"before_agent_run", HookDecision>(
+      "before_agent_run",
+      event,
+      ctx,
+      {
+        mergeResults: (_acc, next, reg) => {
+          if (!isHookDecision(next)) {
+            return _acc ?? next;
+          }
+          const merged = mergeHookDecisions(_acc, next);
+          if (merged === next) {
+            winningPluginId = reg.pluginId;
+          }
+          return merged;
+        },
+        // ask does NOT short-circuit — keep running so other plugins can escalate to block
+        shouldStop: (result) => result.outcome === "block",
+        terminalLabel: "gate-decision",
       },
-      // ask does NOT short-circuit — keep running so other plugins can escalate to block
-      shouldStop: (result) => result.outcome === "block",
-      terminalLabel: "gate-decision",
-    });
-    if (!decision) return undefined;
+    );
+    if (!decision) {
+      return undefined;
+    }
     return { decision, pluginId: winningPluginId ?? "unknown" };
   }
 
@@ -914,7 +911,7 @@ export function createHookRunner(
         }
         return mergeHookDecisions(_acc, next);
       },
-      shouldStop: (result) => result.outcome === "redact" || result.outcome === "block",
+      shouldStop: (result) => result.outcome === "block",
       terminalLabel: "gate-decision",
     });
   }

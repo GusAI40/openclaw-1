@@ -1174,19 +1174,18 @@ export async function handleToolExecutionEnd(
         toolCallId,
       });
       if (afterToolDecision?.outcome === "block") {
+        const { resolveBlockMessage } = await import("../plugins/hook-decision-types.js");
+        const blockMessage = resolveBlockMessage(afterToolDecision);
         ctx.log.warn(
-          `after_tool_call hook blocked tool=${toolName}: ${afterToolDecision.reason}`,
+          `after_tool_call hook blocked tool=${toolName}: ${afterToolDecision.reason}` +
+            ` (replacement message=${JSON.stringify(blockMessage)})`,
         );
         // The tool result was already emitted above via emitToolResultOutput.
-        // We can't un-emit it, but we log the block decision.
-        // TODO: wire redact path once sessionFile is available on ToolHandlerContext
-      }
-
-      if (afterToolDecision?.outcome === "redact") {
-        ctx.log.warn(
-          `after_tool_call hook requested redact for tool=${toolName}: ${afterToolDecision.reason}`,
-        );
-        // TODO: redact requires sessionFile on ToolHandlerContext — deferred
+        // We can't un-emit it, but we log the block decision and the
+        // user-facing replacement message that should be surfaced when the
+        // sessionFile-aware replacement path is wired.
+        // TODO: wire transcript replacement once sessionFile is available on
+        // ToolHandlerContext.
       }
     }
 

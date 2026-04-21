@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   type HookDecision,
+  type HookDecisionBlock,
   mergeHookDecisions,
   isHookDecision,
   HOOK_DECISION_SEVERITY,
+  DEFAULT_BLOCK_MESSAGE,
+  DEFAULT_BLOCK_MAX_RETRIES,
+  resolveBlockMessage,
 } from "./hook-decision-types.js";
 
 describe("HookDecision types", () => {
@@ -31,8 +35,29 @@ describe("HookDecision types", () => {
       expect(isHookDecision({ outcome: "block", reason: "test" })).toBe(true);
     });
 
-    it("recognizes redact", () => {
-      expect(isHookDecision({ outcome: "redact", reason: "r" })).toBe(true);
+    it("recognizes block with message", () => {
+      expect(
+        isHookDecision({
+          outcome: "block",
+          reason: "policy",
+          message: "Please rephrase",
+        }),
+      ).toBe(true);
+    });
+
+    it("recognizes block with retry fields", () => {
+      expect(
+        isHookDecision({
+          outcome: "block",
+          reason: "policy",
+          retry: true,
+          maxRetries: 5,
+        }),
+      ).toBe(true);
+    });
+
+    it("does not recognize the removed `redact` outcome", () => {
+      expect(isHookDecision({ outcome: "redact", reason: "r" })).toBe(false);
     });
 
     it("rejects null", () => {
@@ -65,10 +90,19 @@ describe("HookDecision types", () => {
       expect(HOOK_DECISION_SEVERITY.ask).toBe(1);
     });
 
-    it("severity order is pass < ask < block < redact", () => {
+    it("block has severity 2", () => {
+      expect(HOOK_DECISION_SEVERITY.block).toBe(2);
+    });
+
+    it("severity order is pass < ask < block", () => {
       expect(HOOK_DECISION_SEVERITY.pass).toBeLessThan(HOOK_DECISION_SEVERITY.ask);
       expect(HOOK_DECISION_SEVERITY.ask).toBeLessThan(HOOK_DECISION_SEVERITY.block);
-      expect(HOOK_DECISION_SEVERITY.block).toBeLessThan(HOOK_DECISION_SEVERITY.redact);
+    });
+
+    it("does not expose a `redact` severity entry", () => {
+      // Type-level guarantee: HOOK_DECISION_SEVERITY is keyed on
+      // HookDecision["outcome"], which no longer includes "redact".
+      expect(Object.keys(HOOK_DECISION_SEVERITY).toSorted()).toEqual(["ask", "block", "pass"]);
     });
   });
 
@@ -106,11 +140,6 @@ describe("HookDecision types", () => {
       expect(mergeHookDecisions(askDecision, b)).toBe(b);
     });
 
-    it("redact beats ask", () => {
-      const b: HookDecision = { outcome: "redact", reason: "r" };
-      expect(mergeHookDecisions(askDecision, b)).toBe(b);
-    });
-
     it("keeps first ask when severities match", () => {
       const a: HookDecision = askDecision;
       const b: HookDecision = {
@@ -127,34 +156,88 @@ describe("HookDecision types", () => {
       expect(mergeHookDecisions(askDecision, b).outcome).toBe("ask");
     });
 
-    it("redact beats block", () => {
-      const a: HookDecision = { outcome: "block", reason: "b" };
-      const b: HookDecision = { outcome: "redact", reason: "r" };
-      expect(mergeHookDecisions(a, b)).toBe(b);
-    });
-
     it("escalates pass → block", () => {
       const a: HookDecision = { outcome: "pass" };
       const b: HookDecision = { outcome: "block", reason: "test" };
       expect(mergeHookDecisions(a, b)).toBe(b);
     });
 
-    it("escalates block → redact", () => {
+    it("does not downgrade block → ask", () => {
       const a: HookDecision = { outcome: "block", reason: "b" };
-      const b: HookDecision = { outcome: "redact", reason: "r" };
-      expect(mergeHookDecisions(a, b)).toBe(b);
-    });
-
-    it("does not downgrade redact → block", () => {
-      const a: HookDecision = { outcome: "redact", reason: "r" };
-      const b: HookDecision = { outcome: "block", reason: "b" };
+      const b: HookDecision = askDecision;
       expect(mergeHookDecisions(a, b)).toBe(a);
     });
 
-    it("does not downgrade redact → pass", () => {
-      const a: HookDecision = { outcome: "redact", reason: "r" };
+    it("does not downgrade block → pass", () => {
+      const a: HookDecision = { outcome: "block", reason: "b" };
       const b: HookDecision = { outcome: "pass" };
       expect(mergeHookDecisions(a, b)).toBe(a);
+    });
+
+    it("keeps first block when both are block", () => {
+      const a: HookDecision = { outcome: "block", reason: "first" };
+      const b: HookDecision = { outcome: "block", reason: "second" };
+      expect(mergeHookDecisions(a, b)).toBe(a);
+    });
+  });
+
+  describe("resolveBlockMessage", () => {
+    it("returns the explicit `message` when present", () => {
+      const decision: HookDecisionBlock = {
+        outcome: "block",
+        reason: "policy",
+        message: "Please rephrase your request.",
+      };
+      expect(resolveBlockMessage(decision)).toBe("Please rephrase your request.");
+    });
+
+    it("falls back to deprecated `userMessage` for backwards compatibility", () => {
+      const decision: HookDecisionBlock = {
+        outcome: "block",
+        reason: "policy",
+        userMessage: "Legacy text",
+      };
+      expect(resolveBlockMessage(decision)).toBe("Legacy text");
+    });
+
+    it("prefers `message` over the deprecated `userMessage`", () => {
+      const decision: HookDecisionBlock = {
+        outcome: "block",
+        reason: "policy",
+        message: "New text",
+        userMessage: "Old text",
+      };
+      expect(resolveBlockMessage(decision)).toBe("New text");
+    });
+
+    it("falls back to the default message when neither is provided", () => {
+      const decision: HookDecisionBlock = {
+        outcome: "block",
+        reason: "policy",
+      };
+      expect(resolveBlockMessage(decision)).toBe(DEFAULT_BLOCK_MESSAGE);
+    });
+  });
+
+  describe("block decision retry semantics", () => {
+    it("defaults retry to undefined (interpreted as false)", () => {
+      const decision: HookDecisionBlock = { outcome: "block", reason: "policy" };
+      expect(decision.retry).toBeUndefined();
+    });
+
+    it("supports `retry: true` and `maxRetries`", () => {
+      const decision: HookDecisionBlock = {
+        outcome: "block",
+        reason: "policy",
+        retry: true,
+        maxRetries: 5,
+      };
+      expect(decision.retry).toBe(true);
+      expect(decision.maxRetries).toBe(5);
+    });
+
+    it("DEFAULT_BLOCK_MAX_RETRIES is 3", () => {
+      expect(DEFAULT_BLOCK_MAX_RETRIES).toBe(3);
     });
   });
 });

@@ -2144,6 +2144,12 @@ export async function runEmbeddedAttempt(
       let preflightRecovery: EmbeddedRunAttemptResult["preflightRecovery"];
       let promptErrorSource: EmbeddedRunAttemptResult["promptErrorSource"] = null;
       let skipPromptSubmission = false;
+      // Track retry state for llm_output `block` decisions with `retry: true`.
+      // The outer run loop reads `promptErrorSource === "hook:llm_output"`
+      // together with `llmOutputRetryRequested` to know whether to re-invoke
+      // the LLM (true) or surface the block message as a completed turn (false).
+      let llmOutputRetryCount = 0;
+      let llmOutputRetryRequested = false;
       try {
         const promptStartedAt = Date.now();
         if (emptyExplicitToolAllowlistError) {
@@ -2437,49 +2443,64 @@ export async function runEmbeddedAttempt(
               },
             );
             if (beforeRunResult) {
-            const { decision: beforeRunDecision, pluginId: beforeRunPluginId } = beforeRunResult;
-            if (beforeRunDecision.outcome === "block") {
-              log.warn(`before_agent_run hook blocked by ${beforeRunPluginId}: ${beforeRunDecision.reason}`);
-              promptError = new Error(
-                beforeRunDecision.userMessage ?? "Request blocked by policy.",
-              );
-              promptErrorSource = "hook:before_agent_run";
-              skipPromptSubmission = true;
-            } else if (beforeRunDecision.outcome === "ask") {
-              log.warn(`before_agent_run hook requesting approval (${beforeRunPluginId}): ${beforeRunDecision.reason}`);
-              const { requestHookApproval } = await import("../../../plugins/hook-approval.js");
-              const approvalResult = await requestHookApproval({
-                hookPoint: "before_agent_run",
-                decision: beforeRunDecision,
-                pluginId: beforeRunPluginId,
-                runId: params.runId,
-                sessionKey: params.sessionKey,
-                agentId: hookAgentId,
-                channelId: params.messageChannel ?? params.messageProvider ?? undefined,
-                signal: params.abortSignal,
-                log,
-              });
-              if (approvalResult === "deny" || approvalResult === "cancelled") {
-                log.warn(`before_agent_run hook approval ${approvalResult} (plugin=${beforeRunPluginId})${approvalResult === "cancelled" ? " — no approval route available (is control-ui connected?)" : ""}`);
-                promptError = new Error(
-                  beforeRunDecision.denialMessage ?? "Request denied by owner.",
+              const { decision: beforeRunDecision, pluginId: beforeRunPluginId } = beforeRunResult;
+              if (beforeRunDecision.outcome === "block") {
+                log.warn(
+                  `before_agent_run hook blocked by ${beforeRunPluginId}: ${beforeRunDecision.reason}`,
                 );
+                const { resolveBlockMessage } =
+                  await import("../../../plugins/hook-decision-types.js");
+                // before_agent_run does not support `retry`: the prompt has not
+                // changed yet, so retry would loop on the same input. Surface the
+                // block message and terminate the turn.
+                promptError = new Error(resolveBlockMessage(beforeRunDecision));
                 promptErrorSource = "hook:before_agent_run";
                 skipPromptSubmission = true;
-              } else if (approvalResult === "timeout") {
-                const behavior = beforeRunDecision.timeoutBehavior ?? "deny";
-                if (behavior === "deny") {
-                  log.warn(`before_agent_run hook approval timed out (behavior=deny)`);
-                  promptError = new Error(beforeRunDecision.denialMessage ?? "Approval timed out.");
+              } else if (beforeRunDecision.outcome === "ask") {
+                log.warn(
+                  `before_agent_run hook requesting approval (${beforeRunPluginId}): ${beforeRunDecision.reason}`,
+                );
+                const { requestHookApproval } = await import("../../../plugins/hook-approval.js");
+                const approvalResult = await requestHookApproval({
+                  hookPoint: "before_agent_run",
+                  decision: beforeRunDecision,
+                  pluginId: beforeRunPluginId,
+                  runId: params.runId,
+                  sessionKey: params.sessionKey,
+                  agentId: hookAgentId,
+                  channelId: params.messageChannel ?? params.messageProvider ?? undefined,
+                  signal: params.abortSignal,
+                  log,
+                });
+                if (approvalResult === "deny" || approvalResult === "cancelled") {
+                  log.warn(
+                    `before_agent_run hook approval ${approvalResult} (plugin=${beforeRunPluginId})${approvalResult === "cancelled" ? " — no approval route available (is control-ui connected?)" : ""}`,
+                  );
+                  promptError = new Error(
+                    beforeRunDecision.denialMessage ?? "Request denied by owner.",
+                  );
                   promptErrorSource = "hook:before_agent_run";
                   skipPromptSubmission = true;
+                } else if (approvalResult === "timeout") {
+                  const behavior = beforeRunDecision.timeoutBehavior ?? "deny";
+                  if (behavior === "deny") {
+                    log.warn(`before_agent_run hook approval timed out (behavior=deny)`);
+                    promptError = new Error(
+                      beforeRunDecision.denialMessage ?? "Approval timed out.",
+                    );
+                    promptErrorSource = "hook:before_agent_run";
+                    skipPromptSubmission = true;
+                  } else {
+                    log.warn(
+                      `before_agent_run hook approval timed out (behavior=allow), proceeding`,
+                    );
+                  }
                 } else {
-                  log.warn(`before_agent_run hook approval timed out (behavior=allow), proceeding`);
+                  log.debug(
+                    `before_agent_run hook approval granted (${approvalResult}), proceeding`,
+                  );
                 }
-              } else {
-                log.debug(`before_agent_run hook approval granted (${approvalResult}), proceeding`);
               }
-            }
             }
           }
 
@@ -2992,6 +3013,8 @@ export async function runEmbeddedAttempt(
       }
 
       if (hookRunner?.hasHooks("llm_output")) {
+        const { resolveBlockMessage, DEFAULT_BLOCK_MAX_RETRIES } =
+          await import("../../../plugins/hook-decision-types.js");
         const llmOutputResult = await hookRunner.runLlmOutput(
           {
             runId: params.runId,
@@ -3016,8 +3039,11 @@ export async function runEmbeddedAttempt(
         );
         const llmOutputDecision = llmOutputResult?.decision;
         const llmOutputPluginId = llmOutputResult?.pluginId ?? "unknown";
-        // Helper: redact assistant messages from the transcript and clear assistantTexts
-        const redactLlmOutputResponse = async (
+        // Helper: scrub assistant messages from the persisted transcript and
+        // optionally replace the in-memory assistantTexts with a policy
+        // replacement message. Used by both `block` (replace + end normally)
+        // and the denied `ask` flow.
+        const replaceLlmOutputResponse = async (
           reason: string,
           hookPoint: string,
           replacementMessage?: string,
@@ -3045,19 +3071,40 @@ export async function runEmbeddedAttempt(
         };
 
         if (llmOutputDecision?.outcome === "block") {
-          log.warn(`llm_output hook blocked by ${llmOutputPluginId}: ${llmOutputDecision.reason}`);
-          await redactLlmOutputResponse(llmOutputDecision.reason, "llm_output");
-          promptError = new Error(llmOutputDecision.userMessage ?? "Response blocked by policy.");
-          promptErrorSource = "hook:llm_output";
-        } else if (llmOutputDecision?.outcome === "redact") {
-          log.warn(`llm_output hook redacted by ${llmOutputPluginId}: ${llmOutputDecision.reason}`);
-          await redactLlmOutputResponse(
-            llmOutputDecision.reason,
-            "llm_output",
-            llmOutputDecision.replacementMessage,
-          );
+          const wantsRetry = llmOutputDecision.retry === true;
+          const maxRetries = llmOutputDecision.maxRetries ?? DEFAULT_BLOCK_MAX_RETRIES;
+          const message = resolveBlockMessage(llmOutputDecision);
+          if (wantsRetry && llmOutputRetryCount < maxRetries) {
+            log.warn(
+              `llm_output hook blocked by ${llmOutputPluginId} (retry ${llmOutputRetryCount + 1}/${maxRetries}): ${llmOutputDecision.reason}`,
+            );
+            // Scrub the rejected response from the transcript before retrying so
+            // we do not pollute the cached prefix or replay invalid history.
+            await replaceLlmOutputResponse(llmOutputDecision.reason, "llm_output:retry");
+            llmOutputRetryCount += 1;
+            llmOutputRetryRequested = true;
+            // Mark for the outer attempt loop to re-invoke the LLM.
+            promptErrorSource = "hook:llm_output";
+          } else {
+            if (wantsRetry) {
+              log.warn(
+                `llm_output hook blocked by ${llmOutputPluginId}: retry budget exhausted (${llmOutputRetryCount}/${maxRetries}), terminating turn with block message`,
+              );
+            } else {
+              log.warn(
+                `llm_output hook blocked by ${llmOutputPluginId}: ${llmOutputDecision.reason}`,
+              );
+            }
+            // Replace the assistant text with the block message and end the
+            // turn normally — NOT an error. Do not set promptError; the user
+            // will see the replacement message as a completed assistant reply.
+            await replaceLlmOutputResponse(llmOutputDecision.reason, "llm_output", message);
+            llmOutputRetryRequested = false;
+          }
         } else if (llmOutputDecision?.outcome === "ask") {
-          log.warn(`llm_output hook requesting approval (${llmOutputPluginId}): ${llmOutputDecision.reason}`);
+          log.warn(
+            `llm_output hook requesting approval (${llmOutputPluginId}): ${llmOutputDecision.reason}`,
+          );
           const { requestHookApproval } = await import("../../../plugins/hook-approval.js");
           const approvalResult = await requestHookApproval({
             hookPoint: "llm_output",
@@ -3076,8 +3123,10 @@ export async function runEmbeddedAttempt(
             (approvalResult === "timeout" &&
               (llmOutputDecision.timeoutBehavior ?? "deny") === "deny");
           if (shouldDeny) {
-            log.warn(`llm_output hook approval ${approvalResult} (plugin=${llmOutputPluginId}), redacting response${approvalResult === "cancelled" ? " — no approval route available" : ""}`);
-            await redactLlmOutputResponse(
+            log.warn(
+              `llm_output hook approval ${approvalResult} (plugin=${llmOutputPluginId}), withholding response${approvalResult === "cancelled" ? " — no approval route available" : ""}`,
+            );
+            await replaceLlmOutputResponse(
               llmOutputDecision.reason,
               "llm_output:ask",
               llmOutputDecision.denialMessage ?? "Response withheld pending review.",
@@ -3119,8 +3168,8 @@ export async function runEmbeddedAttempt(
             );
             // For now, log the intervention. Full stream abort + retraction requires
             // wiring into the channel delivery pipeline (deferred).
-            // The redaction can be done immediately:
-            if (decision.outcome === "redact" || decision.outcome === "block") {
+            // The persisted assistant message can be scrubbed immediately:
+            if (decision.outcome === "block") {
               const { redactMessages } = await import("../../../plugins/hook-redaction.js");
               await redactMessages(
                 params.sessionFile,
@@ -3131,7 +3180,7 @@ export async function runEmbeddedAttempt(
                   pluginId,
                   timestamp: Date.now(),
                 },
-              ).catch((err) => log.warn(`async llm_output redaction failed: ${err}`));
+              ).catch((err) => log.warn(`async llm_output cleanup failed: ${err}`));
             }
           },
         );
@@ -3238,6 +3287,8 @@ export async function runEmbeddedAttempt(
         // Client tool call detected (OpenResponses hosted tools)
         clientToolCall: clientToolCallDetected ?? undefined,
         yieldDetected: yieldDetected || undefined,
+        llmOutputRetryRequested,
+        llmOutputRetryCount,
       };
     } finally {
       if (trajectoryRecorder && !trajectoryEndRecorded) {

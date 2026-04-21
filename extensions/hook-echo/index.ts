@@ -2,16 +2,15 @@
  * Hook Echo Plugin — diagnostic/development plugin that exercises all lifecycle hooks.
  *
  * Always logs every hook event. Additionally, responds to magic trigger words
- * in the user prompt to exercise block/redact/async-intervention paths:
+ * in the user prompt to exercise block/retry/async-intervention paths:
  *
  *   Prompt triggers (case-insensitive, matched anywhere in user message):
  *     "HOOK_BLOCK_RUN"     → before_agent_run returns block
  *     "HOOK_ASK_RUN"       → before_agent_run returns ask (human approval)
- *     "HOOK_BLOCK_OUTPUT"  → llm_output returns block
- *     "HOOK_REDACT_OUTPUT" → llm_output returns redact with replacement message
+ *     "HOOK_BLOCK_OUTPUT"  → llm_output returns block with custom message
+ *     "HOOK_BLOCK_RETRY"   → llm_output returns block with retry: true (test retry path)
  *     "HOOK_ASK_OUTPUT"    → llm_output returns ask (human approval)
  *     "HOOK_ASYNC_BLOCK"   → async llm_output intervenes with block
- *     "HOOK_ASYNC_REDACT"  → async llm_output intervenes with redact
  *
  * Enable via config: plugins.entries.hook-echo.enabled = true
  */
@@ -29,7 +28,7 @@ export default definePluginEntry({
   id: PLUGIN_ID,
   name: "Hook Echo",
   description:
-    "Diagnostic plugin — logs all lifecycle hooks and exercises block/redact/async paths via trigger words",
+    "Diagnostic plugin — logs all lifecycle hooks and exercises block/retry/async paths via trigger words",
 
   register(api: OpenClawPluginApi) {
     const log = api.logger ?? console;
@@ -50,6 +49,7 @@ export default definePluginEntry({
         return {
           outcome: "block" as const,
           reason: "[hook-echo] Run blocked by HOOK_BLOCK_RUN trigger",
+          message: "🚫 [hook-echo] This run was blocked by the hook-echo diagnostic plugin.",
         };
       }
 
@@ -98,21 +98,25 @@ export default definePluginEntry({
       // Check the original prompt for triggers (prompt is on the event since it produced this output)
       const combined = `${event.prompt ?? ""} ${textPreview}`;
 
+      if (hasTrigger(combined, "HOOK_BLOCK_RETRY")) {
+        log.info(`[${PLUGIN_ID}] llm_output → BLOCKING with retry (trigger: HOOK_BLOCK_RETRY)`);
+        return {
+          outcome: "block" as const,
+          reason:
+            "[hook-echo] Output blocked by HOOK_BLOCK_RETRY trigger — asking LLM to try again",
+          message:
+            "🔁 [hook-echo] Response was blocked and retried by the hook-echo diagnostic plugin.",
+          retry: true,
+          maxRetries: 2,
+        };
+      }
+
       if (hasTrigger(combined, "HOOK_BLOCK_OUTPUT")) {
         log.info(`[${PLUGIN_ID}] llm_output → BLOCKING (trigger: HOOK_BLOCK_OUTPUT)`);
         return {
           outcome: "block" as const,
           reason: "[hook-echo] Output blocked by HOOK_BLOCK_OUTPUT trigger",
-        };
-      }
-
-      if (hasTrigger(combined, "HOOK_REDACT_OUTPUT")) {
-        log.info(`[${PLUGIN_ID}] llm_output → REDACTING (trigger: HOOK_REDACT_OUTPUT)`);
-        return {
-          outcome: "redact" as const,
-          reason: "[hook-echo] Output redacted by HOOK_REDACT_OUTPUT trigger",
-          replacementMessage:
-            "🔒 [hook-echo] This response was redacted by the hook-echo diagnostic plugin.",
+          message: "🔒 [hook-echo] This response was blocked by the hook-echo diagnostic plugin.",
         };
       }
 
@@ -157,19 +161,8 @@ export default definePluginEntry({
           controller?.intervene({
             outcome: "block" as const,
             reason: "[hook-echo] Output async-blocked by HOOK_ASYNC_BLOCK trigger",
-          });
-          return;
-        }
-
-        if (hasTrigger(combined, "HOOK_ASYNC_REDACT")) {
-          log.info(
-            `[${PLUGIN_ID}] async llm_output → REDACTING via intervene (trigger: HOOK_ASYNC_REDACT)`,
-          );
-          controller?.intervene({
-            outcome: "redact" as const,
-            reason: "[hook-echo] Output async-redacted by HOOK_ASYNC_REDACT trigger",
-            replacementMessage:
-              "🔒 [hook-echo] This response was async-redacted by the hook-echo diagnostic plugin.",
+            message:
+              "🔒 [hook-echo] This response was async-blocked by the hook-echo diagnostic plugin.",
           });
           return;
         }

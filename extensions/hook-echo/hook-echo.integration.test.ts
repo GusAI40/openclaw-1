@@ -104,14 +104,15 @@ describe("hook-echo integration", () => {
       expect(result).toBeUndefined();
     });
 
-    it("returns redact from after_tool_call handler", async () => {
+    it("returns block (with `message`) from after_tool_call handler", async () => {
       const registry = makeRegistry([
         {
           pluginId: "hook-echo",
           hookName: "after_tool_call",
           handler: async () => ({
-            outcome: "redact" as const,
+            outcome: "block" as const,
             reason: "sensitive output",
+            message: "[replaced]",
           }),
           source: "hook-echo",
         },
@@ -121,7 +122,10 @@ describe("hook-echo integration", () => {
         { toolName: "exec", params: {}, result: "secret data" },
         { toolName: "exec", sessionKey: "s1" },
       );
-      expect(result?.outcome).toBe("redact");
+      expect(result?.outcome).toBe("block");
+      if (result?.outcome === "block") {
+        expect(result.message).toBe("[replaced]");
+      }
     });
   });
 

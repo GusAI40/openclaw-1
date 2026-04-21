@@ -40,7 +40,7 @@ describe("before_agent_run hook", () => {
     expect(result?.pluginId).toBe("test");
   });
 
-  it("returns block when handler returns block", async () => {
+  it("returns block when handler returns block (with `message`)", async () => {
     const registry = makeRegistry([
       {
         pluginId: "test",
@@ -48,7 +48,7 @@ describe("before_agent_run hook", () => {
         handler: async () => ({
           outcome: "block" as const,
           reason: "unsafe content",
-          userMessage: "I can't process that.",
+          message: "I can't process that.",
           category: "violence",
         }),
         source: "test",
@@ -59,7 +59,28 @@ describe("before_agent_run hook", () => {
     expect(result?.decision.outcome).toBe("block");
     if (result?.decision.outcome === "block") {
       expect(result.decision.reason).toBe("unsafe content");
-      expect(result.decision.userMessage).toBe("I can't process that.");
+      expect(result.decision.message).toBe("I can't process that.");
+    }
+  });
+
+  it("still accepts the deprecated `userMessage` field on block (backwards compat)", async () => {
+    const registry = makeRegistry([
+      {
+        pluginId: "test",
+        hookName: "before_agent_run",
+        handler: async () => ({
+          outcome: "block" as const,
+          reason: "unsafe content",
+          userMessage: "Legacy field",
+        }),
+        source: "test",
+      },
+    ]);
+    const runner = createHookRunner(registry);
+    const result = await runner.runBeforeAgentRun({ prompt: "bad", messages: [] }, ctx);
+    expect(result?.decision.outcome).toBe("block");
+    if (result?.decision.outcome === "block") {
+      expect(result.decision.userMessage).toBe("Legacy field");
     }
   });
 
@@ -323,7 +344,7 @@ describe("llm_output ask outcome", () => {
     expect(secondHandlerCalled).toBe(true);
   });
 
-  it("ask + redact in sequence → redact wins", async () => {
+  it("ask + block (with `message`) in sequence → block wins", async () => {
     const registry = makeRegistry([
       {
         pluginId: "plugin-a",
@@ -341,9 +362,9 @@ describe("llm_output ask outcome", () => {
         pluginId: "plugin-b",
         hookName: "llm_output",
         handler: async () => ({
-          outcome: "redact" as const,
-          reason: "must redact",
-          replacementMessage: "[redacted]",
+          outcome: "block" as const,
+          reason: "must replace",
+          message: "[replaced]",
         }),
         source: "test",
         priority: 5,
@@ -360,29 +381,45 @@ describe("llm_output ask outcome", () => {
       },
       ctx,
     );
-    expect(result?.decision.outcome).toBe("redact");
+    expect(result?.decision.outcome).toBe("block");
     expect(result?.pluginId).toBe("plugin-b");
+    if (result?.decision.outcome === "block") {
+      expect(result.decision.message).toBe("[replaced]");
+    }
   });
-});
 
-describe("before_agent_run redact guard", () => {
-  it("treats redact as block in before_agent_run (redact is invalid for input gates)", async () => {
+  it("returns block with retry: true from llm_output handler", async () => {
     const registry = makeRegistry([
       {
-        pluginId: "test",
-        hookName: "before_agent_run",
+        pluginId: "retry-plugin",
+        hookName: "llm_output",
         handler: async () => ({
-          outcome: "redact" as const,
-          reason: "should not be redact",
+          outcome: "block" as const,
+          reason: "needs another try",
+          message: "Please try again",
+          retry: true,
+          maxRetries: 2,
         }),
         source: "test",
       },
     ]);
-    const runner = createHookRunner(registry, {
-      logger: { warn: () => {}, error: () => {} },
-    });
-    const result = await runner.runBeforeAgentRun({ prompt: "test", messages: [] }, ctx);
+    const runner = createHookRunner(registry);
+    const result = await runner.runLlmOutput(
+      {
+        runId: "r1",
+        sessionId: "s1",
+        provider: "test",
+        model: "test-model",
+        assistantTexts: ["unsatisfactory"],
+      },
+      ctx,
+    );
     expect(result?.decision.outcome).toBe("block");
+    if (result?.decision.outcome === "block") {
+      expect(result.decision.retry).toBe(true);
+      expect(result.decision.maxRetries).toBe(2);
+      expect(result.decision.message).toBe("Please try again");
+    }
   });
 });
 

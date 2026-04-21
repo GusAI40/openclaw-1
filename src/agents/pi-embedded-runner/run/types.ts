@@ -66,7 +66,13 @@ export type EmbeddedRunAttemptResult = {
    * - "hook:llm_output": a lifecycle hook blocked/redacted the LLM output after response.
    * - null: no promptError.
    */
-  promptErrorSource: "prompt" | "compaction" | "precheck" | "hook:before_agent_run" | "hook:llm_output" | null;
+  promptErrorSource:
+    | "prompt"
+    | "compaction"
+    | "precheck"
+    | "hook:before_agent_run"
+    | "hook:llm_output"
+    | null;
   preflightRecovery?:
     | {
         route: Exclude<PreemptiveCompactionRoute, "fits">;
@@ -107,6 +113,15 @@ export type EmbeddedRunAttemptResult = {
   clientToolCall?: { name: string; params: Record<string, unknown> };
   /** True when sessions_yield tool was called during this attempt. */
   yieldDetected?: boolean;
+  /**
+   * True when an `llm_output` lifecycle hook returned `block` with
+   * `retry: true` and the retry budget had not yet been exhausted, so the
+   * outer run loop should re-invoke the LLM rather than surface the
+   * replacement message.
+   */
+  llmOutputRetryRequested?: boolean;
+  /** Number of `llm_output` block retries already consumed by this attempt. */
+  llmOutputRetryCount?: number;
   replayMetadata: EmbeddedRunReplayMetadata;
   itemLifecycle: {
     startedCount: number;
