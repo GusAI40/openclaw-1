@@ -4,7 +4,6 @@ import type { GlobalHookRunnerRegistry } from "../../src/plugins/hook-registry.t
 import type {
   PluginHookRegistration,
   PluginHookAgentContext,
-  PluginHookToolContext,
   PluginHookBeforeAgentRunEvent,
   PluginHookLlmOutputEvent,
 } from "../../src/plugins/hook-types.js";
@@ -76,56 +75,6 @@ describe("hook-echo integration", () => {
         ctx,
       );
       expect(result?.decision.outcome).toBe("block");
-    });
-  });
-
-  describe("after_tool_call decision", () => {
-    it("returns undefined when handler returns void (observe only)", async () => {
-      const registry = makeRegistry([
-        {
-          pluginId: "hook-echo",
-          hookName: "after_tool_call",
-          handler: async () => {
-            // observe only — no decision
-          },
-          source: "hook-echo",
-        },
-      ]);
-      const runner = createHookRunner(registry);
-      const toolCtx: PluginHookToolContext = {
-        toolName: "exec",
-        sessionKey: "s1",
-        runId: "r1",
-      };
-      const result = await runner.runAfterToolCall(
-        { toolName: "exec", params: {}, result: "ok" },
-        toolCtx,
-      );
-      expect(result).toBeUndefined();
-    });
-
-    it("returns block (with `message`) from after_tool_call handler", async () => {
-      const registry = makeRegistry([
-        {
-          pluginId: "hook-echo",
-          hookName: "after_tool_call",
-          handler: async () => ({
-            outcome: "block" as const,
-            reason: "sensitive output",
-            message: "[replaced]",
-          }),
-          source: "hook-echo",
-        },
-      ]);
-      const runner = createHookRunner(registry);
-      const result = await runner.runAfterToolCall(
-        { toolName: "exec", params: {}, result: "secret data" },
-        { toolName: "exec", sessionKey: "s1" },
-      );
-      expect(result?.outcome).toBe("block");
-      if (result?.outcome === "block") {
-        expect(result.message).toBe("[replaced]");
-      }
     });
   });
 

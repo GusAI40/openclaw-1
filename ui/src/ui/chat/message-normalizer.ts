@@ -251,8 +251,7 @@ export function normalizeMessage(message: unknown): NormalizedMessage {
     if (obc && Array.isArray(obc.content) && obc.content.length > 0) {
       // Reconstruct a synthetic message with the original content for normalization.
       // The rest of the fields (role, timestamp, etc.) stay intact.
-      const patched = { ...m, content: obc.content };
-      patched.__openclaw = oc; // preserve meta
+      const patched = Object.assign({ ...m, content: obc.content }, { __openclaw: oc }); // preserve meta
       message = patched;
       // Re-bind m so the rest of the function sees the patched content.
       Object.assign(m, { content: obc.content });

@@ -280,12 +280,6 @@ export async function loadCompactHooksHarness(): Promise<{
     generateSummary: vi.fn(async () => "summary"),
   }));
 
-  vi.doMock("../session-tool-result-guard-wrapper.js", () => ({
-    guardSessionManager: vi.fn(() => ({
-      flushPendingToolResults: vi.fn(),
-    })),
-  }));
-
   vi.doMock("../pi-settings.js", () => ({
     ensurePiCompactionReserveTokens: vi.fn(),
     resolveCompactionReserveTokensFloor: vi.fn(() => 0),

@@ -80,7 +80,6 @@ import type { AgentRuntimePlan } from "../runtime-plan/types.js";
 import { ensureRuntimePluginsLoaded } from "../runtime-plugins.js";
 import { resolveSandboxContext } from "../sandbox.js";
 import { repairSessionFileIfNeeded } from "../session-file-repair.js";
-import { guardSessionManager } from "../session-tool-result-guard-wrapper.js";
 import { sanitizeToolUseResultPairing } from "../session-transcript-repair.js";
 import {
   acquireSessionWriteLock,
@@ -804,14 +803,7 @@ export async function compactEmbeddedPiSessionDirect(
       });
       await prewarmSessionFile(params.sessionFile);
       const transcriptPolicy = runtimePlan.transcript.resolvePolicy(runtimePlanModelContext);
-      const sessionManager = guardSessionManager(SessionManager.open(params.sessionFile), {
-        agentId: sessionAgentId,
-        sessionKey: params.sessionKey,
-        config: params.config,
-        contextWindowTokens: ctxInfo.tokens,
-        allowSyntheticToolResults: transcriptPolicy.allowSyntheticToolResults,
-        allowedToolNames,
-      });
+      const sessionManager = SessionManager.open(params.sessionFile);
       checkpointSnapshot = captureCompactionCheckpointSnapshot({
         sessionManager,
         sessionFile: params.sessionFile,
@@ -1196,7 +1188,9 @@ export async function compactEmbeddedPiSessionDirect(
           try {
             await flushPendingToolResultsAfterIdle({
               agent: session?.agent,
-              sessionManager,
+              // SessionManager no longer wraps ToolResultFlushManager (guard
+              // wrapper removed); flush becomes a no-op.
+              sessionManager: null,
               clearPendingOnTimeout: true,
             });
           } catch {

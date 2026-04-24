@@ -74,19 +74,4 @@ export type SubscribeEmbeddedPiSessionParams = {
     pluginId: string;
     blockedAssistantText: string;
   }) => void | Promise<void>;
-  /**
-   * Invoked by the subscriber when an `after_tool_call` block decision
-   * lands. Tools that already executed cannot be un-executed, but we can:
-   *   - persist a user-facing block message,
-   *   - emit a terminal lifecycle so the chat stream closes cleanly, and
-   *   - abort the upstream prompt() call so the model does not see the
-   *     tool result and does not iterate further this turn.
-   */
-  onAfterToolCallBlock?: (info: {
-    toolName: string;
-    toolCallId: string;
-    replacementMessage: string;
-    reason: string;
-    pluginId: string;
-  }) => void | Promise<void>;
 };

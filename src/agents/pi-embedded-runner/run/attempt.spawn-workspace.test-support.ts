@@ -220,10 +220,6 @@ vi.mock("../../sandbox.js", () => ({
   resolveSandboxContext: (...args: unknown[]) => hoisted.resolveSandboxContextMock(...args),
 }));
 
-vi.mock("../../session-tool-result-guard-wrapper.js", () => ({
-  guardSessionManager: () => hoisted.sessionManager,
-}));
-
 vi.mock("../../pi-embedded-subscribe.js", () => ({
   subscribeEmbeddedPiSession: (params: Parameters<SubscribeEmbeddedPiSessionFn>[0]) =>
     hoisted.subscribeEmbeddedPiSessionMock(params),

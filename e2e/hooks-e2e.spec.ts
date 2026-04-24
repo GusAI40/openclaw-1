@@ -398,15 +398,6 @@ async function runHookTrigger(
             if (stateField === "final") {
               const t = text || extractMessageText(message);
               const errorish = /agent failed|blocked|policy|denied|hook-echo/i.test(t);
-              const maybeToolOutputAsk =
-                /HOOK_ASK_TOOL_OUTPUT|requires human approval before flowing back to the llm/i.test(
-                  a.message + " " + t,
-                );
-              if (maybeToolOutputAsk && approvalIds.length === 0) {
-                // after_tool_call approvals can be emitted just after the tool-result/final
-                // frame; don't close too early or we'll miss the approval request.
-                return;
-              }
               if (errorish) {
                 errorMessage = t;
                 errorKind = errorKind || "final-block";
@@ -990,55 +981,5 @@ test.describe("Lifecycle hook outcomes (WebKit)", () => {
     expect(retryNotices.length).toBeGreaterThanOrEqual(1);
     // Final block message visible
     expect(finalBlocks.length).toBeGreaterThanOrEqual(1);
-  });
-
-  test("HOOK_BLOCK_TOOL_OUTPUT — tool runs, then turn ends with a styled block message", async ({
-    page,
-  }) => {
-    const triggerMessage =
-      `(test marker: HOOK_BLOCK_TOOL_OUTPUT.) ` +
-      `Skip any introduction. Immediately use the bash tool to run the ` +
-      `single command \`echo hi\` and then report the output.`;
-
-    const result = await runHookTrigger(page, triggerMessage, {
-      timeoutMs: 180_000,
-    });
-
-    recordResult("HOOK_BLOCK_TOOL_OUTPUT", result);
-    const combined = `${result.errorMessage ?? ""} ${result.text ?? ""}`.toLowerCase();
-    expect(combined).toContain("agent failed before reply");
-    expect(combined).toContain("blocked");
-  });
-
-  test("HOOK_ASK_TOOL_OUTPUT — tool result substituted on disk, model continues (known limitation)", async ({
-    page,
-  }) => {
-    // KNOWN LIMITATION: before_message_write substitutes the toolResult
-    // in the persisted JSONL, but the SDK's in-memory model loop has
-    // already consumed the real tool result. The model continues with
-    // the real output. The disk substitution ensures future transcript
-    // reads show the policy notice instead of the real output.
-    //
-    // True in-memory gating would require an SDK-level intercept at the
-    // tool-result handoff boundary, which does not exist yet.
-    const triggerMessage =
-      `(test marker: HOOK_ASK_TOOL_OUTPUT.) ` +
-      `Skip any introduction. Immediately use the bash tool to run the ` +
-      `single command \`echo hi\` and then report the output.`;
-
-    const result = await runHookTrigger(page, triggerMessage, {
-      timeoutMs: 180_000,
-      approvalDecision: "deny",
-    });
-
-    recordResult("HOOK_ASK_TOOL_OUTPUT", {
-      ...result,
-      errorMessage: `approvalIds=${result.approvalIds.length}, finalState=${result.finalState}, errMsg=${result.errorMessage ?? ""}`,
-    });
-
-    // The turn completes — model responds (possibly with real tool output
-    // since the in-memory loop is not gated). We verify the turn finishes
-    // without crashing.
-    expect(result.finalState).toMatch(/final|error/);
   });
 });

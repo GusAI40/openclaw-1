@@ -179,7 +179,6 @@ export type ToolHandlerParams = Pick<
   | "sessionId"
   | "agentId"
   | "toolResultFormat"
-  | "onAfterToolCallBlock"
 >;
 
 export type ToolHandlerState = Pick<

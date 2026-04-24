@@ -897,26 +897,6 @@ export function createHookRunner(
   }
 
   /**
-   * Run after_tool_call hook.
-   * Returns the most-restrictive HookDecision from all sync handlers.
-   */
-  async function runAfterToolCall(
-    event: PluginHookAfterToolCallEvent,
-    ctx: PluginHookToolContext,
-  ): Promise<HookDecision | undefined> {
-    return runModifyingHook<"after_tool_call", HookDecision>("after_tool_call", event, ctx, {
-      mergeResults: (_acc, next) => {
-        if (!isHookDecision(next)) {
-          return _acc ?? next;
-        }
-        return mergeHookDecisions(_acc, next);
-      },
-      shouldStop: (result) => result.outcome === "block",
-      terminalLabel: "gate-decision",
-    });
-  }
-
-  /**
    * Run tool_result_persist hook.
    *
    * This hook is intentionally synchronous: it runs in hot paths where session
@@ -1299,7 +1279,6 @@ export function createHookRunner(
     runMessageSent,
     // Tool hooks
     runBeforeToolCall,
-    runAfterToolCall,
     runToolResultPersist,
     // Message write hooks
     runBeforeMessageWrite,
