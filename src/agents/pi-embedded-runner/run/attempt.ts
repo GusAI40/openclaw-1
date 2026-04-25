@@ -3434,8 +3434,7 @@ export async function runEmbeddedAttempt(
               // to the transcript) as the lifecycle error text. This is
               // what the SPA's chat-final bubble will display. Without
               // this, server-chat broadcasts the hook's verbose `message`
-              // ("🔁 [hook-echo] Response was blocked and retried...") as
-              // a fleeting `state: "final"` payload that gets immediately
+              // as a fleeting `state: "final"` payload that gets immediately
               // overwritten by the proper "⚠️ Response blocked after N
               // retries..." bubble — producing a confusing flash.
               promptError = new Error(finalMessage);

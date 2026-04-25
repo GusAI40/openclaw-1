@@ -56,7 +56,7 @@ describe("shouldReloadHistoryForFinalEvent", () => {
         sessionKey: "main",
         state: "error",
         errorKind: "hook_block",
-        errorMessage: "🔒 [hook-echo] blocked by policy",
+        errorMessage: "Response blocked by policy",
       } as Parameters<typeof shouldReloadHistoryForFinalEvent>[0]),
     ).toBe(true);
   });
