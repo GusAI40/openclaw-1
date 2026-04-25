@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearRuntimeConfigSnapshot, setRuntimeConfigSnapshot } from "../../config/config.js";
 import type { OpenClawConfig } from "../../config/config.js";
+import { resolveQueuedReplyExecutionConfig } from "./agent-runner-utils.js";
 
 const hoisted = vi.hoisted(() => ({
   resolveCommandSecretRefsViaGatewayMock: vi.fn(),
@@ -16,10 +18,6 @@ vi.mock("../../cli/command-secret-targets.js", () => ({
   getScopedChannelsCommandSecretTargets: (...args: unknown[]) =>
     hoisted.getScopedChannelsCommandSecretTargetsMock(...args),
 }));
-
-const { resolveQueuedReplyExecutionConfig } = await import("./agent-runner-utils.js");
-const { clearRuntimeConfigSnapshot, setRuntimeConfigSnapshot } =
-  await import("../../config/config.js");
 
 describe("resolveQueuedReplyExecutionConfig channel scope", () => {
   beforeEach(() => {
