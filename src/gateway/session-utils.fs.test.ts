@@ -691,6 +691,56 @@ describe("readSessionMessages", () => {
       { role: "user", original: "[hitl:ask] second" },
     ]);
   });
+
+  test("dedupes blocked hook messages by idempotency key", async () => {
+    const sessionId = "dedupe-blocked-hook-session";
+    const sessionKey = "agent:main:explicit:dedupe-blocked-hook";
+    const sessionFile = path.join(tmpDir, `${sessionId}.jsonl`);
+    fs.writeFileSync(
+      storePath,
+      JSON.stringify({
+        [sessionKey]: {
+          sessionId,
+          updatedAt: 1,
+          sessionFile,
+        },
+      }),
+      "utf-8",
+    );
+
+    const firstAppend = await appendBlockedUserMessageToSessionTranscript({
+      sessionKey,
+      storePath,
+      originalText: "[hitl:ask] duplicate",
+      redactedText: "Denied by HITL test hook.",
+      pluginId: "hitl-test-hooks",
+      reason: "approval deny",
+      idempotencyKey: "hook-ask-deny:before_agent_run:user:run-1",
+      updateMode: "none",
+    });
+    const secondAppend = await appendBlockedUserMessageToSessionTranscript({
+      sessionKey,
+      storePath,
+      originalText: "[hitl:ask] duplicate",
+      redactedText: "Denied by HITL test hook.",
+      pluginId: "hitl-test-hooks",
+      reason: "approval deny",
+      idempotencyKey: "hook-ask-deny:before_agent_run:user:run-1",
+      updateMode: "none",
+    });
+
+    expect(firstAppend.ok).toBe(true);
+    expect(secondAppend).toEqual(firstAppend);
+    const out = readSessionMessages(sessionId, storePath, sessionFile);
+    expect(out).toHaveLength(1);
+    expect(
+      (
+        out[0] as {
+          __openclaw?: { originalBlockedContent?: { content?: Array<{ text?: string }> } };
+        }
+      ).__openclaw?.originalBlockedContent?.content?.[0]?.text,
+    ).toBe("[hitl:ask] duplicate");
+  });
 });
 
 describe("readSessionPreviewItemsFromTranscript", () => {

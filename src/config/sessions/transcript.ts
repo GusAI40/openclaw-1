@@ -395,10 +395,12 @@ async function transcriptHasIdempotencyKey(
       try {
         const parsed = JSON.parse(line) as {
           id?: unknown;
+          idempotencyKey?: unknown;
           message?: { idempotencyKey?: unknown };
         };
         if (
-          parsed.message?.idempotencyKey === idempotencyKey &&
+          (parsed.message?.idempotencyKey === idempotencyKey ||
+            parsed.idempotencyKey === idempotencyKey) &&
           typeof parsed.id === "string" &&
           parsed.id
         ) {
