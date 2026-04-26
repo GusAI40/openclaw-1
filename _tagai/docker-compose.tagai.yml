@@ -1,109 +1,95 @@
 # =============================================================================
-# OpenClaw — TAG AI overlay (Hetzner / Coolify / Traefik)
+# TAG AI overlay for OpenClaw — Hetzner CPX21 deployment
 # =============================================================================
-# This is an OVERLAY, not a replacement. It is layered on top of the upstream
-# docker-compose.yml so we inherit every upstream change automatically.
 #
-# Combine via:
+# Topology (verified 2026-04-26 — see _tagai/HETZNER_PREFLIGHT.md +
+#                                    _tagai/CADDY_AUDIT.md):
 #
-#   docker compose \
-#     -f docker-compose.yml \
-#     -f _tagai/docker-compose.tagai.yml \
-#     up -d
+#   Internet (443/TCP)
+#       |
+#       v
+#   Caddy v2.11.2 on the HOST (systemd, /etc/caddy/Caddyfile)
+#       |  - Terminates TLS (Let's Encrypt, automatic)
+#       |  - Routes openclaw.ubntag.com -> localhost:18789
+#       |  - Routes /vapi/webhook* + /vapi/tool* -> 127.0.0.1:18792 (host node)
+#       v
+#   docker-proxy (host) -> openclaw-gateway container (port 18789)
+#       |
+#       +-- openclaw-cli  (network_mode: service:openclaw-gateway)
 #
-# Coolify can also be told to use this as the additional compose file under
-# Resource -> Build settings -> "Use additional compose file".
+# This is NOT a Coolify deploy. There is NO Traefik. Do not add Traefik labels
+# or external networks here — Caddy on the host handles all reverse proxying
+# and TLS termination. The upstream docker-compose.yml already binds the
+# gateway to host port 18789, which is exactly where Caddy expects it.
 #
-# What this overlay adds / overrides:
-#   1. Traefik labels routing https://openclaw.ubntag.com -> gateway:18789
-#   2. restart: always (was unless-stopped upstream)
-#   3. TZ pinned to America/Chicago (Argyle, TX founder timezone)
-#   4. Resource limits sized for the CPX21 (3 vCPU / 4 GB) — leaves headroom
-#      for JARVIS, Spectrum/Copper campaigns, and Michelle automation that
-#      share this host
-#   5. Attaches the gateway to Coolify's shared `coolify` external network so
-#      Traefik can reach it. The CLI sidecar continues to share the gateway's
-#      network namespace via service:openclaw-gateway (upstream) and does NOT
-#      need its own network attachment.
+# Apply this overlay on the server with:
+#   cd /home/tagai/openclaw
+#   docker compose -f docker-compose.yml -f _tagai/docker-compose.tagai.yml up -d
+#
+# NOTE: The server today uses a sibling file `docker-compose.override.yml`
+# that only injects env_file. This overlay is more comprehensive — when
+# adopting it, decide whether to keep, replace, or layer on top of the
+# existing override. The two are compatible (same service names, no key
+# collisions on memory limits or restart policy) but applying both with
+# `-f` flags will merge them in the order given.
+#
 # =============================================================================
 
 services:
+  # ---------------------------------------------------------------------------
+  # Gateway — long-running HTTP/WS server, fronted by Caddy on the host
+  # ---------------------------------------------------------------------------
   openclaw-gateway:
-    # restart: always survives `docker daemon` restarts on the host, which
-    # `unless-stopped` does not. We want this back up after every Hetzner
-    # snapshot restore, kernel upgrade, or systemd hiccup.
-    restart: always
+    # Restart policy is already declared upstream (`unless-stopped`).
+    # Re-declared here defensively in case upstream changes.
+    restart: unless-stopped
 
     environment:
-      # Pin TZ for log timestamps + cron job semantics. Matches OPENCLAW_TZ
-      # in .env.tagai.example. Do not remove — upstream defaults to UTC.
+      # Force timezone — host is UTC, business clock is Central.
+      OPENCLAW_TZ: America/Chicago
       TZ: America/Chicago
 
-    # CPX21 budget: 3 vCPU, 4 GB RAM. Reserve ~1.5 GB / ~2 vCPU for the
-    # gateway. The CLI sidecar piggybacks on this container's namespace so
-    # its memory accounting rolls up here.
-    mem_limit: 1.5g
-    mem_reservation: 768m
-    cpus: '2.0'
+    # CPX21 has 4 GB RAM total and runs 4 other containers (michelle-fb-*).
+    # Memory pressure is the #1 cause of OOM kills on this host.
+    # Gateway = the heavy process: 1.5 GiB hard limit, 1.0 GiB soft reservation.
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+        reservations:
+          memory: 1024M
 
-    # Coolify provisions a shared `coolify` bridge network that Traefik
-    # listens on. Attaching here lets the reverse proxy resolve the
-    # service. The upstream compose only publishes ports; we keep that
-    # behavior so loopback access from the host still works for SSH-tunnel
-    # debugging.
-    networks:
-      - default
-      - coolify
-
-    labels:
-      # ----- Traefik base ----------------------------------------------------
-      traefik.enable: 'true'
-      traefik.docker.network: coolify
-
-      # ----- HTTPS router (public, Let's Encrypt via Cloudflare DNS off) ----
-      traefik.http.routers.openclaw.rule: 'Host(`openclaw.ubntag.com`)'
-      traefik.http.routers.openclaw.entrypoints: websecure
-      traefik.http.routers.openclaw.tls: 'true'
-      traefik.http.routers.openclaw.tls.certresolver: letsencrypt
-      traefik.http.routers.openclaw.service: openclaw
-
-      # ----- HTTP -> HTTPS redirect -----------------------------------------
-      traefik.http.routers.openclaw-http.rule: 'Host(`openclaw.ubntag.com`)'
-      traefik.http.routers.openclaw-http.entrypoints: web
-      traefik.http.routers.openclaw-http.middlewares: openclaw-redirect
-      traefik.http.middlewares.openclaw-redirect.redirectscheme.scheme: https
-      traefik.http.middlewares.openclaw-redirect.redirectscheme.permanent: 'true'
-
-      # ----- Service definition (Traefik -> container:18789) ----------------
-      traefik.http.services.openclaw.loadbalancer.server.port: '18789'
-
-      # ----- WebSocket upgrade headers --------------------------------------
-      # The OpenClaw bridge protocol upgrades to WebSocket for agent pairing.
-      # Traefik forwards Upgrade/Connection by default but make it explicit
-      # so future Coolify upgrades do not silently break pairing.
-      traefik.http.routers.openclaw.middlewares: openclaw-headers
-      traefik.http.middlewares.openclaw-headers.headers.customrequestheaders.X-Forwarded-Proto: https
-
+  # ---------------------------------------------------------------------------
+  # CLI — interactive REPL container, shares network namespace with gateway
+  # ---------------------------------------------------------------------------
+  #
+  # KNOWN BUG (see _tagai/CLI_HEALTH_INVESTIGATION.md):
+  # Upstream docker-compose.yml does NOT set a restart policy on this service.
+  # Because `network_mode: service:openclaw-gateway` resolves to the gateway
+  # container ID at start time, recreating the gateway orphans the CLI in a
+  # dead network namespace until the CLI is also recreated. Adding
+  # `restart: unless-stopped` ensures Docker auto-restarts the CLI when its
+  # network peer is recreated, fixing the orphan-namespace problem.
+  #
+  # `depends_on: condition: service_healthy` ensures the CLI does not boot
+  # until the gateway's healthcheck passes — preventing the CLI from
+  # discovering an empty namespace on the very first start.
+  # ---------------------------------------------------------------------------
   openclaw-cli:
-    # Keep the CLI sidecar pinned to the same restart policy. It is normally
-    # short-lived (run via `docker compose run`), but if Coolify happens to
-    # bring it up as a long-running service we still want it managed.
-    restart: always
+    restart: unless-stopped
+
+    depends_on:
+      openclaw-gateway:
+        condition: service_healthy
 
     environment:
+      OPENCLAW_TZ: America/Chicago
       TZ: America/Chicago
 
-    # Modest cap — the CLI itself is light. This prevents a runaway agent
-    # invocation from eating the gateway's headroom.
-    mem_limit: 512m
-    cpus: '1.0'
-
-# Attach the Coolify-managed bridge network as `external: true` so this
-# overlay does not try to create or own it. If you are NOT running under
-# Coolify (e.g. a bare `docker compose up` on a fresh box), comment out
-# the `coolify` network reference in `openclaw-gateway.networks` above
-# and remove this block.
-networks:
-  coolify:
-    external: true
-    name: coolify
+    # CLI is mostly idle (interactive REPL). 512 MiB hard, 256 MiB soft.
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M

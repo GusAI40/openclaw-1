@@ -1,276 +1,351 @@
-# Deploy OpenClaw to Hetzner via Coolify
+# Deploy OpenClaw to Hetzner — Caddy + plain `docker compose`
 
-Step-by-step deployment of the TAG-AI fork (`github.com/GusAI40/openclaw-1`) to
-the production Hetzner CPX21 server (`tagai-cloud`, 87.99.148.242), exposed at
-`https://openclaw.ubntag.com` through Cloudflare DNS and Coolify-managed
-Traefik.
+**Last verified: 2026-04-26.** See `_tagai/HETZNER_PREFLIGHT.md`,
+`_tagai/CADDY_AUDIT.md`, `_tagai/CLI_HEALTH_INVESTIGATION.md`,
+`_tagai/SERVER_REPO_STATE.md` for the audit trail.
 
-Authoritative infra contract: `_shared/docs/HETZNER_INFRASTRUCTURE.yaml`.
-
----
-
-## 1. Prerequisites
-
-The Hetzner server is already provisioned per the contract. Verify before
-deploying:
-
-- [ ] SSH reaches `tagai@87.99.148.242` (key-based, no password).
-- [ ] Coolify dashboard responds at `https://coolify.ubntag.com`.
-- [ ] Cloudflare account has DNS edit access for `ubntag.com`.
-- [ ] You can pull `github.com/GusAI40/openclaw-1` (Coolify's GitHub app is
-      installed, or a deploy key is configured).
-- [ ] Server has at least 1.5 GB free RAM (`ssh tagai@87.99.148.242 free -h`).
-      Image build alone needs ~2 GB, so stop other heavy containers first if
-      memory is tight on the CPX21.
-
-If any of those fail, fix them before continuing — do not improvise around the
-infra contract.
+> **This is NOT a Coolify deploy.** Earlier docs assumed Coolify + Traefik.
+> The actual server uses Caddy on the host as the reverse proxy, plain
+> `docker compose` for containers, and Let's Encrypt via Caddy's automatic
+> cert handling. If a future agent says "let's use Coolify here" — they're
+> wrong. Read the preflight + audit docs before changing topology.
 
 ---
 
-## 2. DNS (Cloudflare)
+## 1. Current state
 
-Add a single A record. Proxy must be **OFF** (gray cloud) — Coolify/Traefik
-handles SSL via Let's Encrypt directly, and Cloudflare proxy mode would
-double-terminate TLS and break the wss:// gateway pairing path.
+| Item | Value |
+|---|---|
+| Server | `tagai-cloud` (Hetzner CPX21) |
+| Public IP | `87.99.148.242` |
+| OS | Ubuntu 24.04 (kernel 6.8.0) |
+| RAM | 3.7 GiB total, ~3.2 GiB used at idle (no swap) |
+| Disk | 75 GiB, 78% used |
+| Reverse proxy | Caddy v2.11.2 on host (systemd, NOT a container) |
+| Caddyfile | `/etc/caddy/Caddyfile` |
+| Container runtime | Docker + plain `docker compose` |
+| Repo path on server | `/home/tagai/openclaw/` |
+| Repo origin | `https://github.com/GusAI40/openclaw-1.git` (TAG fork) |
+| Active branch on server | `main` (consider switching to `tagai-main` to pick up overlay) |
+| Image tag | `openclaw:tagai` (built locally on server) |
+| Containers | `openclaw-openclaw-gateway-1`, `openclaw-openclaw-cli-1` |
+| Gateway port (host) | `18789` (also `18790` for bridge) |
+| VAPI webhook port (host) | `18792` (host Node process, not a container) |
+| TLS | Let's Encrypt via Caddy automatic ACME |
+| DNS | `openclaw.ubntag.com` → `87.99.148.242` (A record live) |
+| External health | `https://openclaw.ubntag.com/healthz` returns `{"ok":true,"status":"live"}` |
 
-| Type | Name      | Content         | Proxy status | TTL  |
-|------|-----------|-----------------|--------------|------|
-| A    | openclaw  | 87.99.148.242   | DNS only     | Auto |
+Deploy is **already live** end-to-end. Most of the time you only need the
+Standard Update Flow below. The First-Time Deploy section is only useful if
+you ever rebuild from scratch.
 
-Verify propagation before continuing:
+---
+
+## 2. Standard update flow (most common)
+
+This is the routine you'll run for almost every code change.
 
 ```bash
-dig +short openclaw.ubntag.com   # must return 87.99.148.242
+# On the server
+ssh tagai@87.99.148.242
+cd /home/tagai/openclaw
+
+# Pull latest from the fork
+git fetch origin
+git checkout tagai-main          # or `main` if you're not using the overlay branch
+git pull --ff-only origin tagai-main
+
+# Rebuild + recreate containers (with the TAG overlay applied)
+docker compose \
+  -f docker-compose.yml \
+  -f _tagai/docker-compose.tagai.yml \
+  up -d --build
+
+# Watch the rebuild + healthcheck land
+docker compose ps
+docker compose logs -f openclaw-gateway
+```
+
+Rebuild typically takes 5–10 minutes. Brief downtime on `gateway` and `cli`
+during recreate. **Caddy keeps running** — TLS and DNS are unaffected.
+
+If you've never applied the overlay before, the very first time you add
+`-f _tagai/docker-compose.tagai.yml` Docker will pick up the
+`restart: unless-stopped` and `depends_on` additions for the CLI and rebuild
+the dependency graph. Expect the CLI to be recreated. This is fine.
+
+### Without the TAG overlay (legacy path)
+
+If for some reason the `_tagai/` overlay is not yet on this branch, you can
+still run with just the upstream compose + the existing
+`docker-compose.override.yml` (which only injects `env_file`):
+
+```bash
+docker compose up -d --build
+```
+
+This is what the server ran from 2026-04-25 through 2026-04-26. It works,
+but the CLI orphan-namespace bug (see Section 7) bites every time the
+gateway is recreated.
+
+---
+
+## 3. First-time deploy (rare — only when starting fresh)
+
+You almost never need this. Only run if `/home/tagai/openclaw/` is missing
+or if you've manually removed everything. The current server is already
+provisioned per these steps.
+
+```bash
+# 0. Prereqs (already satisfied on tagai-cloud as of 2026-04-26):
+#    - Docker + docker compose plugin installed
+#    - Caddy v2 installed via apt, systemd-enabled
+#    - DNS A record openclaw.ubntag.com -> 87.99.148.242
+#    - User `tagai` exists with sudo, in `docker` group
+
+# 1. Clone the fork
+sudo -u tagai -i
+cd /home/tagai
+git clone https://github.com/GusAI40/openclaw-1.git openclaw
+cd openclaw
+git checkout tagai-main
+
+# 2. Create env file (NEVER commit this)
+cat > /home/tagai/openclaw/.env <<'EOF'
+OPENCLAW_IMAGE=openclaw:tagai
+OPENCLAW_TZ=America/Chicago
+OPENCLAW_GATEWAY_PORT=18789
+OPENCLAW_BRIDGE_PORT=18790
+OPENCLAW_GATEWAY_BIND=lan
+OPENCLAW_CONFIG_DIR=/home/tagai/.openclaw
+OPENCLAW_WORKSPACE_DIR=/home/tagai/.openclaw/workspace
+XDG_CONFIG_HOME=/home/node/.openclaw
+EOF
+chmod 600 /home/tagai/openclaw/.env
+
+# 3. Ensure `.openclaw` data dir exists (agents/, credentials/, workspace/)
+mkdir -p /home/tagai/.openclaw/{agents,credentials,workspace,memory,logs}
+
+# 4. Build + start with the TAG overlay
+docker compose \
+  -f docker-compose.yml \
+  -f _tagai/docker-compose.tagai.yml \
+  up -d --build
+
+# 5. Add the Caddy block (see Section 4) and reload Caddy
+sudo systemctl reload caddy
+
+# 6. Verify (see Section 5)
+curl -fsSL https://openclaw.ubntag.com/healthz
 ```
 
 ---
 
-## 3. Create the Coolify project
+## 4. Caddyfile reference (READ-ONLY in normal operation)
 
-In the Coolify dashboard at `https://coolify.ubntag.com`:
+The Caddy block for `openclaw.ubntag.com` is **already in place**. Do not
+modify it unless you're adding a brand-new route. Verbatim from
+`/etc/caddy/Caddyfile`:
 
-1. **Project** -> **New Project**
-   - Name: `openclaw`
-   - Description: `OpenClaw gateway for TAG AI agent fleet`
-
-2. **Resources** -> **+ New** -> **Public/Private Git Repository**
-   - Source: `GitHub` (select the `GusAI40/openclaw-1` repository)
-   - Branch: `main`
-   - Build pack: **Dockerfile**
-   - Dockerfile location: `Dockerfile` (repo root, the upstream multi-stage
-     build)
-
-3. **Build settings**
-   - Dockerfile path: `Dockerfile`
-   - Docker context: `.` (repo root — required so the multi-stage `COPY .`
-     and `COPY ${OPENCLAW_BUNDLED_PLUGIN_DIR}` succeed)
-   - Docker compose override: enable **"Use additional compose file"** and
-     point it at `_tagai/docker-compose.tagai.yml`
-   - Image name: `openclaw:tagai`
-   - Exposed port: `18789`
-   - Health check path: `/healthz`
-
-4. **Build arguments** (Coolify's "Build args" panel, applied at `docker build`)
-   - `OPENCLAW_VARIANT=default`
-   - leave the rest unset unless you need Chromium / sandbox / extensions
-
----
-
-## 4. Inject environment variables
-
-Open the resource's **Environment Variables** panel and load every variable
-from `_tagai/.env.tagai.example`. Mark anything matching `*_TOKEN`,
-`*_KEY`, `*_COOKIE`, or `*_PASSWORD` as a **Secret** in Coolify so it is
-encrypted at rest and masked in logs.
-
-Generate the two required secrets first (run locally or via SSH on the VPS):
-
-```bash
-openssl rand -hex 32   # paste into OPENCLAW_GATEWAY_TOKEN
-openssl rand -hex 32   # paste into GOG_KEYRING_PASSWORD
+```caddyfile
+# OpenClaw — TAG AI gateway (added 2026-04-25)
+openclaw.ubntag.com {
+    @vapi path /vapi/webhook /vapi/webhook/* /vapi/tool /vapi/tool/*
+    handle @vapi {
+        reverse_proxy 127.0.0.1:18792
+    }
+    handle {
+        reverse_proxy localhost:18789
+        header {
+            Strict-Transport-Security "max-age=31536000; includeSubDomains"
+            X-Content-Type-Options "nosniff"
+            X-Frame-Options "DENY"
+        }
+    }
+}
 ```
 
-The Claude session variables (`CLAUDE_AI_SESSION_KEY`, `CLAUDE_WEB_SESSION_KEY`,
-`CLAUDE_WEB_COOKIE`) are optional. Leave them blank for the first deploy and
-fill them in later if any agent needs claude.ai web-session features. The
-fetch instructions are in the comments inside `.env.tagai.example`.
+What it does:
 
----
+- `/vapi/webhook*` and `/vapi/tool*` go to a host-side Node process on
+  `127.0.0.1:18792` (NOT the gateway container — separate VAPI handler).
+- Everything else goes to the gateway on `localhost:18789` (the docker-proxy
+  port for the gateway container).
+- TLS is automatic — Caddy fetches and renews a Let's Encrypt cert for
+  `openclaw.ubntag.com` with no manual config.
 
-## 5. Persistent volumes
-
-Coolify needs two persistent volumes mounted into the container so that
-config, auth profiles, and workspace state survive image rebuilds.
-
-In the resource's **Storages / Persistent volumes** panel, add:
-
-| Source (host)                              | Destination (container)                    | Purpose                                              |
-|--------------------------------------------|--------------------------------------------|------------------------------------------------------|
-| `/home/tagai/.openclaw`                    | `/home/node/.openclaw`                     | `openclaw.json`, `agents/*/auth-profiles.json`, `.env` |
-| `/home/tagai/.openclaw/workspace`          | `/home/node/.openclaw/workspace`           | Agent scratch + session JSONL + media                |
-
-These match the values of `OPENCLAW_CONFIG_DIR` / `OPENCLAW_WORKSPACE_DIR` in
-the env file.
-
-Before the first deploy, the host directories must exist and be owned by
-uid 1000 (the `node` user inside the container). Do this once over SSH:
+If you ever need to change it:
 
 ```bash
-ssh tagai@87.99.148.242 \
-  'sudo mkdir -p /home/tagai/.openclaw/workspace && \
-   sudo chown -R 1000:1000 /home/tagai/.openclaw'
+sudo nano /etc/caddy/Caddyfile          # edit
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy             # zero-downtime reload
 ```
 
----
-
-## 6. Bind the domain
-
-In the resource's **Domains** panel:
-
-- Add `https://openclaw.ubntag.com`
-- Coolify will auto-request a Let's Encrypt cert through Traefik.
-- Confirm the generated Traefik labels match the ones in
-  `_tagai/docker-compose.tagai.yml` (Coolify usually merges them; if it
-  complains about duplicates, remove the auto-generated labels and keep the
-  ones from the overlay file as source of truth).
-
-Resource limits applied via the overlay (`mem_limit: 1.5G`,
-`cpus: '2.0'`) are intentionally tuned for the CPX21's 4 GB / 3 vCPU
-budget. Do not raise them without first checking `free -h` — JARVIS and
-the campaign workers also share this server.
+Other domains served by this same Caddy instance (do not break them):
+`voiceai.ubntag.com`, `michelle-fb.ubntag.com`,
+`michelle-fb-status.ubntag.com`, plus a diagnostic `http://87.99.148.242`
+direct-IP route.
 
 ---
 
-## 7. First deploy
+## 5. Verification
 
-Click **Deploy** in Coolify. The build runs entirely on the Hetzner host and
-takes 8-15 minutes the first time (pnpm install + bun + UI build). Watch the
-build log for `==> Verifying critical native addons...` — that line confirms
-the `matrix-sdk-crypto` native binding compiled correctly on amd64.
-
-When the deploy turns green, verify externally:
+After every deploy, run all three checks:
 
 ```bash
-# Liveness probe (no auth required)
-curl -fsS https://openclaw.ubntag.com/healthz
-# Expected: 200 OK with JSON body
+# (a) Containers up + healthy
+ssh tagai@87.99.148.242 'docker compose -f /home/tagai/openclaw/docker-compose.yml ps'
+# Expect:
+#   openclaw-openclaw-gateway-1   running (healthy)
+#   openclaw-openclaw-cli-1       running (healthy)   # was unhealthy pre-overlay
 
-# Readiness probe
-curl -fsS https://openclaw.ubntag.com/readyz
+# (b) Gateway reachable from inside the host
+ssh tagai@87.99.148.242 'curl -fsSL http://127.0.0.1:18789/healthz'
+# Expect: {"ok":true,"status":"live"}
 
-# Authenticated deep health (uses your gateway token)
-TOKEN="<paste OPENCLAW_GATEWAY_TOKEN>"
-curl -fsS -H "Authorization: Bearer $TOKEN" \
-  https://openclaw.ubntag.com/api/health
+# (c) Gateway reachable from the public internet via Caddy + TLS
+curl -fsSL https://openclaw.ubntag.com/healthz
+# Expect: {"ok":true,"status":"live"}
 ```
 
-If `/healthz` returns 200 but the Control UI at
-`https://openclaw.ubntag.com/` shows a pairing screen, that is correct — see
-post-deploy step below.
+If (b) passes but (c) fails, problem is at Caddy/DNS layer — not the deploy.
+If (a) fails, problem is in the compose layer — check
+`docker compose logs --tail=200 openclaw-gateway`.
 
 ---
 
-## 8. Post-deploy: onboarding and daemon install
+## 6. Rollback
 
-OpenClaw needs an interactive onboarding pass to register the first device,
-seed `openclaw.json`, and (optionally) install the systemd daemon for
-in-container background workers.
-
-Pick **one** of the two paths below.
-
-### Path A — `docker exec` into the running container (faster)
-
-From your laptop or any machine with SSH access:
+If a deploy goes bad and you need to revert:
 
 ```bash
 ssh tagai@87.99.148.242
-# On the server, find the running container ID:
-docker ps --filter 'name=openclaw' --format '{{.ID}}\t{{.Names}}'
+cd /home/tagai/openclaw
 
-# Drop into the container as the node user and run onboarding:
-docker exec -it <container_id> openclaw onboard
+# Find the last-known-good SHA (e.g., from `git log` or a tagged release)
+LAST_GOOD_SHA=9b48e4c0b6           # example — substitute the real one
 
-# Wizard prompts: provider API keys, channel logins, gateway token confirm.
-# Accept the defaults except where the wizard asks about bind mode — keep
-# `lan`, since Traefik fronts the gateway.
+# Hard rollback to that SHA on whichever branch you're on
+git fetch origin
+git reset --hard "${LAST_GOOD_SHA}"
+
+# Rebuild from the rolled-back tree
+docker compose \
+  -f docker-compose.yml \
+  -f _tagai/docker-compose.tagai.yml \
+  up -d --build
+
+# Verify (Section 5)
 ```
 
-### Path B — SSH directly + use the host CLI (preferred for daemon install)
+Faster rollback if the bad image is still tagged locally:
 
 ```bash
-ssh tagai@87.99.148.242
-docker exec -it <container_id> openclaw onboard --install-daemon
+docker compose down
+docker tag openclaw:tagai-broken openclaw:tagai-rollback   # safety copy
+docker tag openclaw:previous openclaw:tagai                # promote prev image
+docker compose up -d
 ```
 
-`--install-daemon` registers a long-running background worker so scheduled
-agent jobs survive container restarts. Coolify's `restart: always` policy
-(set via the overlay) covers the container itself; `--install-daemon`
-covers the agent runtime inside it.
-
-After onboarding, browse to `https://openclaw.ubntag.com/` and paste the
-`OPENCLAW_GATEWAY_TOKEN` value into the Control UI auth field. You should
-land on the dashboard with the gateway showing `connected`.
-
----
-
-## 9. Smoke test the agent path
+You can also flip back to plain upstream by dropping the overlay flag:
 
 ```bash
-# From your laptop:
-TOKEN="<paste OPENCLAW_GATEWAY_TOKEN>"
-curl -fsS -H "Authorization: Bearer $TOKEN" \
-  https://openclaw.ubntag.com/api/agents
-# Expected: JSON list of registered agents (empty array on first deploy is fine).
-
-# Pair a CLI device:
-docker exec -it <container_id> openclaw devices list --json
-docker exec -it <container_id> openclaw dashboard --no-open
-# Open the printed URL, approve the pairing.
+docker compose up -d        # uses only docker-compose.yml + docker-compose.override.yml
 ```
 
 ---
 
-## 10. Known gotchas
+## 7. Common gotchas
 
-- **Cloudflare proxy must stay OFF.** Turning the orange cloud on breaks
-  the wss:// pairing flow because Cloudflare buffers WebSocket upgrades
-  differently than Traefik expects.
-- **Out-of-memory during build.** CPX21 has 4 GB RAM. If the build is OOM
-  killed (`exit code 137`), stop other heavy containers first
-  (`docker ps`, then `docker stop <name>`), or temporarily upgrade to
-  CPX31 in the Hetzner console — the rebuild only needs ~2 GB peak.
-- **Volume permission errors** (`EACCES /home/node/.openclaw`). The
-  container runs as uid 1000. Run the `chown -R 1000:1000` command from
-  step 5 before retrying.
-- **Cookie rotation.** `CLAUDE_WEB_SESSION_KEY` / `CLAUDE_WEB_COOKIE`
-  expire roughly every 30 days. When channel commands start returning
-  `HTTP 403 ... user:profile`, refresh both values from a logged-in
-  browser session and redeploy.
+### CLI orphan-namespace bug (FIXED by the overlay)
 
----
+Upstream `docker-compose.yml` declares
+`network_mode: service:openclaw-gateway` on `openclaw-cli` but does NOT set
+a restart policy. When the gateway is recreated (e.g., via `up -d --build`),
+the CLI's network namespace points at the old gateway's container ID and is
+orphaned. Healthcheck fails (`ECONNREFUSED 127.0.0.1:18789`), but the CLI
+process keeps running in a network-isolated state.
 
-## 11. Updates
+**The TAG overlay (`_tagai/docker-compose.tagai.yml`) fixes this** by adding
+`restart: unless-stopped` and `depends_on: condition: service_healthy` on
+the CLI service. Always apply the overlay.
+
+If you ever see the CLI in `unhealthy` state after a deploy, manual fix:
 
 ```bash
-# In Coolify dashboard:
-#   Resource -> Redeploy  (pulls latest commit from main)
-
-# Or trigger via CLI from your laptop:
-gh api repos/GusAI40/openclaw-1/dispatches \
-  -f event_type=coolify-redeploy
+docker compose -f docker-compose.yml -f _tagai/docker-compose.tagai.yml \
+  up -d --force-recreate openclaw-cli
 ```
 
-For upstream sync (pulling new commits from `openclaw/openclaw` into the
-fork), do that on a feature branch locally, open a PR against your fork's
-`main`, then let Coolify auto-deploy on merge.
+### RAM pressure (3.7 GiB total, no swap)
 
----
+This box is one OOM kill away from a bad day. Before any deploy that
+introduces a new container or larger image:
 
-## Related files
+```bash
+free -h                       # check available RAM
+docker stats --no-stream      # check current per-container usage
+```
 
-- `_tagai/.env.tagai.example` — full env-var reference
-- `_tagai/docker-compose.tagai.yml` — Traefik routing, resource limits,
-  TZ override
-- `_shared/docs/HETZNER_INFRASTRUCTURE.yaml` — authoritative infra contract
-- `docs/install/hetzner.md` — upstream guide (kept unmodified for diffability)
+If `available` drops below ~400 MiB, add a swap file BEFORE deploying:
+
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+The TAG overlay pins gateway = 1.5 GiB, cli = 512 MiB, leaving headroom for
+the four `michelle-fb-*` containers and Caddy.
+
+### Disk pressure (78% full)
+
+Periodic cleanup:
+
+```bash
+docker image prune -af                         # safe — only dangling images
+docker system prune -af --volumes              # ONLY if no in-use volumes you care about
+journalctl --vacuum-size=200M                  # cap systemd journal
+```
+
+### Stale tmux/ssh sessions
+
+`who | wc -l` on this host has shown 200+ "users" — almost all stale ssh
+sessions from earlier agent runs. They consume tiny amounts of memory and
+clutter `who`. Clean periodically:
+
+```bash
+who | awk '{print $2}' | sort -u | xargs -I{} sudo pkill -9 -t {}
+```
+
+Don't do this if you're currently SSH'd in — you'll kill yourself.
+
+### Two compose-override files coexisting
+
+Server currently has `/home/tagai/openclaw/docker-compose.override.yml`
+(applied automatically by `docker compose up -d`) which only adds
+`env_file`. The TAG overlay at `_tagai/docker-compose.tagai.yml` adds
+restart policy, memory limits, depends_on, and timezone. They merge cleanly
+when both `-f` flags are used in order. You generally want both:
+
+```bash
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.override.yml \
+  -f _tagai/docker-compose.tagai.yml \
+  up -d
+```
+
+(Note: `docker-compose.override.yml` is loaded automatically by name even
+without `-f`, so the explicit form above is equivalent to the simpler
+`-f docker-compose.yml -f _tagai/docker-compose.tagai.yml` only when the
+override file is also picked up implicitly. Mixing explicit and implicit
+override loading is footgun-prone — pick one and stick with it.)
+
+### Don't push to `upstream`
+
+Remote `upstream = openclaw/openclaw` exists. Only push to `origin`
+(the TAG fork). See `_tagai/CLAUDE.md` for the full rule list.
