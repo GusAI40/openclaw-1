@@ -50,7 +50,14 @@ Live instance: OpenClaw v2026.4.25 on tagai-cloud (Hetzner CPX21, 87.99.148.242)
 - **Verification:** `conversations_list` returned the live `agent:main:main` session (Gus Sanchez Telegram chat 8603473262, lastMessage `HEARTBEAT_OK`).
 - **Runtime pickup:** Claude Code reads `mcpServers` on session start. **Current session does NOT have access**; restart Claude Code in this directory to activate.
 
-### [pending] #3 — Skill enablement sweep
-- **Scope:** Move 5 starter skills from "Needs Setup" → "Ready" (Tavily, Notion, Gmail, GitHub, Calendar)
-- **Owner homework needed:** Tavily API key, Notion integration token, Gmail/Calendar OAuth (or service account), GitHub PAT
-- **Standing Order gate:** Per `Program: Skill Enablement & Vetting`, each skill must pass owner approval + ClawHub VT scan before going Ready
+### [partial] #3 — Skill enablement sweep
+- **Status:** Tavily SHIPPED 2026-04-27 ~15:15 CDT. 4 starters remain.
+- **Tavily details:**
+  - Bundled first-party plugin (NOT a community skill — official integration per https://docs.tavily.com/documentation/integrations/openclaw)
+  - API key (dev tier, `tvly-dev-...`) stored in `/home/tagai/openclaw/.env` as `TAVILY_API_KEY` and inline in `/home/tagai/.openclaw/openclaw.json` under `plugins.entries.tavily.config.webSearch.apiKey`
+  - openclaw.json updates: `plugins.entries.tavily.enabled=true`, `tools.web.search.provider="tavily"`
+  - Backup of openclaw.json saved with unix-timestamp suffix
+  - Tools exposed: `tavily_search`, `tavily_extract`. Capability advertised: `web-search: tavily`
+  - Verified end-to-end: direct Tavily API smoke test returned 3 live results
+  - **Security action owed:** key was pasted in chat — rotate at https://app.tavily.com after testing settles
+- **Remaining 4 starters:** Notion, Gmail, GitHub, Calendar (each needs owner-supplied credentials)
