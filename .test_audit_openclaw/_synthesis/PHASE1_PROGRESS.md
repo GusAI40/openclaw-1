@@ -88,4 +88,16 @@ Live instance: OpenClaw v2026.4.25 on tagai-cloud (Hetzner CPX21, 87.99.148.242)
   - Wired as saved MCP server in `openclaw.json` with creds inlined in env block
   - Smoke test: stdio server initialized, returned all 6 tools with full schemas
 
-- **Remaining starters (lower priority):** Gmail (personal — covered by MS Graph for business), Calendar (same), Vercel, Resend, Salesforce
+- **Vercel details (shipped 2026-04-27 ~17:55 CDT):**
+  - Wired as saved MCP server in `openclaw.json` at `mcp.servers.vercel` (Vercel's official MCP at `https://mcp.vercel.com/`)
+  - Transport: `streamable-http` with `Authorization: Bearer <token>` header
+  - Token: CLI bearer (`Tc99ru0aNj6BAGu4BQbxNev3`), source = `C:/Users/gsanc/AppData/Roaming/com.vercel.cli/Data/auth.json`. Saved to server `/home/tagai/.openclaw/secrets/vercel.token` (chmod 600) + inlined in openclaw.json
+  - Direct MCP `initialize` against `mcp.vercel.com` returned protocolVersion 2025-06-18, server "Vercel MCP Server v2", caps `tools.listChanged` + `prompts.listChanged`
+  - Backup of openclaw.json saved at `/home/tagai/.openclaw/openclaw.json.bak.1777330406`
+  - Container force-recreated (~30s outage) to attach new MCP connection; gateway came up healthy in ~26s, 6 plugins loaded
+  - Smoke test (synthetic agent turn, deepseek-v4-flash, no delivery): `vercel__list_teams` succeeded with 1 call / 0 failures, returned 2 teams — `GOAT-UIX` (`team_A9mO9nXfBvnPN57ZJc2zxoG5`) and `TAG-ai` (`team_hLW8yrUTYNGt9CiRY4IMMSet`)
+  - Tools surface (8): `list_teams`, `list_projects`, `get_project`, `deploy_to_vercel`, `search_vercel_documentation`, `web_fetch_vercel_url`, `list_toolbar_threads`, `reply_to_toolbar_thread`
+  - **Side-finding flagged for separate fix:** runtime warned AGENTS.md was truncated 35% before injection (15458 → 9999 chars). Programs added 2026-04-27 morning may be partially clipped. Tune `agents.defaults.bootstrapMaxChars` / `bootstrapTotalMaxChars`.
+  - **Security note:** token has been in chat transcripts since 2026-04-25 (originally extracted into `project_openclaw_pending_work.md`). Owner can rotate at https://vercel.com/account/tokens if desired; not a fresh leak.
+
+- **Remaining starters (lower priority):** Gmail (personal — covered by MS Graph for business), Calendar (same), Resend, Salesforce
