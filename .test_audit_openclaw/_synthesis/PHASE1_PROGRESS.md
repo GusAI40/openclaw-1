@@ -51,7 +51,18 @@ Live instance: OpenClaw v2026.4.25 on tagai-cloud (Hetzner CPX21, 87.99.148.242)
 - **Runtime pickup:** Claude Code reads `mcpServers` on session start. **Current session does NOT have access**; restart Claude Code in this directory to activate.
 
 ### [partial] #3 — Skill enablement sweep
-- **Status:** Tavily SHIPPED 2026-04-27 ~15:15 CDT. 4 starters remain.
+- **Status:** Tavily + GitHub SHIPPED 2026-04-27. 3 starters remain.
+
+- **GitHub details (shipped ~15:30 CDT):**
+  - Wired as a saved MCP server entry in `openclaw.json` (NOT a plugin or skill — it's the official remote MCP at `https://api.githubcopilot.com/mcp/`)
+  - Transport: `streamable-http` with `Authorization: Bearer <PAT>` header
+  - PAT stored: local `C:/Users/gsanc/.openclaw/skills/github.token` + server `/home/tagai/.openclaw/secrets/github.token` (chmod 600)
+  - PAT type: fine-grained (`github_pat_11A...`), authenticated as GusAI40 / DataWiseGus, 20 public repos
+  - Direct MCP `initialize` handshake against `api.githubcopilot.com/mcp/` returned protocolVersion 2025-06-18 with tools/prompts/resources/completions caps. PAT auth resolves the "OAuth uncertainty" flagged in `project_openclaw_pending_work.md` Tier 1 #4 — Path A works.
+  - Saved-MCP list inside container shows `github` and `jarvis-vapi`
+  - **Security action owed:** PAT was pasted in chat — rotate at https://github.com/settings/tokens after testing settles
+
+
 - **Tavily details:**
   - Bundled first-party plugin (NOT a community skill — official integration per https://docs.tavily.com/documentation/integrations/openclaw)
   - API key (dev tier, `tvly-dev-...`) stored in `/home/tagai/openclaw/.env` as `TAVILY_API_KEY` and inline in `/home/tagai/.openclaw/openclaw.json` under `plugins.entries.tavily.config.webSearch.apiKey`
@@ -60,4 +71,4 @@ Live instance: OpenClaw v2026.4.25 on tagai-cloud (Hetzner CPX21, 87.99.148.242)
   - Tools exposed: `tavily_search`, `tavily_extract`. Capability advertised: `web-search: tavily`
   - Verified end-to-end: direct Tavily API smoke test returned 3 live results
   - **Security action owed:** key was pasted in chat — rotate at https://app.tavily.com after testing settles
-- **Remaining 4 starters:** Notion, Gmail, GitHub, Calendar (each needs owner-supplied credentials)
+- **Remaining 3 starters:** Notion, Gmail, Calendar (each needs owner-supplied credentials)
