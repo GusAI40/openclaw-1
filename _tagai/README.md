@@ -1,8 +1,10 @@
-# _tagai/ — TAG AI Overlay Layer
+# _tagai/ — Jarvis AI Overlay Layer
+
+> Jarvis AI (the OpenClaw fork) — TAG's deployed product. The codebase keeps the upstream OpenClaw identity so we can rebase against `openclaw/openclaw` cleanly. Only the user-facing brand layer in this folder is rebranded.
 
 ## Purpose
 
-This folder contains all TAG-AI-specific customization for the OpenClaw fork (`GusAI40/openclaw-1`). Everything that is **not** part of the upstream OpenClaw project lives here: deployment configs for Hetzner, channel routing strategy, capability inventory, onboarding playbooks, and Claude Code instructions for this repo.
+This folder contains all Jarvis-AI-specific customization for the fork (`GusAI40/openclaw-1`). Everything that is **not** part of the upstream OpenClaw project lives here: deployment configs for Hetzner, channel routing strategy, capability inventory, onboarding playbooks, and Claude Code instructions for this repo.
 
 ## Why Separated
 
@@ -21,12 +23,12 @@ The repo root `CLAUDE.md` is upstream's. Our Claude instructions live at `_tagai
 |------|---------|
 | `README.md` | This file. Overview of the overlay layer. |
 | `CLAUDE.md` | Instructions for future Claude Code sessions opening this repo. |
-| `INTEGRATION.md` | How OpenClaw fits into the broader TAG AI stack (JARVIS, Supabase, Hetzner). |
+| `INTEGRATION.md` | How Jarvis AI fits into the broader TAG AI stack (JARVIS pipeline, Supabase, Hetzner). |
 | `HEALTH.md` | Service health endpoints, status checks, and runbook. |
-| `DEPLOY_HETZNER.md` | Step-by-step deployment to Hetzner via Coolify. Domain, ports, DNS. |
+| `DEPLOY_HETZNER.md` | Step-by-step deployment to Hetzner. Domain, ports, DNS. |
 | `docker-compose.tagai.yml` | Compose overlay layered on top of upstream `docker-compose.yml`. |
 | `.env.tagai.example` | Reference list of all TAG-specific env vars. Real values live on the server. |
-| `CAPABILITIES.md` | Inventory of skills, tools, and JARVIS agents the OpenClaw gateway can invoke. |
+| `CAPABILITIES.md` | Inventory of skills, tools, and JARVIS agents the Jarvis AI gateway can invoke. |
 | `CHANNEL_STRATEGY.md` | Tier 1 (WhatsApp, Telegram), Tier 2 (Slack), Tier 3 (iMessage, SMS) rollout plan. |
 | `ONBOARD_PLAYBOOK.md` | Operator runbook for the `openclaw onboard` command. |
 

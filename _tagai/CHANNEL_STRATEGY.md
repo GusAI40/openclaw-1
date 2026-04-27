@@ -1,6 +1,8 @@
-# OpenClaw Channel Strategy for TAG AI
+# Jarvis AI Channel Strategy
 
-Priority order is driven by Gus's daily comms patterns: WhatsApp is #1 personal channel, Telegram is the existing ops dashboard channel (cheap and bot-token simple), Slack covers a slice of TAG AI client comms, iMessage/Discord are situational. Gmail is not a built-in chat channel in OpenClaw — handle email through agent skills, not as a channel.
+> Jarvis AI (the OpenClaw fork) — TAG's deployed product. CLI command names (`openclaw ...`), env var prefixes (`OPENCLAW_*`), and config paths stay upstream-aligned for clean rebases. Brand changes are user-facing only.
+
+Priority order is driven by Gus's daily comms patterns: WhatsApp is #1 personal channel, Telegram is the existing ops dashboard channel (cheap and bot-token simple), Slack covers a slice of TAG client comms, iMessage/Discord are situational. Gmail is not a built-in chat channel in Jarvis AI — handle email through agent skills, not as a channel.
 
 ## Tier 1 — Activate Day 1
 
@@ -48,10 +50,10 @@ Priority order is driven by Gus's daily comms patterns: WhatsApp is #1 personal 
 ## Tier 2 — Activate Week 1
 
 ### Slack
-- **Why it matters:** Some TAG AI clients live in Slack. Activate when first Slack-based client onboards.
+- **Why it matters:** Some TAG clients live in Slack. Activate when first Slack-based client onboards.
 - **Auth method:** Slack app (Socket Mode preferred — no public webhook needed). Two tokens: App Token (`xapp-...`) + Bot Token (`xoxb-...`).
 - **Setup steps:**
-  - Create app at api.slack.com/apps → "From manifest" → paste OpenClaw's example manifest (in `docs/channels/slack.md`).
+  - Create app at api.slack.com/apps → "From manifest" → paste the upstream example manifest (in `docs/channels/slack.md`).
   - Generate App-Level Token with `connections:write`.
   - Install to workspace, copy Bot Token.
   - Add to `/home/tagai/.tagai-env`:
@@ -64,21 +66,21 @@ Priority order is driven by Gus's daily comms patterns: WhatsApp is #1 personal 
 - **Risks / known limitations:** Each client = potentially a separate Slack app + separate account namespace under `channels.slack.accounts.<id>`. Plan multi-account from day 1; do not reuse one bot across clients.
 
 ### Gmail — NOT a channel, handle via skill
-OpenClaw has no first-party Gmail chat channel. Treat email as a *tool/skill* for the agent (we already have `setup-google-workspace` skill). Do not block on this for Tier 2.
+Jarvis AI has no first-party Gmail chat channel. Treat email as a *tool/skill* for the agent (we already have `setup-google-workspace` skill). Do not block on this for Tier 2.
 
 ## Tier 3 — Activate as needed
 
-**Discord** — Bot via Discord Developer Portal. Bot token + Privileged Intents (Message Content + Server Members). Useful for community/internal team chat; low priority for TAG AI revenue. Token goes in `.tagai-env` as `DISCORD_BOT_TOKEN`. Setup ~15 min.
+**Discord** — Bot via Discord Developer Portal. Bot token + Privileged Intents (Message Content + Server Members). Useful for community/internal team chat; low priority for TAG revenue. Token goes in `.tagai-env` as `DISCORD_BOT_TOKEN`. Setup ~15 min.
 
 **iMessage via BlueBubbles** — Requires a *macOS box running BlueBubbles server*. Hetzner is Linux, so this is impractical from the VPS unless Gus dedicates a Mac mini at home as the BlueBubbles bridge (server URL + password webhook back to Hetzner). Skip until Gus has a quiet always-on Mac. Legacy `imsg` path is Mac-only and being deprecated — do not use.
 
-**Microsoft Teams** — Bundled plugin. Activate only if a TAG AI client requires Teams. Setup: Azure app registration + bot token. Add to `.tagai-env` as `TEAMS_*` keys.
+**Microsoft Teams** — Bundled plugin. Activate only if a TAG client requires Teams. Setup: Azure app registration + bot token. Add to `.tagai-env` as `TEAMS_*` keys.
 
 **Signal** — Bundled `signal-cli` integration. Linked-device pairing, Java 21 dependency. Useful for high-privacy client comms; activate on demand.
 
 ## Skip / Not Recommended
 
-- **WeChat / QQ Bot / Feishu / Zalo / Line / KakaoTalk** — China/APAC channels, no TAG AI use case.
-- **IRC / Matrix / Mattermost / Nextcloud Talk / Synology Chat / Tlon / Nostr / Twitch** — niche or community channels; no current TAG AI client.
+- **WeChat / QQ Bot / Feishu / Zalo / Line / KakaoTalk** — China/APAC channels, no TAG use case.
+- **IRC / Matrix / Mattermost / Nextcloud Talk / Synology Chat / Tlon / Nostr / Twitch** — niche or community channels; no current TAG client.
 - **Legacy iMessage (`imsg`)** — being deprecated upstream; if iMessage is ever needed, use BlueBubbles instead.
-- **Twilio WhatsApp** — not in OpenClaw's built-in registry. The only WhatsApp path is Baileys (Web). Don't try to wire a Twilio sender as a "channel."
+- **Twilio WhatsApp** — not in the built-in channel registry. The only WhatsApp path is Baileys (Web). Don't try to wire a Twilio sender as a "channel."

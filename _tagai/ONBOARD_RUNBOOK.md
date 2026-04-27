@@ -1,7 +1,9 @@
-# OpenClaw Onboard Runbook (Server-Aware) — 2026-04-26
+# Jarvis AI Onboard Runbook (Server-Aware) — 2026-04-26
 
-Server-aware, prompt-by-prompt instructions for taking the deployed OpenClaw
-on `tagai-cloud` from "running but unconfigured" to "useful". Written from
+> Jarvis AI (the OpenClaw fork). The CLI binary, container names, and config paths stay upstream (`openclaw*`) for clean rebases. Brand layer is rebranded; tooling is not.
+
+Server-aware, prompt-by-prompt instructions for taking the deployed Jarvis AI
+gateway on `tagai-cloud` from "running but unconfigured" to "useful". Written from
 live probes against the running container, NOT reverse-engineered from source.
 
 ## Current state (probed 2026-04-26 12:55 CDT)
@@ -9,9 +11,9 @@ live probes against the running container, NOT reverse-engineered from source.
 - **Domain:** `https://openclaw.ubntag.com` — HEALTHY end-to-end (`/healthz` returns `{"ok":true,"status":"live"}`).
 - **Reverse proxy:** Caddy v2.11.2 on host. Already routes correctly. Do NOT touch.
 - **Containers:**
-  - `openclaw-openclaw-gateway-1` — UP, healthy (17h+).
+  - `openclaw-openclaw-gateway-1` — UP, healthy (17h+). (Container name keeps upstream identity.)
   - `openclaw-openclaw-cli-1` — UP, **HEALTHY** (was unhealthy earlier today; parallel agent P3.A fixed it).
-- **Version inside container:** `OpenClaw 2026.4.25`.
+- **CLI version inside container:** `openclaw 2026.4.25`.
 - **Anthropic auth:** ALREADY CONFIGURED via `ANTHROPIC_API_KEY` env var. `openclaw models status` shows `claude-cli` provider with profile=1 (api_key=1), source=`env: ANTHROPIC_API_KEY`. The earlier HEALTH.md "no Anthropic auth" finding is **stale** — it is now wired up through the container env.
 - **Telegram:** ALREADY CONFIGURED. `openclaw doctor` reports `Telegram: ok (@tagai_jarvis_bot) (177ms)`. 1 active session ID `agent:main:telegram:default:direct:8603473262` (last seen 1123m ago).
 - **Default model:** `deepseek/deepseek-v4-flash` with fallbacks `google/gemini-2.5-flash-lite`, `anthropic/claude-haiku-4.5`, `anthropic/claude-sonnet-4.6`.
@@ -26,7 +28,7 @@ Get from "deployed and partially configured" → "Telegram answers respond, What
 
 ## Key insight: most of onboard is already done
 
-A previous interactive onboard run (or `--non-interactive` invocation) clearly happened — auth profiles, agent workspace, Telegram config, gateway daemon are all in place. The only YELLOW items are:
+A previous interactive `openclaw onboard` run (or `--non-interactive` invocation) clearly happened — auth profiles, agent workspace, Telegram config, gateway daemon are all in place. The only YELLOW items are:
 
 1. State dir perms (`chmod 700 ~/.openclaw`) — one shell command.
 2. 3 orphan transcript .jsonl files — `openclaw doctor --fix` cleans these.
@@ -110,7 +112,7 @@ Caddy, container deploy at `/home/tagai/openclaw`).
 ? Onboard mode: (local | remote)
 ```
 **Answer:** `local`. The container IS the host of the gateway. We are not
-pairing back to a remote OpenClaw — we ARE the server.
+pairing back to a remote gateway — we ARE the server.
 
 ### 2. Flow prompt
 ```
@@ -191,6 +193,8 @@ reachable but the paste-back flow works.
 If you want to skip Anthropic auth and only use cheap fallbacks
 (deepseek/google), pick `skip` — auth profiles already loaded will keep
 working.
+
+> Branding note: the `claude-cli` provider name is upstream-defined. Do not rename it; agents reference it by string.
 
 ### 11. API keys (one prompt per provider it offers)
 ```
@@ -364,7 +368,7 @@ DON'T touch `/etc/caddy/Caddyfile` during onboard. Caddy is independent of OpenC
 
 ## Recommended starting point
 
-**Path A.** The probe data shows OpenClaw is already 95% configured. Auth
+**Path A.** The probe data shows Jarvis AI is already 95% configured. Auth
 profiles are loaded, Telegram works, gateway is healthy, plugins compiled. The
 HEALTH.md YELLOW about "no Anthropic auth" was stale — `models status`
 confirms the env var is wiring `claude-cli` correctly.

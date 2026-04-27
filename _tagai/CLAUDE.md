@@ -1,6 +1,6 @@
-# CLAUDE.md — TAG AI overlay for OpenClaw fork
+# CLAUDE.md — Jarvis AI overlay (OpenClaw fork)
 
-This is the TAG AI fork of OpenClaw (`GusAI40/openclaw-1`). Upstream is `openclaw/openclaw`.
+This is Jarvis AI — TAG's deployed product, built as a fork of OpenClaw (`GusAI40/openclaw-1`). Upstream is `openclaw/openclaw`. The codebase keeps the upstream identity (container names, package.json, CLI binary, env var prefixes, image names all stay `openclaw*`) so we can rebase cleanly. Only the user-facing brand is "Jarvis AI."
 
 ## Server reality (READ THIS FIRST)
 
@@ -24,7 +24,7 @@ assumptions.
 ## Working in this repo
 
 - DO NOT modify upstream files (`docker-compose.yml`, `Dockerfile`, `package.json`, `apps/`, `extensions/`, `Swabble/`, etc.) unless making a contribution intended for upstream.
-- All TAG-AI customization lives in `_tagai/`.
+- All Jarvis AI customization lives in `_tagai/`.
 - Deployment overlay: `_tagai/docker-compose.tagai.yml` is composed on top of upstream `docker-compose.yml`.
 - Env vars: `_tagai/.env.tagai.example` lists everything; real values live in `/home/tagai/openclaw/.env` and `/home/tagai/.tagai-env` on Hetzner (NEVER commit real values).
 
@@ -50,7 +50,7 @@ assumptions.
 
 ## When asked about capabilities
 
-- See `_tagai/CAPABILITIES.md` for the inventory of skills and JARVIS agents OpenClaw can invoke.
+- See `_tagai/CAPABILITIES.md` for the inventory of skills and JARVIS agents Jarvis AI can invoke.
 
 ## When making changes
 
@@ -60,16 +60,16 @@ assumptions.
 
 ## Architecture context
 
-- See `_tagai/INTEGRATION.md` for how OpenClaw fits in the TAG AI stack
+- See `_tagai/INTEGRATION.md` for how Jarvis AI fits in the TAG AI stack
 - Server: Hetzner CPX21 (87.99.148.242), see `C:\Users\gsanc\TAG-Projects-2026\_shared\docs\HETZNER_INFRASTRUCTURE.yaml`
-- OpenClaw is a thin gateway. Business logic lives in JARVIS pipeline + Supabase + skills, not in this repo.
+- Jarvis AI is a thin gateway. Business logic lives in JARVIS pipeline + Supabase + skills, not in this repo.
 
 ## Forbidden
 
 - Do NOT push to `upstream` (only to `origin`)
 - Do NOT commit secrets — use `/home/tagai/openclaw/.env` and `/home/tagai/.tagai-env` on the server
 - Do NOT modify upstream files unless contributing back
-- Do NOT add business logic to OpenClaw — invoke a skill or JARVIS agent instead
+- Do NOT add business logic to Jarvis AI — invoke a skill or JARVIS agent instead
 - Do NOT add Coolify, Traefik, or any new reverse-proxy infrastructure to this stack — Caddy on the host already terminates TLS and proxies all five `*.ubntag.com` domains
 - Do NOT add Traefik labels (`traefik.*`) or external networks (e.g. `coolify`) to `_tagai/docker-compose.tagai.yml` — they are dead weight on this server
 

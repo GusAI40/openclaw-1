@@ -1,10 +1,12 @@
-# OpenClaw Capabilities — Local Inventory
+# Jarvis AI Capabilities — Local Inventory
 
-Captured 2026-04-25, OpenClaw 2026.4.23 on Windows 11. Sources: `openclaw skills list`, `plugins list`, `channels list`, `channels capabilities --help`, `models list`, `models status`.
+> Jarvis AI (the OpenClaw fork). The CLI binary is still named `openclaw` — that's the upstream tool name, not the brand. Brand layer is rebranded; tooling stays.
+
+Captured 2026-04-25, `openclaw` CLI v2026.4.23 on Windows 11. Sources: `openclaw skills list`, `plugins list`, `channels list`, `channels capabilities --help`, `models list`, `models status`.
 
 ## Skills
 
-`openclaw skills list` reports **31 ready / 70 total**. Sources: `openclaw-bundled` (built-in) and `agents-skills-personal` (user). All ready unless marked `△ needs setup`.
+`openclaw skills list` reports **31 ready / 70 total**. Sources: `openclaw-bundled` (built-in upstream skill pack) and `agents-skills-personal` (user). All ready unless marked `△ needs setup`.
 
 Ready (31):
 - ⭐ agent-browser — snapshot-based browser automation CLI
@@ -59,7 +61,7 @@ OAuth/token-bound providers: none.
 
 ## Notes
 
-- **Skill totals**: 70 discovered, 31 ready. Heavy bias toward macOS skills that won't run here; the 31 ready cover the active TAG AI surface (web automation, code, docs, decks, video, design, GitHub).
+- **Skill totals**: 70 discovered, 31 ready. Heavy bias toward macOS skills that won't run here; the 31 ready cover the active TAG surface (web automation, code, docs, decks, video, design, GitHub).
 - **Plugins command hangs** — capture later once gateway is healthy; right now the file system / marketplace probe never returns. Treat as `unknown` for the inventory.
 - **Models list is empty** even with `--all`; `models status` is the real inventory and shows 14 provider keys live via env (master `~/.env`).
 - **No channels and no OAuth tokens** are wired yet — onboarding step (per `ONBOARD_PLAYBOOK.md`) hasn't been executed.

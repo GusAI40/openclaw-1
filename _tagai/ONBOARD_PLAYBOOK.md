@@ -1,4 +1,6 @@
-# OpenClaw Onboard Playbook (TAG AI)
+# Jarvis AI Onboard Playbook
+
+> Jarvis AI (the OpenClaw fork). The `openclaw` CLI command and config paths stay upstream-named for clean rebases.
 
 **Run as `tagai` user on the Hetzner VPS:**
 ```bash
@@ -16,7 +18,7 @@ Reverse-engineered from `src/wizard/setup.ts`, `docs/start/wizard.md`, and `docs
 ### 1. Security risk acknowledgement
 - **Question:** "I understand the security implications of running an AI agent that controls my system." (confirm yes/no)
 - **Recommended answer:** **Yes**
-- **Why:** OpenClaw can read/write your workspace and call tools. The Hetzner VPS is Gus-only, isolated from his laptop, so the blast radius is contained. Pass `--accept-risk` in scripted reruns.
+- **Why:** Jarvis AI can read/write your workspace and call tools. The Hetzner VPS is Gus-only, isolated from his laptop, so the blast radius is contained. Pass `--accept-risk` in scripted reruns.
 
 ### 2. Setup mode
 - **Question:** "Setup mode" → QuickStart vs Manual (Advanced).
@@ -41,7 +43,7 @@ Reverse-engineered from `src/wizard/setup.ts`, `docs/start/wizard.md`, and `docs
 ### 6. Model / auth provider
 - **Question:** Auth choice picker (Anthropic Claude CLI / Anthropic API key / OpenAI Codex OAuth / OpenAI API key / xAI / OpenCode / Vercel AI Gateway / Cloudflare AI Gateway / MiniMax / StepFun / Synthetic / Ollama / Moonshot / Custom / Skip).
 - **Recommended answer:** **Anthropic API key**
-- **Why:** TAG AI's master `~/.env` already has `ANTHROPIC_API_KEY`. Onboard auto-detects it. Anthropic Claude CLI works locally on Gus's laptop but adds a daemon dependency on a VPS. API key is the recommended production path per upstream docs.
+- **Why:** TAG's master `~/.env` already has `ANTHROPIC_API_KEY`. Onboard auto-detects it. Anthropic Claude CLI works locally on Gus's laptop but adds a daemon dependency on a VPS. API key is the recommended production path per upstream docs.
 - **Action:** Pre-set `export ANTHROPIC_API_KEY=...` from `/home/tagai/.tagai-env` *before* running onboard, or paste when prompted. Use `--secret-input-mode ref --gateway-token-ref-env ANTHROPIC_API_KEY` if we want env-backed refs instead of plaintext in `auth-profiles.json`.
 
 ### 7. Default model picker
@@ -52,7 +54,7 @@ Reverse-engineered from `src/wizard/setup.ts`, `docs/start/wizard.md`, and `docs
 ### 8. Gateway port
 - **Question:** "Gateway port"
 - **Recommended answer:** **18789** (QuickStart default)
-- **Why:** Matches OpenClaw default; matches docs and clients. Bind to loopback on Hetzner; expose via SSH tunnel from Gus's laptop, not by opening the port publicly.
+- **Why:** Matches the upstream default; matches docs and clients. Bind to loopback on Hetzner; expose via SSH tunnel from Gus's laptop, not by opening the port publicly.
 
 ### 9. Gateway bind address (Manual only)
 - **Question:** "Gateway bind" → loopback / lan / auto / custom / tailnet
@@ -62,7 +64,7 @@ Reverse-engineered from `src/wizard/setup.ts`, `docs/start/wizard.md`, and `docs
 ### 10. Gateway auth mode
 - **Question:** Token vs Password; then "Generate/store plaintext token" vs "Use SecretRef".
 - **Recommended answer:** **Token, generate plaintext** for QuickStart; or **SecretRef → env var `OPENCLAW_GATEWAY_TOKEN`** for the production hardened path.
-- **Why:** Even on loopback, token auth prevents any local process from connecting unauthenticated. SecretRef keeps the token out of `openclaw.json` and lets Gus rotate via `.tagai-env`.
+- **Why:** Even on loopback, token auth prevents any local process from connecting unauthenticated. SecretRef keeps the token out of `openclaw.json` and lets Gus rotate via `.tagai-env`. The env var stays `OPENCLAW_GATEWAY_TOKEN` because that's the upstream-defined name.
 
 ### 11. Tailscale exposure
 - **Question:** "Tailscale exposure" → Off / Serve / Funnel
@@ -74,7 +76,7 @@ Reverse-engineered from `src/wizard/setup.ts`, `docs/start/wizard.md`, and `docs
 - **Recommended answer:** **WhatsApp + Telegram only** at onboard time.
 - **Why:** Tier 1 from `CHANNEL_STRATEGY.md`. Slack added via `openclaw channels add --channel slack` later when first Slack client onboards. Selecting fewer channels = fewer plugin installs = faster onboard.
 - **Sub-prompts triggered:**
-  - **WhatsApp**: "Install `@openclaw/whatsapp` plugin?" → **Yes**. Then prompts for phone number for `allowFrom` allowlist → enter Gus's E.164 number (e.g., `+18175551234`).
+  - **WhatsApp**: "Install `@openclaw/whatsapp` plugin?" → **Yes** (plugin is upstream-named). Then prompts for phone number for `allowFrom` allowlist → enter Gus's E.164 number (e.g., `+18175551234`).
   - **WhatsApp**: QR login can be deferred — say no at onboard, run `openclaw channels login --channel whatsapp` separately so Gus has time to grab his phone.
   - **Telegram**: "Bot token" → paste from BotFather (or set `TELEGRAM_BOT_TOKEN` in env first). Then "Allowlist user ID" → numeric ID from @userinfobot.
 
@@ -92,11 +94,11 @@ Reverse-engineered from `src/wizard/setup.ts`, `docs/start/wizard.md`, and `docs
 ### 15. Skills setup
 - **Question:** "Install recommended skills?" + "Node manager: npm / pnpm / bun"
 - **Recommended answer:** **Yes**, **pnpm**
-- **Why:** OpenClaw repo uses pnpm (see `pnpm-workspace.yaml`). Stay consistent. Bun is flagged unstable for this codebase.
+- **Why:** Upstream repo uses pnpm (see `pnpm-workspace.yaml`). Stay consistent. Bun is flagged unstable for this codebase.
 
 ### 16. Web search provider
 - **Question:** "Web search provider" → Brave / DuckDuckGo / Exa / Firecrawl / Gemini / Grok / Kimi / MiniMax / Ollama / Perplexity / SearXNG / Tavily.
-- **Recommended answer:** **Brave** (Gus has `BRAVE_API_KEY` in TAG AI's audited keys); fallback **DuckDuckGo** (key-free).
+- **Recommended answer:** **Brave** (Gus has `BRAVE_API_KEY` in TAG's audited keys); fallback **DuckDuckGo** (key-free).
 - **Why:** Brave is solid + already paid for. Skip if you want — re-run via `openclaw configure --section web` later.
 
 ### 17. Finish

@@ -1,7 +1,9 @@
-# OpenClaw Health Report — 2026-04-25
+# Jarvis AI Health Report — 2026-04-25
+
+> Jarvis AI (the OpenClaw fork). Brand is rebranded; the CLI binary, container names, env vars, and config paths still use `openclaw*` because that's upstream's identity.
 
 ## Summary
-YELLOW — `doctor --fix` ran clean (0 plugin errors, gateway token configured), but headless Claude CLI is OAuth-only and the OpenClaw auth profile (`anthropic:claude-cli`) is still missing; onboarding/login is required before agent runs will work.
+YELLOW — `openclaw doctor --fix` ran clean (0 plugin errors, gateway token configured), but headless Claude CLI is OAuth-only and the auth profile (`anthropic:claude-cli`) is still missing; onboarding/login is required before agent runs will work.
 
 ## Bundled Plugin Status
 | Plugin | Version | Status | Notes |
@@ -19,7 +21,7 @@ YELLOW — `doctor --fix` ran clean (0 plugin errors, gateway token configured),
 - OAuth credentials dir not present (`~\.openclaw\credentials`) — skipped; no WhatsApp/pairing channel active, so this is benign
 
 ## Outstanding Issues
-- **OpenClaw auth profile missing**: `anthropic:claude-cli` not in `C:\Users\gsanc\.openclaw\agents\main\agent\auth-profiles.json`. Fix: `openclaw models auth login --provider anthropic --method cli --set-default` (or run onboarding).
+- **Anthropic auth profile missing**: `anthropic:claude-cli` not in `C:\Users\gsanc\.openclaw\agents\main\agent\auth-profiles.json`. Fix: `openclaw models auth login --provider anthropic --method cli --set-default` (or run onboarding).
 - **Claude project dir not yet created** (`~\.claude\projects\C--Users-gsanc--openclaw-workspace`) — appears after first Claude CLI turn; benign until first run.
 - **Skills**: 31 eligible, **39 missing requirements**, 0 blocked. Most likely external CLIs/SDKs not yet on PATH (e.g., gh, bq, etc.); not blocking core functionality.
 - **Shell completion**: zsh cache was missing; `--fix` regenerated it. Note Windows shell here is bash/PowerShell — zsh path is harmless.

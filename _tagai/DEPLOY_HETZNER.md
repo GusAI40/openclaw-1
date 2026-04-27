@@ -1,4 +1,6 @@
-# Deploy OpenClaw to Hetzner — Caddy + plain `docker compose`
+# Deploy Jarvis AI to Hetzner — Caddy + plain `docker compose`
+
+> Jarvis AI (the OpenClaw fork). Container names, image tag (`openclaw:tagai`), repo path (`/home/tagai/openclaw/`), env vars (`OPENCLAW_*`), and CLI commands (`openclaw ...`) all keep upstream identity for clean rebases. Brand changes are user-facing only.
 
 **Last verified: 2026-04-26.** See `_tagai/HETZNER_PREFLIGHT.md`,
 `_tagai/CADDY_AUDIT.md`, `_tagai/CLI_HEALTH_INVESTIGATION.md`,
