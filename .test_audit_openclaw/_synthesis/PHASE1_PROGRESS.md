@@ -71,4 +71,21 @@ Live instance: OpenClaw v2026.4.25 on tagai-cloud (Hetzner CPX21, 87.99.148.242)
   - Tools exposed: `tavily_search`, `tavily_extract`. Capability advertised: `web-search: tavily`
   - Verified end-to-end: direct Tavily API smoke test returned 3 live results
   - **Security action owed:** key was pasted in chat — rotate at https://app.tavily.com after testing settles
-- **Remaining 3 starters:** Notion, Gmail, Calendar (each needs owner-supplied credentials)
+- **Notion:** SKIPPED 2026-04-27 (owner doesn't use Notion)
+
+- **Supabase details (shipped ~15:55 CDT):**
+  - Wired as saved MCP server in `openclaw.json` using official `@supabase/mcp-server-supabase@latest` (npx stdio)
+  - Token: `SUPABASE_ACCESS_TOKEN` (sbp_...) inlined in openclaw.json + pushed to server `.env` (was empty placeholder before)
+  - Source of token: local `/c/Users/gsanc/.env` (already on disk, not newly leaked)
+  - Smoke test returned 28 tools incl. `execute_sql`, `apply_migration`, `deploy_edge_function`, `list_tables`, `get_advisors`, `get_logs`
+  - Verified PAT visibility: 5 projects (HUM, E-Rate Pipeline 2026, spectrum-aitify-production, Lead Machine Auto-Pilot ref `bjhjqegqfieyekbffgij`, dacp-pursuit-intelligence)
+  - Container force-recreated to pick up env_file change (~30s outage)
+
+- **Microsoft Graph details (shipped ~15:50 CDT):**
+  - Pre-existing custom MCP stdio server at `/home/node/.openclaw/mcp-servers/microsoft-graph/src/index.mjs` (built but not yet wired into config — solved bench-blocker "Email integration — blocked on Microsoft Graph")
+  - 6 tools: `mail_search`, `mail_send`, `calendar_list_events`, `calendar_create_event`, `drive_list`, `drive_get_file`
+  - Auth: client-credentials (app-only) using `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `MS_DEFAULT_USER` (all from `/c/Users/gsanc/.env` AZURE_* renamed to MS_*; container env confirmed all populated)
+  - Wired as saved MCP server in `openclaw.json` with creds inlined in env block
+  - Smoke test: stdio server initialized, returned all 6 tools with full schemas
+
+- **Remaining starters (lower priority):** Gmail (personal — covered by MS Graph for business), Calendar (same), Vercel, Resend, Salesforce
