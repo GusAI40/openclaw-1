@@ -1,0 +1,173 @@
+[
+  {
+    "url": "https://docs.openclaw.ai/",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\00-home.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/start/lore",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\01-start-lore.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/start/wizard",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\02-start-wizard.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/concepts/agent",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\03-concepts-agent.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/concepts/multi-agent",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\04-concepts-multi-agent.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/concepts/architecture",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\05-concepts-architecture.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/concepts/delegate-architecture",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\06-concepts-delegate.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/channels",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\07-channels-index.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/channels/telegram",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\08-channels-telegram.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/channels/whatsapp",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\09-channels-whatsapp.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/channels/bluebubbles",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\10-channels-bluebubbles.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/tools/index",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\11-tools-index.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/tools/skills",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\12-tools-skills.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/tools/lobster",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\13-tools-lobster.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/providers/litellm",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\14-providers-litellm.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/gateway/health",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\15-gateway-health.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/gateway/security",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\16-gateway-security.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/plugins/architecture",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\17-plugins-architecture.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/automation/cron-jobs",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\18-automation-cron.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/automation/standing-orders",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\19-automation-standing-orders.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/cli/setup",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\20-cli-setup.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/cli/cron",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\21-cli-cron.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/nodes/index",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\22-nodes-index.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/concepts/memory-search",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\23-memory-search.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/concepts/context-engine",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\24-context-engine.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/security/CONTRIBUTING-THREAT-MODEL",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\25-security-threat-model.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/reference/templates/AGENTS",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\26-templates-agents.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/reference/templates/SOUL",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\27-templates-soul.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/reference/templates/IDENTITY",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\28-templates-identity.png",
+    "ok": true
+  },
+  {
+    "url": "https://docs.openclaw.ai/reference/templates/BOOT",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\01-docs-openclaw-ai\\screenshots\\29-templates-boot.png",
+    "ok": true
+  },
+  {
+    "url": "https://sidsaladi.substack.com/p/openclaw-101-2026-march-29-the-complete",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\03-substack-101\\screenshots\\00-fullpage.png",
+    "ok": true
+  },
+  {
+    "url": "https://openclaw.ai/blog/virustotal-partnership",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\04-virustotal-partnership\\screenshots\\00-virustotal-post.png",
+    "ok": true
+  },
+  {
+    "url": "https://openclaw.ai",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\04-virustotal-partnership\\screenshots\\01-homepage.png",
+    "ok": true
+  },
+  {
+    "url": "https://openclaw.ai/blog",
+    "out": "C:\\Users\\gsanc\\TAG-Projects-2026\\openclaw\\.test_audit_openclaw\\04-virustotal-partnership\\screenshots\\02-blog-index.png",
+    "ok": true,
+    "blog_posts_found": 2
+  }
+]
