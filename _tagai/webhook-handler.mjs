@@ -173,7 +173,15 @@ function parseRequestedWhen(raw, nowMs = Date.now()) {
   const fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12: false });
   const parts = Object.fromEntries(fmt.formatToParts(new Date(nowMs)).map(p=>[p.type,p.value]));
   const baseY = +parts.year, baseM = +parts.month, baseD = +parts.day;
-  const mkLocal = (y,m,d,hh,mm=0) => new Date(`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}T${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:00-06:00`);
+  const mkLocal = (y,m,d,hh,mm=0) => {
+    const guess = new Date(Date.UTC(y, m-1, d, hh+6, mm));
+    const f = new Intl.DateTimeFormat('sv', { timeZone:'America/Chicago', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+    const [dPart,tPart] = f.format(guess).split(' ');
+    const [gy,gm,gd] = dPart.split('-').map(Number);
+    const [gh,gmin] = tPart.split(':').map(Number);
+    const correction = Date.UTC(y, m-1, d, hh, mm) - Date.UTC(gy, gm-1, gd, gh, gmin);
+    return new Date(guess.getTime() + correction);
+  };
   let dayOffset = null;
   if (/\btoday\b/.test(s)) dayOffset = 0;
   else if (/\btomorrow\b|\btmrw?\b/.test(s)) dayOffset = 1;
