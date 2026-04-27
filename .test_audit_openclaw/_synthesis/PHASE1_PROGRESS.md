@@ -31,8 +31,15 @@ Live instance: OpenClaw v2026.4.25 on tagai-cloud (Hetzner CPX21, 87.99.148.242)
 
 ## Unlock log
 
-### [pending] #1 — Standing Orders → AGENTS.md
-- **Status:** in progress (started 2026-04-27)
+### [shipped] #1 — Standing Orders → AGENTS.md
+- **Status:** SHIPPED 2026-04-27 ~13:43 CDT
 - **Path:** `/home/tagai/.openclaw/workspace/AGENTS.md`
-- **Source:** 6 Program blocks from `_synthesis/ACTIONS.md`
-- **Backup convention:** `AGENTS.md.bak.<unix-timestamp>` before any append
+- **Source:** 6 Program blocks from `_synthesis/ACTIONS.md`, assembled into `_synthesis/standing-orders-payload.md`
+- **Backup:** `/home/tagai/.openclaw/workspace/AGENTS.md.bak.1777315383` (md5 `5cf56cbc86bfe84927a8efb560cd6819`, 218 lines, original Apr 25 16:50)
+- **Result:** AGENTS.md grew 218 → 355 lines. All 6 Program headers verified at lines 227, 239, 259, 280, 300, 330.
+- **Runtime pickup:** AGENTS.md is auto-loaded on every session start (per the file's own "Session Startup" section). No restart needed; next inbound Telegram / web-chat prompt instantiates a session with the new rules in scope.
+- **Verification owed (owner action):** Send Telegram message "What are your standing orders?" and confirm Jarvis recites Programs 1–6. Then ask "Use Opus to write a 5-sentence summary" — Jarvis should refuse / escalate per Program: Model Cost Routing.
+
+### [pending] #2 — `openclaw mcp serve` registered in Claude Code settings
+- **Why next:** Lets the local Claude Code session (this terminal) talk to the live tagai-cloud agent over MCP. Unlocks "spawn live Jarvis as a sub-agent" workflow.
+- **Estimated effort:** 10 min
