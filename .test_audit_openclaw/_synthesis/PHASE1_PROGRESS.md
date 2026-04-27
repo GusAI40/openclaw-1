@@ -40,6 +40,17 @@ Live instance: OpenClaw v2026.4.25 on tagai-cloud (Hetzner CPX21, 87.99.148.242)
 - **Runtime pickup:** AGENTS.md is auto-loaded on every session start (per the file's own "Session Startup" section). No restart needed; next inbound Telegram / web-chat prompt instantiates a session with the new rules in scope.
 - **Verification owed (owner action):** Send Telegram message "What are your standing orders?" and confirm Jarvis recites Programs 1–6. Then ask "Use Opus to write a 5-sentence summary" — Jarvis should refuse / escalate per Program: Model Cost Routing.
 
-### [pending] #2 — `openclaw mcp serve` registered in Claude Code settings
-- **Why next:** Lets the local Claude Code session (this terminal) talk to the live tagai-cloud agent over MCP. Unlocks "spawn live Jarvis as a sub-agent" workflow.
-- **Estimated effort:** 10 min
+### [shipped] #2 — `openclaw mcp serve` registered in Claude Code settings
+- **Status:** SHIPPED 2026-04-27 ~14:10 CDT
+- **Bridge:** local stdio MCP bridge (`openclaw mcp serve`) → `wss://openclaw.ubntag.com` (Caddy → gateway port 18789)
+- **Token:** `C:/Users/gsanc/.openclaw/gateway.token` (64 chars, trimmed, user-scoped perms)
+- **Device pairing:** approved as device `06fcc6d4cc12cfaf8ff66236cf395b8034f912006c6277f3a3969e6131085b19` from IP 47.161.120.20 with scopes `operator.read`, `operator.write`, `operator.approvals`
+- **MCP config location:** `C:/Users/gsanc/TAG-Projects-2026/openclaw/.claude/settings.json` under `mcpServers.openclaw`
+- **Tools exposed (9):** `conversations_list`, `conversation_get`, `messages_read`, `attachments_fetch`, `events_poll`, `events_wait`, `messages_send`, `permissions_list_open`, `permissions_respond`
+- **Verification:** `conversations_list` returned the live `agent:main:main` session (Gus Sanchez Telegram chat 8603473262, lastMessage `HEARTBEAT_OK`).
+- **Runtime pickup:** Claude Code reads `mcpServers` on session start. **Current session does NOT have access**; restart Claude Code in this directory to activate.
+
+### [pending] #3 — Skill enablement sweep
+- **Scope:** Move 5 starter skills from "Needs Setup" → "Ready" (Tavily, Notion, Gmail, GitHub, Calendar)
+- **Owner homework needed:** Tavily API key, Notion integration token, Gmail/Calendar OAuth (or service account), GitHub PAT
+- **Standing Order gate:** Per `Program: Skill Enablement & Vetting`, each skill must pass owner approval + ClawHub VT scan before going Ready
