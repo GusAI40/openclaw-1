@@ -88,6 +88,18 @@ Live instance: OpenClaw v2026.4.25 on tagai-cloud (Hetzner CPX21, 87.99.148.242)
   - Wired as saved MCP server in `openclaw.json` with creds inlined in env block
   - Smoke test: stdio server initialized, returned all 6 tools with full schemas
 
+- **Resend details (shipped 2026-04-27 ~18:30 CDT):**
+  - Wired as saved MCP server in `openclaw.json` at `mcp.servers.resend` using official `resend-mcp` v2.6.0 (npx stdio)
+  - Authorship verified: `github.com/resend/resend-mcp` is from the `resend` GitHub Organization (not community), 504 stars, MIT, last updated 2026-04-22
+  - **Defense-in-depth at API layer (guru pattern):** owner provided a Full Access key (`re_g1Q...`); used it to mint a fresh sending-only key (`re_emxv...`, ID `13b7a664-67bb-47f3-9232-0e6ae70f750a`, named "OpenClaw Jarvis (sending) - 2026-04-27") via Resend's `POST /api-keys` with `permission=sending_access`. Original Full Access key DELETED via `DELETE /api-keys/4d3cfa2e-ded0-404c-8880-77480b980b43`. Confirmed dead after ~10s auth-cache TTL.
+  - New key scope verified by Resend itself: `GET /api-keys`, `/audiences`, `/domains` all return `401 "This API key is restricted to only send emails"`. Even if Jarvis is jailbroken or hallucinates, he physically cannot delete a domain or revoke an API key. Safety enforced at platform layer, not runtime.
+  - Token saved to `/home/tagai/.openclaw/secrets/resend.token` (chmod 600) + inlined in MCP env block (NOT in master `.env`)
+  - **Master `.env` left untouched** — `RESEND_API_KEY=re_KdMS...` belongs to Michelle's outreach stack (fb-group-poster, ig-poster, li-poster, cross-platform-orchestrator) and the Hetzner deployment. Three keys, three lanes, zero crossover.
+  - Smoke test: `resend__send-email` invoked from agent turn (deepseek-v4-flash, 1 call / 0 failures). Real email sent from `jarvis@ubntag.com` to `wirelessgus@gmail.com`, Resend ID `13df0074-d5b9-4849-9b0b-083ba96a4ab3`
+  - 78 tools exposed by the MCP, but ~70 will silently 401 because of the key scope. Send/get/list-emails work; everything destructive returns "restricted_api_key" without ever reaching the Resend backend.
+  - Snippet at `/home/tagai/mcp-snippets/resend.json` (drafted 2026-04-26, smoke-tested then) was the prior-art reference; lifted into live config today.
+  - **Audit trail upgrade (free):** every email Jarvis sends is now attributable in Resend's logs to the "OpenClaw Jarvis (sending)" key — distinct from Michelle outreach + Maya + Hetzner. Three named keys, three named lanes.
+
 - **Vercel details (shipped 2026-04-27 ~17:55 CDT):**
   - Wired as saved MCP server in `openclaw.json` at `mcp.servers.vercel` (Vercel's official MCP at `https://mcp.vercel.com/`)
   - Transport: `streamable-http` with `Authorization: Bearer <token>` header
@@ -100,4 +112,4 @@ Live instance: OpenClaw v2026.4.25 on tagai-cloud (Hetzner CPX21, 87.99.148.242)
   - **Side-finding flagged for separate fix:** runtime warned AGENTS.md was truncated 35% before injection (15458 → 9999 chars). Programs added 2026-04-27 morning may be partially clipped. Tune `agents.defaults.bootstrapMaxChars` / `bootstrapTotalMaxChars`.
   - **Security note:** token has been in chat transcripts since 2026-04-25 (originally extracted into `project_openclaw_pending_work.md`). Owner can rotate at https://vercel.com/account/tokens if desired; not a fresh leak.
 
-- **Remaining starters (lower priority):** Gmail (personal — covered by MS Graph for business), Calendar (same), Resend, Salesforce
+- **Remaining starters:** Gmail (personal — covered by MS Graph for business), Calendar (same). **Salesforce SKIPPED** 2026-04-27: no API access available, do not propose unprompted.
