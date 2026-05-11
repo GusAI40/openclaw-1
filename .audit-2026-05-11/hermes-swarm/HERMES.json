@@ -1,0 +1,130 @@
+{
+  "version": "0.13.0",
+  "designation": "CTO of TAG AI Corporation (per AI_CORPORATION_BLUEPRINT.md)",
+  "discovered_2026_05_11": true,
+  "layers": {
+    "layer_1_container_runtime": {
+      "location": "INSIDE docker container openclaw-openclaw-gateway-1 at /home/node/.hermes/",
+      "binary": "~/.local/bin/hermes",
+      "python_venv": "Python 3.11 via uv or stdlib venv",
+      "components": [
+        "hermes-agent/ (36 dirs, includes hermes_swe_env Python SWE-bench environment)",
+        "skills/ (26 skills installed)",
+        "state.db (19MB SQLite, kanban.db 102KB)",
+        "config.yaml (12KB)",
+        "SOUL.md",
+        "auth.json + auth.lock + gateway.pid + gateway.lock + gateway_state.json",
+        "cron/, sessions/, memories/, sandboxes/, hooks/, pairing/",
+        "models_dev_cache.json (1.8MB), .skills_prompt_snapshot.json (53KB)"
+      ],
+      "model": {
+        "primary": "deepseek-chat via openai-compatible endpoint (api.deepseek.com/v1)",
+        "provider": "openai",
+        "key_env": "HERMES_OPENAI_KEY"
+      },
+      "telegram_bot": "@TAGAIWorkforceBot",
+      "allowed_users": ["8603473262 (Gus Sanchez)"],
+      "logs": {
+        "gateway": "/tmp/hermes-gateway.log",
+        "agent": "~/.hermes/logs/agent.log",
+        "spawn": "~/.hermes/logs/spawn.log"
+      },
+      "lifecycle": {
+        "start": "cd ~/.hermes && nohup ~/.local/bin/hermes gateway --accept-hooks > /tmp/hermes-gateway.log 2>&1 &",
+        "stop": "pkill -f 'hermes gateway'"
+      },
+      "env_vars": [
+        "DEEPSEEK_API_KEY", "EXA_API_KEY", "OPENROUTER_API_KEY",
+        "HERMES_OPENAI_API_KEY", "HERMES_OPENAI_BASE_URL", "HERMES_OPENAI_KEY",
+        "TELEGRAM_BOT_TOKEN", "TELEGRAM_ALLOWED_USERS",
+        "TELEGRAM_HOME_CHANNEL", "TELEGRAM_HOME_CHANNEL_NAME",
+        "BROWSERBASE_ADVANCED_STEALTH", "BROWSERBASE_PROXIES",
+        "BROWSER_INACTIVITY_TIMEOUT", "BROWSER_SESSION_TIMEOUT",
+        "TERMINAL_LIFETIME_SECONDS", "TERMINAL_MODAL_IMAGE", "TERMINAL_TIMEOUT",
+        "VOICE_TOOLS_OPENAI_KEY",
+        "VISION_TOOLS_DEBUG", "WEB_TOOLS_DEBUG", "IMAGE_TOOLS_DEBUG", "MOA_TOOLS_DEBUG"
+      ]
+    },
+    "layer_2_public_chat_proxy": {
+      "script": "/home/tagai/.openclaw/workspace/jarvis-infrastructure/scripts/hermes-proxy.mjs",
+      "port": 4000,
+      "bind": "0.0.0.0:4000",
+      "status": "NOT CURRENTLY LISTENING on VPS (verified via ss -tlnp). Either not started, or only runs inside container.",
+      "endpoints": [
+        "GET /health",
+        "POST /api/hermes/chat",
+        "OPTIONS * (CORS preflight)"
+      ],
+      "model": "deepseek-chat",
+      "persona": "Hermes, AI assistant for TAG AI. Luxury concierge tone. One-sentence answers. Contact: +1 (839) 888-2424.",
+      "consumers": [
+        "tag-ai-website-openclaw-2026-05-01/src/app/hermes/HermesChat.tsx",
+        "tag-ai-website-openclaw-2026-05-01/src/app/api/hermes/",
+        "tag-ai-website-openclaw-2026-05-01/src/components/hermes/HermesResources.tsx",
+        "tag-ai-website-openclaw-2026-05-01/src/components/shared/HermesFloatingButton.tsx",
+        "ubntag/src/app/hermes/HermesChat.tsx",
+        "ubntag/src/app/api/hermes/",
+        "ubntag/src/components/hermes/HermesResources.tsx"
+      ]
+    },
+    "layer_3_skill_bundle_hermes_army": {
+      "location_vps": "/home/tagai/.openclaw/workspace/.agents/skills/hermes-army/",
+      "location_local_snapshot": ".audit-2026-05-11/vps-snapshot/hermes-army-skills/",
+      "skills_present": [
+        {
+          "name": "corp-dashboard",
+          "purpose": "Sync kanban activity to public AI Corp dashboard at ubntag.com/ai-corp",
+          "self_improving": true,
+          "status": "skill defined, dashboard pending"
+        },
+        {
+          "name": "multi-platform",
+          "purpose": "Route tasks across Telegram/web/voice/CLI channels by response time",
+          "channels": ["Telegram", "Web (ubntag.com/hermes)", "Voice (LiveKit pending)", "CLI"],
+          "status": "Telegram + Web live, Voice pending"
+        },
+        {
+          "name": "nano-spawner",
+          "purpose": "Spawn N parallel nano-agents with adaptive batch sizing",
+          "self_improving": true,
+          "usage": "hermes -s nano-spawner -z 'Spawn 10 agents to analyze repos'",
+          "status": "skill defined, optimizer logs to ~/.hermes/logs/spawn.log"
+        }
+      ],
+      "skills_missing_per_blueprint": [
+        "10 dept-lead kanban profiles (exec-lead, eng-lead, ai-lead, sales-lead, cs-lead, ops-lead, creative-lead, data-lead, legal-lead, studio-lead)",
+        "90 worker skills (one per CORP-001..CORP-100 roster entry)"
+      ]
+    }
+  },
+  "swarm_topology_as_designed": {
+    "command_chain": {
+      "top_down": "Gus -> Jarvis (Telegram) -> Hermes (one-shot CLI) -> kanban tasks -> subagent workers",
+      "bottom_up": "subagent -> Hermes (completion report) -> Jarvis (structured summary) -> Gus (Telegram, one-line)",
+      "lateral": "shared kanban board + workspace files (/home/node/.openclaw/corp/) + Telegram relay"
+    },
+    "org_chart_summary": {
+      "chairman_human": 1,
+      "board_oracles_ai": 6,
+      "c_suite_humans": 1,
+      "c_suite_ai": 7,
+      "dept_leads": 10,
+      "workers": 90,
+      "total_agents_per_tenant": 114
+    }
+  },
+  "gaps_blocking_swarm_activation": [
+    "97 worker skills not yet authored (only 3 of 100 exist)",
+    "10 dept-lead kanban profiles not yet created",
+    "Public ai-corp dashboard at ubntag.com/ai-corp not deployed",
+    "LiveKit voice channel for multi-platform skill is pending credentials",
+    "kanban.db is per-container; no multi-tenant scoping",
+    "Hermes runs INSIDE openclaw container, so per-tenant replication = per-container Hermes instance"
+  ],
+  "replication_implications": {
+    "per_tenant_hermes": "Each tenant gets their own openclaw container + their own Hermes runtime + their own kanban.db",
+    "shared_resources": "DeepSeek/OpenRouter API keys can be shared with per-tenant quotas, OR scoped per tenant",
+    "tenant_id_propagation": "All kanban tasks, sessions, memories must include tenant_id for isolation",
+    "telegram_per_tenant": "Each tenant needs their own @-bot OR a single bot with tenant routing by allowed_users"
+  }
+}

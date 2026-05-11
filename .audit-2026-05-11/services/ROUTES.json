@@ -1,0 +1,128 @@
+{
+  "generated_at": "2026-05-11T00:00:00Z",
+  "caddyfile_source": "C:/Users/gsanc/TAG-Projects-2026/openclaw-4-25-26/.audit-2026-05-11/vps-snapshot/Caddyfile.vps",
+  "caddy_admin_api": "127.0.0.1:2019",
+  "snippets": [
+    {
+      "name": "common",
+      "definition": "reverse_proxy localhost:3000 + HSTS/X-Content-Type-Options/X-Frame-Options:DENY headers",
+      "imported_by": ["http://voiceai.ubntag.com", "voiceai.ubntag.com"]
+    }
+  ],
+  "routes": [
+    {
+      "host": "voiceai.ubntag.com",
+      "schemes": ["http", "https"],
+      "upstream_default": "localhost:3000",
+      "path_matchers": [],
+      "tls": "lets-encrypt (Cloudflare proxy compatible — Flexible or Full SSL)",
+      "headers": [
+        "Strict-Transport-Security: max-age=31536000; includeSubDomains",
+        "X-Content-Type-Options: nosniff",
+        "X-Frame-Options: DENY"
+      ],
+      "service_id": "voiceai-server",
+      "status": "ok",
+      "notes": "Defined twice in Caddyfile (http:// + apex) — both import (common) snippet"
+    },
+    {
+      "host": "87.99.148.242",
+      "schemes": ["http"],
+      "upstream_default": "localhost:3000",
+      "path_matchers": [],
+      "tls": "none (direct-IP HTTP only — diagnostic)",
+      "headers": [],
+      "service_id": "voiceai-server",
+      "status": "ok",
+      "notes": "Diagnostic route — bypasses DNS for testing the voiceai server"
+    },
+    {
+      "host": "michelle-fb.ubntag.com",
+      "schemes": ["https"],
+      "upstream_default": "localhost:8000",
+      "path_matchers": [],
+      "tls": "internal (Caddy self-signed)",
+      "headers": [
+        "Strict-Transport-Security: max-age=31536000; includeSubDomains",
+        "X-Content-Type-Options: nosniff",
+        "X-Frame-Options: DENY"
+      ],
+      "service_id": null,
+      "status": "ORPHAN",
+      "notes": "BROKEN — no process is listening on localhost:8000. Caddy will return 502 to all callers. Caddyfile comment claims 'Michelle FB Group Poster webhook (mobile trigger endpoint)' but the upstream is dead."
+    },
+    {
+      "host": "michelle-fb-status.ubntag.com",
+      "schemes": ["https"],
+      "upstream_default": "localhost:8001",
+      "path_matchers": [],
+      "tls": "internal (Caddy self-signed)",
+      "headers": [
+        "Strict-Transport-Security: max-age=31536000; includeSubDomains",
+        "X-Content-Type-Options: nosniff",
+        "X-Frame-Options: DENY"
+      ],
+      "service_id": "tour-book",
+      "status": "BROKEN",
+      "notes": "Caddyfile comment says 'Michelle FB Group Poster read-only dashboard PWA' but the only thing on 8001 is the tour-book container, which does NOT bind 8001 to the host. Route is unreachable from localhost. Fix: bind tour-book's 8001 to host, OR change Caddy upstream to 172.19.0.2:8001 (Docker network IP) or the container DNS name."
+    },
+    {
+      "host": "openclaw.ubntag.com",
+      "schemes": ["https"],
+      "upstream_default": "localhost:18789",
+      "path_matchers": [
+        {
+          "matcher_name": "@vapi",
+          "pattern": "/vapi/webhook /vapi/webhook/* /vapi/tool /vapi/tool/*",
+          "upstream": "127.0.0.1:18792",
+          "service_id": "jarvis-vapi-webhook"
+        }
+      ],
+      "tls": "lets-encrypt (Caddy default)",
+      "headers": [
+        "Strict-Transport-Security: max-age=31536000; includeSubDomains",
+        "X-Content-Type-Options: nosniff",
+        "X-Frame-Options: DENY"
+      ],
+      "service_id": "openclaw-gateway",
+      "status": "ok",
+      "notes": "Primary Jarvis gateway URL. /vapi/* path-prefix split to systemd-managed webhook handler on loopback 18792; everything else to the OpenClaw gateway container on 18789."
+    },
+    {
+      "host": "cma.ubntag.com",
+      "schemes": ["https"],
+      "upstream_default": "localhost:8080",
+      "path_matchers": [],
+      "tls": "lets-encrypt (Caddy default)",
+      "headers": [],
+      "encode": "gzip",
+      "log": {
+        "output": "/var/log/caddy/cma.access.log",
+        "format": "console"
+      },
+      "service_id": "michelle-cma",
+      "status": "ok",
+      "notes": "Michelle CMA report API. Only route in the file with explicit access logging."
+    }
+  ],
+  "subdomain_to_service": {
+    "voiceai.ubntag.com": "voiceai-server",
+    "87.99.148.242 (HTTP)": "voiceai-server",
+    "michelle-fb.ubntag.com": null,
+    "michelle-fb-status.ubntag.com": "tour-book (BROKEN)",
+    "openclaw.ubntag.com": "openclaw-gateway (default) + jarvis-vapi-webhook (/vapi/*)",
+    "cma.ubntag.com": "michelle-cma"
+  },
+  "anomalies": [
+    {
+      "host": "michelle-fb.ubntag.com",
+      "severity": "high",
+      "issue": "Upstream localhost:8000 has no listener — dead route"
+    },
+    {
+      "host": "michelle-fb-status.ubntag.com",
+      "severity": "high",
+      "issue": "Upstream localhost:8001 unreachable — tour-book container port 8001 is not host-bound, only accessible inside openclaw_default Docker network at 172.19.0.2:8001"
+    }
+  ]
+}

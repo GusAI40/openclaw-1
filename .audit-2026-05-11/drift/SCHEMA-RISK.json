@@ -1,0 +1,154 @@
+{
+  "audit_date": "2026-05-11",
+  "scope": "openclaw.json schema-clobber forensics — explains why config gets destroyed on image upgrades",
+  "config_path": "/home/tagai/.openclaw/openclaw.json (mounts to /home/node/.openclaw/openclaw.json in container)",
+  "running_image_tag": "openclaw:tagai",
+  "container_started_at": "2026-05-07 12:44:15 UTC",
+
+  "root_cause_summary": "The openclaw gateway runtime reads openclaw.json on boot, checks meta.lastTouchedVersion, and IF mismatched with the runtime version it (a) snapshots the existing config to openclaw.json.clobbered.<timestamp> and (b) rewrites openclaw.json with the runtime's defaults — destroying user customizations (agents, mcp servers, channels, tools config). All six .clobbered.* files snapshot the SAME pre-upgrade state (meta.lastTouchedVersion=2026.4.27, lastTouchedAt=2026-05-01T05:14:00.178Z), meaning the runtime kept clobbering the same config repeatedly on each restart between May 2 and May 6 until manual intervention rewrote the file to match version 2026.5.6.",
+
+  "current_state": {
+    "running_image_version": "openclaw:tagai (tag does not encode version — must read from /home/node/package.json inside container to determine actual version)",
+    "config_lastTouchedVersion": "2026.5.6",
+    "config_lastTouchedAt": "2026-05-07T01:26:29.585Z",
+    "top_level_keys_current": ["agents", "gateway", "meta", "channels", "plugins", "mcp", "tools"],
+    "in_sync_status": "true — config and last-good are byte-identical (9633 bytes)",
+    "risk_level": "MEDIUM — schema appears stable in current state, but next image upgrade will re-trigger the clobber if procedure not followed"
+  },
+
+  "incident_log": [
+    {
+      "file": "openclaw.json.clobbered.2026-05-02T00-05-58-283Z",
+      "size_bytes": 8178,
+      "trigger_time_utc": "2026-05-02T00:05:58.283Z",
+      "snapshot_meta": { "lastTouchedVersion": "2026.4.27", "lastTouchedAt": "2026-05-01T05:14:00.178Z" },
+      "probable_trigger": "Docker image upgrade or container restart with newer runtime than 2026.4.27 — runtime detected mismatch, snapshotted old config, wrote defaults",
+      "delta_summary": "Pre-existing valid 2026.4.27 config destroyed; replaced with runtime defaults"
+    },
+    {
+      "file": "openclaw.json.clobbered.2026-05-02T00-06-18-507Z",
+      "size_bytes": 8178,
+      "trigger_time_utc": "2026-05-02T00:06:18.507Z",
+      "snapshot_meta": { "lastTouchedVersion": "2026.4.27", "lastTouchedAt": "2026-05-01T05:14:00.178Z" },
+      "probable_trigger": "Restart 20 seconds after first clobber — implies user/Gus tried to restore old config, container restarted, clobbered it AGAIN",
+      "delta_summary": "Same 8178-byte snapshot — clobber loop confirmed"
+    },
+    {
+      "file": "openclaw.json.clobbered.2026-05-06T11-12-25-905Z",
+      "size_bytes": 9550,
+      "trigger_time_utc": "2026-05-06T11:12:25.905Z",
+      "snapshot_meta": { "lastTouchedVersion": "2026.4.27", "lastTouchedAt": "2026-05-01T05:14:00.178Z" },
+      "probable_trigger": "Restart attempt after 4-day quiet period — config had been manually rebuilt to 9550 bytes (closer to current) but still on old version string",
+      "delta_summary": "User restored functionality but didn't bump meta.lastTouchedVersion — clobber triggered again"
+    },
+    {
+      "file": "openclaw.json.clobbered.2026-05-06T11-13-43-705Z",
+      "size_bytes": 9550,
+      "trigger_time_utc": "2026-05-06T11:13:43.705Z",
+      "snapshot_meta": { "lastTouchedVersion": "2026.4.27", "lastTouchedAt": "2026-05-01T05:14:00.178Z" },
+      "probable_trigger": "Restart 1m18s later — same loop pattern as May 2",
+      "delta_summary": "Identical 9550-byte snapshot"
+    },
+    {
+      "file": "openclaw.json.clobbered.2026-05-06T11-27-04-142Z",
+      "size_bytes": 9846,
+      "trigger_time_utc": "2026-05-06T11:27:04.142Z",
+      "snapshot_meta": { "lastTouchedVersion": "2026.4.27", "lastTouchedAt": "2026-05-01T05:14:00.178Z" },
+      "probable_trigger": "User added more config (9846 bytes), bumped Touched dates BUT did not update lastTouchedVersion string — clobber triggered yet again",
+      "delta_summary": "Lesson: only lastTouchedVersion matters, not lastTouchedAt"
+    },
+    {
+      "file": "openclaw.json.clobbered.2026-05-06T11-27-45-104Z",
+      "size_bytes": 9880,
+      "trigger_time_utc": "2026-05-06T11:27:45.104Z",
+      "snapshot_meta": { "lastTouchedVersion": "2026.4.27", "lastTouchedAt": "2026-05-01T05:14:00.178Z" },
+      "probable_trigger": "Final clobber in the May 6 incident — 6th clobber total. After this, lastTouchedVersion was finally set to 2026.5.6 manually, breaking the loop.",
+      "delta_summary": "Manual fix went in shortly after this; openclaw.json.last-good (timestamped May 11 13:12) is byte-identical to current production config"
+    }
+  ],
+
+  "schema_evolution": {
+    "version_2026.4.25_bak.4_oldest": {
+      "size_bytes": 5803,
+      "top_level_keys": ["agents", "gateway", "meta", "channels", "plugins", "mcp"],
+      "missing_vs_current": ["tools"],
+      "channels_subkeys": ["telegram"],
+      "notes": "Smallest config. No tools section at all."
+    },
+    "version_2026.4.25_bak.3": {
+      "size_bytes": 7866,
+      "top_level_keys": ["agents", "gateway", "meta", "channels", "plugins", "mcp", "tools"],
+      "notes": "tools key first appears at this version. Schema grew by 1 top-level key."
+    },
+    "version_2026.4.27_bak.2_and_bak.1": {
+      "size_bytes": "8005-8028",
+      "top_level_keys": ["agents", "gateway", "meta", "channels", "plugins", "mcp", "tools"],
+      "notes": "Continued growth within same schema shape"
+    },
+    "version_2026.5.6_last_good_and_current": {
+      "size_bytes": 9633,
+      "top_level_keys": ["agents", "gateway", "meta", "channels", "plugins", "mcp", "tools"],
+      "channels_subkeys": ["telegram", "discord"],
+      "tools_subkeys": ["web"],
+      "notes": "Discord channel added; web tool added inside tools section"
+    },
+    "version_2026.5.6_bak.20260507-114921_anomaly": {
+      "size_bytes": 9641,
+      "top_level_keys": ["agents", "gateway", "meta", "channels", "plugins", "mcp", "tools", "secrets"],
+      "extra_vs_current": ["secrets"],
+      "notes": "BRIEFLY had a top-level 'secrets' key that was later removed. Indicates the runtime may add a secrets section in some code paths — watch for this on next upgrade."
+    },
+    "added_fields_v2026.4.25_to_v2026.5.6": ["tools (root)", "channels.discord", "tools.web"],
+    "removed_fields": [],
+    "renamed_fields": [],
+    "transiently_added_then_removed": ["secrets (root) — saw it in bak.20260507-114921 only"]
+  },
+
+  "structural_delta_oldest_to_newest": {
+    "from_file": "openclaw.json.bak.4 (2026-04-27, 5803 bytes, version 2026.4.25)",
+    "to_file": "openclaw.json.last-good (2026-05-11, 9633 bytes, version 2026.5.6)",
+    "byte_growth": 3830,
+    "structural_changes": [
+      "+ Added top-level 'tools' object (with 'web' sub-section)",
+      "+ Added 'discord' under 'channels'",
+      "+ Grew 'agents.defaults' (expanded model/effort/permissions config)",
+      "+ Grew 'mcp.servers' list (added new MCP servers: github, supabase, microsoft-graph, etc.)",
+      "+ Grew 'plugins.entries' list",
+      "= No fields renamed, no fields removed"
+    ],
+    "schema_compatibility": "Mostly additive — old configs SHOULD be forward-compatible IF runtime tolerates missing keys. Evidence suggests it does NOT tolerate missing version string match — that's the kill switch."
+  },
+
+  "the_kill_switch_field": {
+    "field": "meta.lastTouchedVersion",
+    "trigger_condition": "Runtime version != config's meta.lastTouchedVersion (string-equal comparison)",
+    "action_on_trigger": "Move existing openclaw.json to openclaw.json.clobbered.<ISO8601>, write fresh defaults",
+    "why_destructive": "Defaults wipe agents[], channels{}, plugins[], mcp.servers[] — all user customization lost",
+    "secondary_fields_observed": "meta.lastTouchedAt is updated on every write but does NOT trigger clobber on mismatch"
+  },
+
+  "safe_upgrade_procedure": [
+    "STEP 0 (one-time prereq): Stop the openclaw container — DO NOT just `docker pull` and `docker restart`, the restart triggers the clobber",
+    "STEP 1: Snapshot the current good config:  cp /home/tagai/.openclaw/openclaw.json /home/tagai/.openclaw/openclaw.json.pre-upgrade-$(date -u +%Y%m%dT%H%M%SZ)",
+    "STEP 2: Also snapshot the data dirs:  tar czf /home/tagai/openclaw-backup-$(date -u +%Y%m%d).tar.gz /home/tagai/.openclaw/memory /home/tagai/.openclaw/credentials /home/tagai/.openclaw/identity /home/tagai/.openclaw/secrets /home/tagai/.openclaw/hindsight",
+    "STEP 3: Pull the new image:  docker pull openclaw:<newtag>",
+    "STEP 4: Determine the new runtime version BEFORE running. Either:  (a) docker run --rm openclaw:<newtag> cat /home/node/package.json | python3 -c 'import json,sys; print(json.load(sys.stdin)[\"version\"])'  OR (b) docker run --rm --entrypoint=node openclaw:<newtag> -e 'console.log(require(\"/home/node/package.json\").version)'",
+    "STEP 5: PRE-EMPTIVELY rewrite meta.lastTouchedVersion in the live config to match the new runtime version BEFORE starting the container:  python3 -c \"import json; p='/home/tagai/.openclaw/openclaw.json'; d=json.load(open(p)); d['meta']['lastTouchedVersion']='<newversion>'; json.dump(d, open(p,'w'), indent=2)\"",
+    "STEP 6: Start the container:  cd /home/tagai/openclaw && docker compose up -d",
+    "STEP 7: Verify gateway boot:  sleep 5 && curl http://127.0.0.1:18789/healthz   — should return 200 OK",
+    "STEP 8: Verify no new .clobbered file appeared:  ls -la /home/tagai/.openclaw/openclaw.json.clobbered.* | tail -3   — newest should still be from May 6",
+    "STEP 9: If clobber happened anyway, the schema changed structurally (new required field). Roll back:  docker compose down; cp /home/tagai/.openclaw/openclaw.json.pre-upgrade-* /home/tagai/.openclaw/openclaw.json; docker pull openclaw:<oldtag>; docker compose up -d",
+    "STEP 10: After rollback, file a bug or read the new image's CHANGELOG to discover the new required key, hand-merge it into the snapshot, retry"
+  ],
+
+  "preventive_hardening_recommendations": [
+    "1. Add a pre-start docker compose hook that reads the runtime version from the image's package.json and patches openclaw.json's meta.lastTouchedVersion to match BEFORE the gateway boots",
+    "2. Wire the empty /home/tagai/.openclaw/backups/ dir with a daily cron:  0 3 * * * cp /home/tagai/.openclaw/openclaw.json /home/tagai/.openclaw/backups/openclaw.json.$(date -u +\\%Y\\%m\\%d).json",
+    "3. Add a git repo for /home/tagai/.openclaw/openclaw.json — commit on every change so we have a true history (the .clobbered.* files are accidental history; git is intentional)",
+    "4. Add a monitor: alert if openclaw.json.clobbered.* files appear in the last 24h (means an unplanned clobber happened)",
+    "5. Pin OPENCLAW_IMAGE in /home/tagai/openclaw/.env to an explicit version tag — never use :tagai or :latest in production",
+    "6. Document expected meta.lastTouchedVersion in /home/tagai/openclaw/README.md and update it on every upgrade"
+  ],
+
+  "key_finding": "The clobber pattern is deterministic: same input (config with meta.lastTouchedVersion=X) + same trigger (runtime with version Y where X≠Y) = same output (config wiped). The 6 clobbered files between May 2 and May 6 are evidence of 6 failed restart attempts where the user kept restoring the config without bumping the version string. The fix is to BUMP THE VERSION STRING FIRST, then start the container."
+}

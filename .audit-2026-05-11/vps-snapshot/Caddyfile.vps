@@ -1,0 +1,73 @@
+# Production: works with Cloudflare proxy ON in either Flexible or Full SSL mode.
+# - HTTP path on :80 — Cloudflare 'Flexible' SSL or direct testing
+# - HTTPS path on :443 — Caddy auto-acquires Let's Encrypt cert (requires DNS direct or proxy OFF for HTTP-01 challenge)
+
+(common) {
+    reverse_proxy localhost:3000
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+    }
+}
+
+http://voiceai.ubntag.com {
+    import common
+}
+
+voiceai.ubntag.com {
+    import common
+}
+
+# Diagnostic: direct-IP HTTP for testing without DNS
+http://87.99.148.242 {
+    reverse_proxy localhost:3000
+}
+
+# Michelle FB Group Poster — webhook (mobile trigger endpoint)
+michelle-fb.ubntag.com {
+    tls internal
+    reverse_proxy localhost:8000
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+    }
+}
+
+# Michelle FB Group Poster — read-only dashboard PWA
+michelle-fb-status.ubntag.com {
+    tls internal
+    reverse_proxy localhost:8001
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+    }
+}
+
+# OpenClaw — TAG AI gateway (added 2026-04-25)
+openclaw.ubntag.com {
+    @vapi path /vapi/webhook /vapi/webhook/* /vapi/tool /vapi/tool/*
+    handle @vapi {
+        reverse_proxy 127.0.0.1:18792
+    }
+    handle {
+        reverse_proxy localhost:18789
+        header {
+            Strict-Transport-Security "max-age=31536000; includeSubDomains"
+            X-Content-Type-Options "nosniff"
+            X-Frame-Options "DENY"
+        }
+    }
+}
+
+# CMA report server (added 2026-04-26)
+cma.ubntag.com {
+    reverse_proxy localhost:8080
+    encode gzip
+    log {
+        output file /var/log/caddy/cma.access.log
+        format console
+    }
+}
