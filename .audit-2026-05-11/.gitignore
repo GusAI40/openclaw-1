@@ -1,0 +1,16 @@
+# Audit hygiene — do not commit files that contain credential prefixes or full secret values.
+# These files exist locally for the audit but must not land in the public GusAI40/openclaw-1 fork.
+
+# Files known to contain real credential prefixes / full keys (pulled from VPS as-is)
+vps-snapshot/SYSTEM_ARCHITECTURE.LOCAL-ONLY.md
+vps-snapshot/SYSTEM_ARCHITECTURE.md
+
+# Defensive globs for any future LOCAL-ONLY-marked files
+**/*.LOCAL-ONLY*
+**/*.private*
+**/*.secrets*
+
+# If anyone pulls fresh raw VPS env files into the audit, never commit them
+**/*.env
+**/*.env.local
+**/*.env.bak*
