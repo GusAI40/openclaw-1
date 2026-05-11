@@ -1,96 +1,229 @@
 {
-  "meta": {
-    "lastTouchedVersion": "{{OPENCLAW_IMAGE_VERSION}}",
-    "lastTouchedAt": "{{NOW_ISO8601}}",
-    "tenant_id": "{{TENANT_ID}}",
-    "tenant_name": "{{TENANT_NAME}}",
-    "owner_email": "{{OWNER_EMAIL}}",
-    "bootstrapped_by": "bootstrap-tenant.sh"
-  },
-  "gateway": {
-    "bind": "lan",
-    "port": 18789,
-    "token": "{{GATEWAY_TOKEN}}",
-    "allowInsecurePrivateWs": false
-  },
   "agents": {
     "defaults": {
-      "model": "claude-opus-4-7",
-      "effort": "high",
-      "permissions": {
-        "fileSystem": "workspace-only",
-        "network": "allow",
-        "bash": "allow"
+      "workspace": "/home/node/.openclaw/workspace",
+      "model": {
+        "primary": "deepseek/deepseek-v4-flash",
+        "fallbacks": [
+          "google/gemini-2.5-flash-lite",
+          "anthropic/claude-haiku-4.5",
+          "anthropic/claude-sonnet-4.6"
+        ]
       },
-      "systemPrompt": "You are Jarvis for {{TENANT_NAME}}. Owner of record: {{OWNER_EMAIL}}. You are the concierge and strategist for this tenant only — you have NO access to other tenants' data, kanban boards, or workspaces. Your responsibilities:\n\n1. Coordinate Hermes (CTO) and the 100-agent corp roster scoped to this tenant.\n2. Maintain hard isolation: never reference, query, or act upon another tenant's data. All Supabase queries must filter by tenant_id='{{TENANT_ID}}'. All LiveKit rooms must be prefixed with 'room-{{TENANT_ID}}'.\n3. Approval gates: any outbound email, SMS, or call requires explicit human approval from {{OWNER_EMAIL}}.\n4. Default to plan mode for any task that creates, modifies, or sends external artifacts.\n5. When uncertain about scope, escalate to the owner via the configured Telegram channel.\n\nYou represent {{TENANT_NAME}}. Speak in their voice, not Gus Sanchez's. Brand alignment overrides defaults."
+      "contextPruning": {
+        "mode": "cache-ttl",
+        "ttl": "1h"
+      },
+      "heartbeat": {
+        "every": "30m"
+      },
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "systemPromptOverride": "You are Jarvis for {{TENANT_NAME}}. You are not 'an AI assistant.' You are Jarvis, {{TENANT_NAME}}'s permanent digital concierge \u2014 half-human empathy, half-machine precision. One brain across every channel.\n\nOwner of record: {{OWNER_EMAIL}}. Tenant: {{TENANT_ID}}.\n\nReply with the precision of a butler. One-line answers when possible. Multi-paragraph only when explicitly asked. Refer to yourself as 'Jarvis.' Never 'Claude,' 'the AI,' or 'as a language model.'\n\nConfirm scope before destructive actions. Show drafts before sending. When uncertain, say so in one sentence and propose a verified next step.\n\nHard gates: Never send any outbound email without owner approval. Reference .env for secrets, never paste them in chat.\n\nClosing principle: You are the live execution layer for {{TENANT_NAME}}'s automation. Move with the precision of a butler and the breadth of an agency. Never break character.",
+      "contextInjection": "continuation-skip",
+      "bootstrapMaxChars": 32768,
+      "bootstrapTotalMaxChars": 80000
     }
+  },
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "token",
+      "token": "{{GATEWAY_TOKEN}}"
+    },
+    "trustedProxies": [
+      "173.245.48.0/20",
+      "103.21.244.0/22",
+      "103.22.200.0/22",
+      "103.31.4.0/22",
+      "141.101.64.0/18",
+      "108.162.192.0/18",
+      "190.93.240.0/20",
+      "188.114.96.0/20",
+      "197.234.240.0/22",
+      "198.41.128.0/17",
+      "162.158.0.0/15",
+      "104.16.0.0/13",
+      "104.24.0.0/14",
+      "172.64.0.0/13",
+      "131.0.72.0/22",
+      "172.19.0.0/16"
+    ],
+    "controlUi": {
+      "allowedOrigins": [
+        "https://openclaw.ubntag.com",
+        "http://localhost:18789",
+        "http://127.0.0.1:18789"
+      ]
+    }
+  },
+  "meta": {
+    "lastTouchedVersion": "{{OPENCLAW_IMAGE_VERSION}}",
+    "lastTouchedAt": "{{NOW_ISO8601}}"
   },
   "channels": {
     "telegram": {
-      "enabled": true,
-      "botTokenEnv": "TENANT_TELEGRAM_BOT_TOKEN",
-      "allowedUsersEnv": "TENANT_TELEGRAM_ALLOWED_USERS",
-      "homeChannelEnv": "TENANT_TELEGRAM_HOME_CHANNEL",
-      "tenantScope": "{{TENANT_ID}}"
+      "enabled": true
     },
     "discord": {
-      "enabled": false,
-      "note": "Disabled by default per tenant — enable via owner request"
-    },
-    "web": {
-      "enabled": true,
-      "publicUrl": "https://{{DOMAIN}}/hermes",
-      "corsAllow": ["https://{{DOMAIN}}"]
-    },
-    "voice": {
-      "enabled": true,
-      "provider": "livekit",
-      "roomPrefix": "room-{{TENANT_ID}}",
-      "note": "Per-tenant room namespacing prevents cross-tenant audio leakage"
+      "token": {
+        "source": "env",
+        "provider": "default",
+        "id": "DISCORD_BOT_TOKEN"
+      },
+      "enabled": false
     }
   },
   "plugins": {
-    "entries": [
-      { "name": "hermes-army", "path": "/home/node/.openclaw/workspace/.agents/skills/hermes-army", "enabled": true },
-      { "name": "corp-roster", "path": "/home/node/.openclaw/corp", "enabled": true }
-    ]
-  },
-  "mcp": {
-    "servers": [
-      {
-        "name": "supabase",
-        "command": "node",
-        "args": ["/home/node/.openclaw/mcp-servers/supabase/index.js"],
-        "env": { "SUPABASE_TENANT_FILTER": "{{TENANT_ID}}" },
+    "entries": {
+      "deepseek": {
         "enabled": true
       },
-      {
-        "name": "telnyx",
-        "command": "node",
-        "args": ["/home/node/.openclaw/mcp-servers/telnyx/index.js"],
-        "enabled": true,
-        "note": "Shared trunk — global concurrent-call semaphore enforced by Hermes"
+      "bonjour": {
+        "enabled": false
       },
-      {
-        "name": "livekit",
-        "command": "node",
-        "args": ["/home/node/.openclaw/mcp-servers/livekit/index.js"],
-        "env": { "LIVEKIT_ROOM_PREFIX": "room-{{TENANT_ID}}" },
+      "google": {
+        "enabled": true
+      },
+      "anthropic": {
+        "enabled": true
+      },
+      "tavily": {
+        "enabled": true,
+        "config": {
+          "webSearch": {
+            "apiKey": "{{REDACT_FILL_AT_DEPLOY}}"
+          }
+        }
+      },
+      "memory-core": {
+        "config": {
+          "dreaming": {
+            "enabled": true
+          }
+        },
+        "enabled": true
+      },
+      "browser": {
         "enabled": true
       }
-    ]
+    }
+  },
+  "mcp": {
+    "servers": {
+      "jarvis-vapi": {
+        "command": "node",
+        "args": [
+          "/home/node/.openclaw/jarvis-vapi/vapi-mcp-server.mjs"
+        ]
+      },
+      "github": {
+        "url": "https://api.githubcopilot.com/mcp/",
+        "transport": "streamable-http",
+        "headers": {
+          "Authorization": "{{REDACT_FILL_AT_DEPLOY}}"
+        }
+      },
+      "microsoft-graph": {
+        "command": "node",
+        "args": [
+          "/home/node/.openclaw/mcp-servers/microsoft-graph/src/index.mjs"
+        ],
+        "env": {
+          "MS_TENANT_ID": "54d81568-52a6-454f-8f81-7bb6896db20a",
+          "MS_CLIENT_ID": "fe090265-730a-4f1f-b04d-c1bd3c93a34b",
+          "MS_CLIENT_SECRET": "{{REDACT_FILL_AT_DEPLOY}}",
+          "MS_DEFAULT_USER": "gus@ubntag.com"
+        }
+      },
+      "supabase": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@supabase/mcp-server-supabase@latest"
+        ],
+        "env": {
+          "SUPABASE_ACCESS_TOKEN": "",
+          "SUPABASE_PROJECT_REF": "bjhjqegqfieyekbffgij"
+        }
+      },
+      "vercel": {
+        "url": "https://mcp.vercel.com/",
+        "transport": "streamable-http",
+        "headers": {
+          "Authorization": "{{REDACT_FILL_AT_DEPLOY}}"
+        }
+      },
+      "resend": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "resend-mcp"
+        ],
+        "env": {
+          "RESEND_API_KEY": "{{REDACT_FILL_AT_DEPLOY}}"
+        }
+      },
+      "tag-ai-functions": {
+        "command": "node",
+        "args": [
+          "/app/langfuse-proxy.mjs",
+          "node",
+          "/home/node/.openclaw/mcp-servers/tag-ai-functions/src/index.mjs"
+        ],
+        "env": {
+          "MICHELLE_CMA_URL": "http://172.19.0.1:8080",
+          "CMA_API_KEY": "{{REDACT_FILL_AT_DEPLOY}}"
+        }
+      },
+      "kie-ai": {
+        "command": "node",
+        "args": [
+          "/home/node/.openclaw/mcp-servers/kie-ai/src/index.mjs"
+        ],
+        "env": {
+          "KIE_API_KEY": "{{REDACT_FILL_AT_DEPLOY}}"
+        }
+      },
+      "langfuse": {
+        "command": "node",
+        "args": [
+          "/app/langfuse-mcp.mjs"
+        ],
+        "env": {
+          "LANGFUSE_SECRET_KEY": "{{REDACT_FILL_AT_DEPLOY}}",
+          "LANGFUSE_PUBLIC_KEY": "{{REDACT_FILL_AT_DEPLOY}}",
+          "LANGFUSE_BASE_URL": "https://us.cloud.langfuse.com"
+        }
+      },
+      "hindsight": {
+        "url": "http://localhost:8888/mcp/",
+        "transport": "streamable-http"
+      },
+      "n8n-mcp": {
+        "url": "https://tagaiai.app.n8n.cloud/mcp-server/http",
+        "transport": "streamable-http",
+        "headers": {
+          "Authorization": "{{REDACT_FILL_AT_DEPLOY}}"
+        }
+      },
+      "telnyx": {
+        "command": "node",
+        "args": [
+          "/home/node/.openclaw/mcp-servers/telnyx/node_modules/telnyx-mcp/index.js"
+        ],
+        "env": {
+          "TELNYX_API_KEY": "{{REDACT_FILL_AT_DEPLOY}}"
+        }
+      }
+    }
   },
   "tools": {
     "web": {
-      "enabled": true,
-      "provider": "tavily",
-      "tenantScope": "{{TENANT_ID}}"
+      "search": {
+        "provider": "tavily"
+      }
     }
-  },
-  "hardGates": {
-    "outboundEmail": { "requireHumanApproval": true, "approverEmail": "{{OWNER_EMAIL}}" },
-    "outboundSms": { "requireHumanApproval": true },
-    "outboundCall": { "requireHumanApproval": true },
-    "crossTenantAccess": { "blocked": true, "note": "Hermes spawn loop must reject any task whose tenant_id != '{{TENANT_ID}}'" }
   }
 }

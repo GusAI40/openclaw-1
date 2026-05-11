@@ -157,13 +157,10 @@ created_files+=("$TOKEN_FILE")
 # 4. Determine OPENCLAW_IMAGE_VERSION (schema-clobber prevention)
 # ============================================================================
 log "Reading runtime version from image ${OPENCLAW_IMAGE} (schema-clobber prevention)"
-if ! OPENCLAW_IMAGE_VERSION="$(docker run --rm --entrypoint=node "$OPENCLAW_IMAGE" \
-    -e 'console.log(require("/home/node/package.json").version)' 2>/dev/null)"; then
-    # Fallback path 1: cat package.json
-    if ! OPENCLAW_IMAGE_VERSION="$(docker run --rm --entrypoint=cat "$OPENCLAW_IMAGE" \
-        /home/node/package.json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])' 2>/dev/null)"; then
-        fail "Cannot determine version from image ${OPENCLAW_IMAGE}. Pin to a real version tag and try again."
-    fi
+# openclaw's package.json lives at /app/package.json inside the image (NOT /home/node/)
+if ! OPENCLAW_IMAGE_VERSION="$(docker run --rm --entrypoint=cat "$OPENCLAW_IMAGE" \
+    /app/package.json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])' 2>/dev/null)"; then
+    fail "Cannot determine version from image ${OPENCLAW_IMAGE}. Pin to a real version tag and try again."
 fi
 OPENCLAW_IMAGE_VERSION="$(echo "$OPENCLAW_IMAGE_VERSION" | tr -d '[:space:]')"
 log "Runtime version: ${OPENCLAW_IMAGE_VERSION} (will be baked into openclaw.json meta.lastTouchedVersion)"
