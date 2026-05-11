@@ -25,26 +25,34 @@ http://87.99.148.242 {
 }
 
 # Michelle FB Group Poster — webhook (mobile trigger endpoint)
-michelle-fb.ubntag.com {
-    tls internal
-    reverse_proxy localhost:8000
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "DENY"
-    }
-}
+
+# TODO 2026-05-11 (Task #12, audit): re-enable when /home/tagai/clients/michelle-fb/hetzner/
+#   is deployed. Compose has 3 services (fb-poster, fb-webhook on :8000, fb-dashboard on :8001).
+#   To restore: uncomment block below + run `docker compose up -d` in that dir.
+# michelle-fb.ubntag.com {
+#     tls internal
+#     reverse_proxy localhost:8000
+#     header {
+#         Strict-Transport-Security "max-age=31536000; includeSubDomains"
+#         X-Content-Type-Options "nosniff"
+#         X-Frame-Options "DENY"
+#     }
+# }
 
 # Michelle FB Group Poster — read-only dashboard PWA
-michelle-fb-status.ubntag.com {
-    tls internal
-    reverse_proxy localhost:8001
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "DENY"
-    }
-}
+
+# TODO 2026-05-11 (Task #12, audit): re-enable when /home/tagai/clients/michelle-fb/hetzner/
+#   is deployed. Compose has 3 services (fb-poster, fb-webhook on :8000, fb-dashboard on :8001).
+#   To restore: uncomment block below + run `docker compose up -d` in that dir.
+# michelle-fb-status.ubntag.com {
+#     tls internal
+#     reverse_proxy localhost:8001
+#     header {
+#         Strict-Transport-Security "max-age=31536000; includeSubDomains"
+#         X-Content-Type-Options "nosniff"
+#         X-Frame-Options "DENY"
+#     }
+# }
 
 # OpenClaw — TAG AI gateway (added 2026-04-25)
 openclaw.ubntag.com {
