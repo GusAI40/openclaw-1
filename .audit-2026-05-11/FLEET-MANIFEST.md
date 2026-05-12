@@ -87,6 +87,13 @@ Critical caveat: the age private key (decryption) lives at `/home/tagai/.opencla
 
 Estimated time per tenant after #3: **5–8 minutes** (most spent in BotFather + waiting for Vercel DNS propagation).
 
+## 2026-05-12 Updates — Julian operational + auth fix landed
+
+- **DeepSeek auth fix:** Julian's tenant was falling back to Gemini because `agents/main/agent/auth-profiles.json` was missing. Hot-fix applied (copied from Gus's). Permanent fix committed to `bootstrap-tenant.sh` step 8.5 (commit `2237db8b79`). Template files live at `/home/tagai/openclaw-bootstrap/_template/agents-main-agent/` on VPS (NOT in git — they hold raw LLM provider keys).
+- **Device-pair auto-approve cron:** every 30s, `/home/tagai/auto-approve-julian-devices.sh` sweeps `tenants/julian/.openclaw/devices/pending.json` and moves entries to `paired.json`. Removes browser-pairing friction for Julian. **Single-factor security** — anyone with the gateway token can pair within 30s. Fine for inner-circle; NOT acceptable for paying tenants. Toggle off for tenant #N (where N > 2 and external).
+- **All 3 of Julian's devices paired** (2× Win32 — Gus's incognito test browser; 1× MacIntel — Julian's actual browser). Both Gus + Julian can hit https://julian.ubntag.com/ via web UI.
+- **`controlUi.allowedOrigins` parameterized in bootstrap template** (commit `7c389ad085` covered this for julian.conf in Caddyfile; openclaw.json template patched in `36ec7a7d37` to use `{{DOMAIN}}` + `{{GATEWAY_PORT}}`).
+
 ## Future enhancements (not blocking, but track here)
 
 - **`{{REDACT_FILL_AT_DEPLOY}}` placeholder fill in bootstrap-tenant.sh:** the redacted openclaw.json.tpl leaves 11 plugin/MCP secret placeholders unfilled. Julian inherited working values because his template render happened before redaction. Tenant #3+ will need either a script enhancement (auto-fill from shared.env at render time) OR a manual post-bootstrap step.
@@ -94,6 +101,9 @@ Estimated time per tenant after #3: **5–8 minutes** (most spent in BotFather +
 - **Per-tenant Resend domain:** Same model as Telnyx — currently shared (or Gus's 1 domain). When a tenant needs their own sender reputation, provision a Resend domain + key, set `RESEND_API_KEY=` per-tenant.
 - **Weekly remote-branch prune** on `tagai-cloud-backups` (90-day retention).
 - **`list-tenants.sh` enhancement:** script exists but only reads from `/home/tagai/tenants/`. Cross-reference this manifest for human-readable display names and bot usernames.
+- **Shared-projects integration (rescue-websites + awesome-design-md):** plan documented in `integration-plans/REPO-INTEGRATION-PLAN.md`. Pending Gus's GitHub fork action, then 10-15 min execution in next session.
+- **Backup script needs `/home/tagai/openclaw-bootstrap/_template/agents-main-agent/`** included — those auth files are critical infra (without them, new tenants have no LLM access). Currently not in backup path.
+- **`auto-approve-{tenant}-devices.sh` only exists for julian.** When tenants #3+ are inner-circle, replicate. When external/paying, do NOT install (require manual device approval per browser).
 
 ## Out-of-band channels (not tenant-scoped)
 
