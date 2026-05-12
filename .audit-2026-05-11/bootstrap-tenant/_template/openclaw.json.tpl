@@ -52,9 +52,9 @@
     ],
     "controlUi": {
       "allowedOrigins": [
-        "https://openclaw.ubntag.com",
-        "http://localhost:18789",
-        "http://127.0.0.1:18789"
+        "https://{{DOMAIN}}",
+        "http://localhost:{{GATEWAY_PORT}}",
+        "http://127.0.0.1:{{GATEWAY_PORT}}"
       ]
     }
   },
