@@ -292,6 +292,26 @@ for skill in corp-dashboard multi-platform nano-spawner tenant-onboarder; do
 done
 
 # ============================================================================
+# 8.5 Seed agent auth-profiles.json + auth-state.json (LLM provider keys)
+#    Without these, the runtime cannot authenticate to DeepSeek/Anthropic/OpenAI
+#    etc. and falls back through the model chain forever.
+# ============================================================================
+log "Seeding agents/main/agent auth files (LLM provider credentials)"
+AGENTS_DST="${TENANT_CONFIG}/agents/main/agent"
+mkdir -p "$AGENTS_DST"
+for src_name in auth-profiles.json auth-state.json; do
+    src="${TEMPLATE_DIR}/agents-main-agent/${src_name}"
+    dst="${AGENTS_DST}/${src_name}"
+    if [[ ! -f "$src" ]]; then
+        log "  - WARNING: ${src} not found, tenant will fall back to Gemini until auth is configured manually"
+        continue
+    fi
+    cp "$src" "$dst"
+    chmod 600 "$dst"
+    created_files+=("$dst")
+done
+
+# ============================================================================
 # 9. Install Caddy site block
 # ============================================================================
 log "Installing Caddy site block: ${CADDY_TENANT_CONF}"
