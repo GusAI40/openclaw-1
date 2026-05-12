@@ -1,0 +1,19 @@
+
+# ============================================================================
+# 8.6 Shared projects bind-mount verification
+#    The compose template mounts /home/tagai/shared-projects -> /home/node/.openclaw/shared
+#    (read-write). No per-tenant symlinks required. This step just logs what
+#    shared resources the new tenant will see inside its container.
+# ============================================================================
+SHARED_HOST_DIR="/home/tagai/shared-projects"
+if [[ -d "$SHARED_HOST_DIR" ]]; then
+    log "Shared resources visible to this tenant at /home/node/.openclaw/shared/:"
+    for proj in "$SHARED_HOST_DIR"/*/; do
+        [[ -d "$proj" ]] || continue
+        log "  - $(basename "$proj")"
+    done
+else
+    log "  - NOTE: $SHARED_HOST_DIR does not exist yet on this host."
+    log "    Tenant will have an empty /home/node/.openclaw/shared/ until shared repos are cloned."
+fi
+

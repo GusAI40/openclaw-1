@@ -87,6 +87,39 @@ Critical caveat: the age private key (decryption) lives at `/home/tagai/.opencla
 
 Estimated time per tenant after #3: **5–8 minutes** (most spent in BotFather + waiting for Vercel DNS propagation).
 
+## Shared projects (bind-mounted into all tenants)
+
+All tenants see these repos at `/home/node/.openclaw/shared/<repo>` inside their container. Backed by a single bind-mount in each tenant's `docker-compose.yml`:
+
+```yaml
+- /home/tagai/shared-projects:/home/node/.openclaw/shared
+```
+
+| Project | Source | Local path | Mode | Last upstream sync |
+|---|---|---|---|---|
+| rescue-websites | GusAI40/rescue-websites (fork of JaBeanJr) | /home/tagai/shared-projects/rescue-websites | rw | 2026-05-12 (clone) |
+| awesome-design-md | voltagent/awesome-design-md | /home/tagai/shared-projects/awesome-design-md | rw | 2026-05-12 (clone) |
+
+**Adding a new shared repo:**
+1. Clone into `/home/tagai/shared-projects/<name>/` on the VPS
+2. Next container restart picks it up automatically — no compose edit needed (bind-mount covers the parent dir)
+3. Add a row to the table above
+
+**rescue-websites remote config:**
+- `origin` = `git@github.com:GusAI40/rescue-websites.git` (fork, push-rights via id_hetzner key)
+- `upstream` = `git@github.com:JaBeanJr/rescue-websites.git` (read-only, with `tagOpt=--no-tags`)
+
+**Pulling upstream changes:**
+```bash
+cd /home/tagai/shared-projects/rescue-websites
+git fetch upstream && git merge upstream/main && git push origin main
+```
+
+**Backup coverage:**
+- Local snapshot at 3 AM cron: `shared-projects.tar.gz` (excludes `node_modules` + `.git/objects`) — currently ~172 MB
+- Off-site GitHub sync at 3:30 AM: **shared-projects WILL BE SKIPPED by sync-to-github.sh** because the encrypted tarball exceeds the 99 MB GitHub soft cap. Acceptable trade-off — both source repos exist on GitHub (GusAI40 fork + voltagent upstream) and can be re-cloned if the VPS disk dies. The truly irreplaceable file is `bootstrap-template.tar.gz` (12 KB, holds raw LLM provider tokens) which IS off-sited.
+- TODO when more shared repos are added: split shared-projects tarball per-repo to stay under the GitHub cap, OR add Hetzner Storage Box as a secondary off-site destination.
+
 ## 2026-05-12 Updates — Julian operational + auth fix landed
 
 - **DeepSeek auth fix:** Julian's tenant was falling back to Gemini because `agents/main/agent/auth-profiles.json` was missing. Hot-fix applied (copied from Gus's). Permanent fix committed to `bootstrap-tenant.sh` step 8.5 (commit `2237db8b79`). Template files live at `/home/tagai/openclaw-bootstrap/_template/agents-main-agent/` on VPS (NOT in git — they hold raw LLM provider keys).

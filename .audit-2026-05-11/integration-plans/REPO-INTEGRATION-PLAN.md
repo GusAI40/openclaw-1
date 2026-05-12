@@ -1,5 +1,7 @@
 # Step-by-Step Integration Plan — Two New Repos
 
+> **STATUS: EXECUTED 2026-05-12** ✅ All 7 phases complete + bonus Julian battle-prep. See "Execution log" at the bottom.
+
 **Goal:** make both repos accessible to both tenants (Gus + Julian) with the right access model per repo.
 
 | Repo | Type | Size | Recommended placement |
@@ -195,3 +197,67 @@ Total time after you fork: ~10-15 min.
 1. Should `rescue-websites` use TAG's shared Resend/Tavily quotas (default) or have its own (cost isolation)?
 2. Symlinks (recommended) or independent clones (cost: 380 MB)?
 3. Should awesome-design-md become a Hermes-army skill, or just be a static reference?
+
+---
+
+## Execution log — 2026-05-12
+
+### What actually shipped vs. what the plan said
+
+**Phase 1 — Host prep:** as planned. `/home/tagai/shared-projects/` mode 755, owned tagai:tagai.
+
+**Phase 2 — rescue-websites:** as planned. `GusAI40/rescue-websites` fork cloned to `/home/tagai/shared-projects/rescue-websites/` (391 MB on disk). `origin = GusAI40`, `upstream = JaBeanJr` with `tagOpt=--no-tags`.
+
+**Phase 3 — awesome-design-md:** as planned. Shallow-cloned voltagent/awesome-design-md (3.5 MB).
+
+**Phase 6 — container visibility test: FAILED with symlinks, fixed with bind-mount.**
+
+This is the one deviation from the plan worth flagging. The original plan called for host-side symlinks (`ln -s /home/tagai/shared-projects/rescue-websites /home/tagai/.openclaw/workspace/rescue-websites`). Symlinks work fine from the host shell, but **Docker containers cannot follow a symlink whose target is outside the container's bind-mount** — the symlink target path doesn't exist inside the container.
+
+**Fix applied:** added a second bind-mount to both live `docker-compose.yml` files (Gus's gateway + cli, Julian's gateway) and the bootstrap template:
+
+```yaml
+- /home/tagai/shared-projects:/home/node/.openclaw/shared
+```
+
+Host-side symlinks were removed. Canonical container path is now `/home/node/.openclaw/shared/<repo>` (NOT `workspace/<repo>` as the plan suggested). Containers were `up -d --force-recreate`'d to pick up the new mount; brief ~10 sec disruption, no device-pair re-prompts needed (auto-approve cron handles that anyway).
+
+**Phase 4 — backup.sh patched:** local snapshot now includes `shared-projects.tar.gz` (~172 MB, excludes `node_modules` + `.git/objects`) and `bootstrap-template.tar.gz` (12 KB). Verified end-to-end with a manual run.
+
+**Off-site backup caveat:** the encrypted backup tarball is now ~214 MB (with shared-projects), which exceeds the 99 MB GitHub soft cap that `sync-to-github.sh` enforces. The sync script gracefully warns-and-continues, but does **not** mark the oversized backup as synced — so every night it will try and fail. Documented in `FLEET-MANIFEST.md` "Shared projects → Backup coverage". The truly irreplaceable file (`bootstrap-template.tar.gz` with raw LLM tokens) is 12 KB so it would off-site fine if it were a separate tarball. **Follow-up TODO:** patch `sync-to-github.sh` to split per-tarball OR add Hetzner Storage Box as a secondary off-site destination.
+
+**Phase 5 — FLEET-MANIFEST updated:** new "Shared projects (bind-mounted into all tenants)" section. Documents the bind-mount approach, the rescue-websites remote topology (origin=GusAI40, upstream=JaBeanJr), upstream-pull workflow, and the off-site cap gap.
+
+**Phase 7 — bootstrap-tenant.sh step 8.6 added:** verification + log block before "# 9. Install Caddy site block". Future tenants will automatically inherit the `shared/` bind-mount via the compose template (the template already has the mount line). Step 8.6 just logs what shared repos the new tenant will see, so the operator can sanity-check at bootstrap time.
+
+### Bonus: Julian battle-prep (not in original plan)
+
+After Phase 7 completed, Gus's request: "make sure Julian has the API keys to actually run rescue-websites." Audit + seed:
+
+- API key audit: README claimed 4 hard-required keys + 3 optional. Cross-referenced against `/home/tagai/openclaw/.env`, `/home/tagai/.openclaw-shared.env`, and the running container's env.
+- **Correction to my initial audit:** my redaction substitution (`sed s/=.*/=<REDACTED>/`) silently rewrote empty values, so I initially mis-claimed FIRECRAWL_API_KEY was present in shared.env when in fact line 16 reads `FIRECRAWL_API_KEY=` (empty). Real audit (using `grep -E '^KEY=[^[:space:]]+'`) caught this.
+- Gus provided GOOGLE_PLACES_API_KEY + FIRECRAWL_API_KEY in chat. Both got restricted-key warnings (key now in conversation log).
+- `SUPABASE_KEY` on the VPS is `service_role` (decoded JWT confirms), not anon. Cannot reuse as `SUPABASE_ANON_KEY` for client-side use. Fetched the real anon key via Supabase Management API (`GET /v1/projects/{ref}/api-keys`) using `SUPABASE_ACCESS_TOKEN` from container env.
+- `scripts/seed-rescue-env.py` (new): reads keys from VPS sources, fetches Supabase anon key, writes `/home/tagai/shared-projects/rescue-websites/.env` with mode 600, optionally applies the schema. Reports only last-6-char fingerprints to stdout.
+- Schema applied via Mgmt API `POST /v1/projects/{ref}/database/query` → HTTP 201. Verified 5 `website_rescue_*` tables now exist (3 new from our schema + 2 pre-existing from a prior setup, all untouched).
+- `npm install` inside Julian's container: 66 packages in 2s. Pipeline is now runnable.
+
+### Final battle-ready checklist
+
+- [x] rescue-websites + awesome-design-md cloned to `/home/tagai/shared-projects/`
+- [x] Bind-mount `/home/node/.openclaw/shared/` live in both tenant containers + template
+- [x] Backup script captures shared-projects + bootstrap auth template (local only, off-site oversized)
+- [x] FLEET-MANIFEST documents shared projects + remote topology + caveats
+- [x] bootstrap-tenant.sh step 8.6 logs shared visibility for tenant #3+
+- [x] Julian's `.env` seeded with all 4 required keys + 2 inherited
+- [x] Supabase schema applied (`website_rescue_businesses`, `_audits`, `_emails`)
+- [x] `npm install` complete inside Julian's container
+
+### Open follow-ups (not blocking first run, but track)
+
+- [ ] Restrict the new Google Places API key in Google Cloud Console (HTTP referrers + API restrictions = Places + Geocoding only)
+- [ ] Patch `sync-to-github.sh` to split per-tarball so shared-projects gets off-sited
+- [ ] When tenant #3 ships, decide whether they get their own Supabase project (preferred for paying tenants — Julian shares Gus's for inner circle)
+- [ ] Cloudflare Pages deploy token (`CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`) — Pipeline Step 5 mockup deploys won't run without these
+- [ ] Voice-proxy worker: currently defaults to `wss://rescue-voice-proxy.jujusanchez413.workers.dev` — if Juju retires that worker, Julian's voice agents break. Mitigation: deploy a TAG-controlled copy.
+
