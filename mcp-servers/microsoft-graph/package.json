@@ -1,0 +1,23 @@
+{
+  "name": "@tag/mcp-microsoft-graph",
+  "version": "0.1.0",
+  "description": "Self-contained MCP server exposing Microsoft Graph (mail, calendar, OneDrive) as tools for OpenClaw agents.",
+  "type": "module",
+  "bin": {
+    "mcp-microsoft-graph": "src/index.mjs"
+  },
+  "scripts": {
+    "start": "node src/index.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "@azure/identity": "^4.13.1",
+    "zod": "^3.25.0"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

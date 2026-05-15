@@ -160,3 +160,18 @@ extensions/**/.openclaw-runtime-deps-stamp.json
 # Windows artifacts
 desktop.ini
 **/desktop.ini
+
+# === TAG reconciliation 2026-05-15 — junk + secret-bearing scratch ===
+# 66MB website-audit test dump — never commit
+.test_audit_openclaw/
+.cinematic-pilot-edits/
+# Throwaway debug iterations (leak Telegram bot tokens)
+_tagai/diag-telegram*.sh
+_tagai/maya-human-sim.sh
+# Secret-bearing ops scratch — stays on host, never in git.
+# Sanitized env-based versions can be added later if needed.
+_tagai/resend.json
+_tagai/supabase-snippet.json
+_tagai/*-snippet.json
+_tagai/webhook-handler-current.mjs
+_tagai/openclaw-healthcheck.sh
