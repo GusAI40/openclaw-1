@@ -190,14 +190,29 @@ Two cron jobs run on the VPS:
   - Pushes as an orphan branch to `GusAI40/tagai-cloud-backups` (private GitHub repo)
   - The `age` private key at `~/.openclaw/backups/.age-key.txt` (mode 400) **MUST** be copied to 1Password separately, or all backups are unrecoverable
 
-**Known gaps (discovered 2026-05-22 during a manual run):**
+**Fixed 2026-05-22 evening** — historical context kept here because the fix matters more than once:
 
-1. **The backup script does NOT include per-tenant config dirs** (`/home/tagai/tenants/<tenant>/.openclaw/`) or the Gus runtime config (`~/.openclaw/openclaw.json`). It covers agent memory and shared projects but not runtime state. If a tenant's `openclaw.json`, `auth-state.json`, or sessions database is changed (as happens during ops), those changes are not in the off-site backup. Mitigation today: in-place `.bak-<timestamp>` files for any manual change. Real fix: extend `backup.sh` to tar `tenants/*/.openclaw/` (excluding session blobs over a size threshold) and `~/.openclaw/openclaw.json`.
+The original backup pipeline had two compounding bugs that surfaced on 2026-05-22:
 
-2. **The off-site sync is silently failing.** The `shared-projects.tar.gz` is ~2.9 GB. After age encryption it's still ~2.9 GB. GitHub's per-file soft cap is ~99 MB without git-lfs. The sync script detects "exceeds 99MB soft cap" and **skips the file entirely**, then logs "Sync complete" — so the cron job shows success but nothing actually ships. As of 2026-05-22 the last backup that was actually pushed off-box was **2026-05-19**; three nights of "successful" runs have shipped zero bytes. Three fixes worth considering, in order of effort:
-   - **Quickest:** exclude `shared-projects/` from the main backup tier (back it up separately via S3 / Hetzner Storage Box). The agent-memory + tenant-config tier stays small.
-   - **Cleanest:** add git-lfs to the `tagai-cloud-backups` repo and bump the `sync-to-github.sh` size threshold.
-   - **Most resilient:** stop using GitHub for backup blobs and switch to S3-compatible object storage (Hetzner Storage Box ≈ €3/month, no per-file cap).
+1. **Per-tenant runtime configs were not captured.** Daily backup tar'd `hindsight/`, `shared-projects/`, `bootstrap-template/`, and `memory.sqlite` — but NOT `~/.openclaw/openclaw.json` (Gus's runtime config) or any `/home/tagai/tenants/<tenant>/.openclaw/` content. Hot-fixes to a tenant's `openclaw.json`, `auth-state.json`, or `sessions.json` lived only on the VPS disk + their in-place `.bak-<ts>` siblings.
+
+2. **The off-site GitHub sync was silently failing.** `shared-projects.tar.gz` was 2.9 GB and GitHub has a ~99 MB per-file soft cap. The sync script detected "exceeds cap" and silently skipped each backup while logging "Sync complete". Last actually-pushed backup was 2026-05-19; nights 05-20, 05-21, 05-22-03:00 shipped zero bytes but cron showed success.
+
+**The fix that's now live:**
+
+- New `backup.sh` (canonical at `_tagai/scripts/backup.sh`, deployed to `/home/tagai/.openclaw/backups/backup.sh`):
+  - REMOVED the 2.9 GB `shared-projects.tar.gz` tier. Those repos live in their own GitHub projects; the code is recoverable; per-tenant `.env` files are reproducible from `~/.openclaw-shared.env` + `bootstrap-tenant.sh`.
+  - ADDED `runtime-configs.tar.gz` (~1.8 MB): `openclaw.json` + `auth-profiles.json` + `auth-state.json` + `models.json` + `sessions.json` + `HEARTBEAT.md` + `devices/` + `identity/` + per-tenant `docker-compose.yml` + per-tenant `.env` + the shared envs (`.openclaw-shared.env`, `.tagai-env`). Captured for Gus AND every `/home/tagai/tenants/*/`.
+- New `sync-to-github.sh` (canonical at `_tagai/scripts/sync-to-github.sh`):
+  - When any backup exceeds the size cap, the script exits **non-zero (rc=4)** instead of silently logging success. Cron records the run as failed.
+  - Tracks per-run skipped-vs-pushed counts in the final summary line.
+- Verified by manual run 2026-05-22 22:42 UTC: `backup-20260522-224145` (82 MB local, 49.5 MB encrypted) pushed successfully to `GusAI40/tagai-cloud-backups` as orphan branch `backup-20260522-224145`, commit `64f5311539ca7c58d0d40c1d61a6d945b661d0c1`. The three orphaned 2.9 GB backups (05-20, 05-21, 05-22-030001) were deleted locally because they contained no irreplaceable content.
+
+**What's still on the wishlist (not blockers):**
+
+- Migrate backup blobs from GitHub orphan branches to S3-compatible object storage (Hetzner Storage Box ≈ €3/month, no per-file cap) so the size guard becomes irrelevant.
+- Add `~/.openclaw/openclaw.json.bak.*` retention pruning — backup files have started accumulating on disk.
+- Add a "test restore" cron that monthly fetches one random encrypted backup, decrypts to /tmp, verifies sha256, then deletes. Otherwise we won't know recovery is broken until we need it.
 
 ## 5. The current fleet
 
@@ -249,7 +264,7 @@ docker inspect openclaw-julian-gateway -f '{{.State.Health.Status}}'
 | Restart a tenant (RIGHT way) | `cd /home/tagai/tenants/<tenant>/openclaw && docker compose up -d` |
 | Restart a tenant (WRONG way — env_file won't reload) | ~~`docker restart openclaw-<tenant>-gateway`~~ |
 | Inspect Telegram bot | `curl https://api.telegram.org/bot<TOKEN>/getMe` |
-| Trigger backup now | `~/.openclaw/backups/backup.sh && ~/.openclaw/backups/sync-to-github.sh` |
+| Trigger backup now | `~/.openclaw/backups/backup.sh && ~/.openclaw/backups/sync-to-github.sh` (canonical sources: `_tagai/scripts/backup.sh` and `_tagai/scripts/sync-to-github.sh`) |
 | Add a new tenant | `~/openclaw-bootstrap/bootstrap-tenant.sh <id> <subdomain.ubntag.com> <email>` |
 | Tear down a tenant (archives, never deletes) | `~/openclaw-bootstrap/teardown-tenant.sh <id>` |
 | List all tenants | `~/openclaw-bootstrap/list-tenants.sh` |
@@ -281,7 +296,7 @@ These are the recurring "I burned myself on this" lessons. Each one cost at leas
 6. **DNS for `ubntag.com` lives on Vercel, not Cloudflare.** Past confusion when adding subdomains. New tenant subdomains must be added in Vercel's DNS panel first.
 7. **Symlinks across Docker bind-mounts don't work.** If you symlink a host file into a tenant volume, the container can't follow it. Use bind-mounts directly. (Incident: 2026-05-12 shared-projects)
 8. **LLM auth lives in `agents/main/agent/auth-profiles.json`**, NOT in `DEEPSEEK_API_KEY` env var. The env var is a red herring. If the file is missing, the runtime fails over `deepseek → gemini` forever silently. Bootstrap step 8.5 seeds it.
-9. **The off-site backup script does not include per-tenant runtime configs.** Documented 2026-05-22. If you change `openclaw.json` for a tenant via a hot-fix, that change is not in the offsite backup. Until the script is extended, manually `tar` + `age` the tenant config dir after a hot-fix.
+9. **The off-site backup pipeline has lied about success before.** Until 2026-05-22 it silently skipped any file over GitHub's 99 MB cap while logging "Sync complete" — three nights shipped zero bytes before anyone noticed. The current script (`_tagai/scripts/sync-to-github.sh`) exits non-zero when any backup is skipped, so the cron job will be recorded as failed. When you next add a large new data tier to `backup.sh`, double-check the resulting tarball stays under the cap OR move that tier to a separate transport (S3 / Hetzner Storage Box). Trust the cron's exit code, not its log message.
 10. **Stuck sessions are heritable across restarts.** A session that hangs in `state=processing` will resume on next boot and hang again. Archive the session files + remove the `sessions.json` pointer before restart, or the loop continues. (Incident: 2026-05-22)
 11. **The heartbeat cron can starve channel responses.** `agents.defaults.heartbeat` puts a synthetic prompt into `agent:main:main` periodically. If the heartbeat takes longer than the watchdog timeout (5 min), the container restarts and Telegram messages queue without ever being processed. Keep `HEARTBEAT.md` empty unless you want active proactive work, and consider longer intervals. (Incident: 2026-05-22)
 
@@ -440,8 +455,10 @@ A 10-tenant fleet on one CPX21 runs ~$100/month all-in including API usage at mo
 | `_tagai/CHANNEL_STRATEGY.md` | Which channels are priority + why |
 | `_tagai/CAPABILITIES.md` | Skill / tool inventory |
 | `_tagai/HEALTH.md` | Health endpoints + status checks |
+| `_tagai/scripts/backup.sh` | Canonical source for the VPS daily-backup cron (the fixed one) |
+| `_tagai/scripts/sync-to-github.sh` | Canonical source for the VPS off-site-sync cron (fails loud, exits non-zero on skip) |
 | `~/openclaw-bootstrap/README.md` (on the VPS) | The bootstrap script's contract + assumptions |
-| `~/openclaw-bootstrap/HERMES-SWARM-EXTRACTION.md` | The agent-swarm primitive (Hermes pattern) |
+| `~/openclaw-bootstrap/HERMES-SWARM-EXTRACTION.md` | The full Hermes 3-layer swarm primitive — read alongside §13 below |
 | `AGENTS.md` (repo root, upstream) | Upstream OpenClaw contributor rules |
 | `CLAUDE.md` (repo root) | Upstream + TAG combined instructions |
 
@@ -454,6 +471,72 @@ For machine-readable infra detail (server specs, network layout, DNS records, de
 
 These live outside this repo because they describe ALL TAG infrastructure, not just Jarvis AI.
 
+## 13. Hermes swarm (designed, partly built, not fully deployed)
+
+Hermes is the **agent-swarm primitive** that gives each tenant a "CTO + workforce" inside their own container. The canonical doc is `~/openclaw-bootstrap/HERMES-SWARM-EXTRACTION.md` on the VPS. This section is the elevator pitch; read the source doc for the wiring.
+
+### What Hermes is (the design)
+
+**Three concentric layers, one per tenant:**
+
+| Layer | What | Where |
+|---|---|---|
+| 1. Runtime | Python 3.11 binary (`~/.local/bin/hermes`) with `state.db` (~19 MB), `kanban.db` (~100 KB), `config.yaml`, `SOUL.md` | Inside the per-tenant container at `~/.hermes/` |
+| 2. Public chat proxy | Node shim on port 4000; fronts the floating-button chat widget on `<tenant>.ubntag.com/api/hermes/chat` | Per-tenant, Caddy-routed |
+| 3. Skill bundle `hermes-army` | Markdown skills the runtime invokes | `workspace/.agents/skills/hermes-army/` |
+
+**The IPC is kanban-as-message-bus.** Workers don't have a direct call interface. They poll a SQLite kanban board for tasks in `BACKLOG`, claim them, do work, write results back as task comments and flip status to `DONE`. The whole flow is replayable from kanban history, tenant-scoped by `tenant_id`, and the bottom of every skill carries a `TenantViolation` raise if it sees a foreign tenant_id in its output.
+
+**The 100-agent corp** is 10 dept leads + 90 worker skill-tags. Every tenant gets the same shape, prefixed with their tenant-id:
+
+| Dept lead | Skills |
+|---|---|
+| `<tid>-exec-lead` | research, decision-support, risk-mgmt, documentation |
+| `<tid>-eng-lead` | software-dev, devops, testing |
+| `<tid>-ai-lead` | mlops, prompts, data-science, autonomous-ai-agents |
+| `<tid>-sales-lead` | sales-outreach, content, seo, social-media, analytics |
+| `<tid>-cs-lead` | onboarding, support, account-mgmt, training, escalation |
+| `<tid>-ops-lead` | sysadmin, networking, security, monitoring, backup |
+| `<tid>-creative-lead` | video-gen (Seedance), image-gen, copywriting, brand-mgmt |
+| `<tid>-data-lead` | data-engineering, analytics, bi-reporting, web-scraping |
+| `<tid>-legal-lead` | contract-review, compliance, privacy, e-rate, ip-trademark |
+| `<tid>-studio-lead` | cinematography, voiceover, music, post-production |
+
+The 90 workers are NOT pre-spawned. They're skill TAGs in `corp-agent-roster.csv`. When a dept lead dispatches a task with `skill_tag=software-dev`, the `nano-spawner` skill matches it against the 6 software-dev workers under `eng-lead` (CORP-011..016), least-recently-used, spawns one, hands it the task.
+
+### The 4 shipped `hermes-army` skills
+
+In `/home/tagai/openclaw-bootstrap/_template/hermes-army/`:
+
+| Skill | Purpose |
+|---|---|
+| `nano-spawner.md` | The swarm's `Promise.all()`. Every fan-out (analyze 100 leads, render 30 videos, send 1000 emails) goes through this single API. Where the `TenantViolation` gate lives. |
+| `tenant-onboarder.md` | One-shot bring-up of the 10 dept leads + 90 worker bindings for a fresh tenant |
+| `multi-platform.md` | Routes incoming tasks across Telegram / web / voice / CLI |
+| `corp-dashboard.md` | Emits pulse events to a Supabase table for the `ubntag.com/ai-corp` dashboard |
+
+### What's actually running vs. designed today
+
+| Component | Status |
+|---|---|
+| Layer 1 — Hermes runtime in container | **Designed, not verified running** on any production tenant. Binary install path is `~/.local/bin/hermes` but I have not confirmed it's there on Julian's container. |
+| Layer 2 — chat proxy on port 4000 | **NOT live.** The floating-button widget on `*.ubntag.com` calls a dead endpoint. The source doc itself says "the service isn't bound." |
+| Layer 3 — `hermes-army` skills | Template exists. **NOT installed on Julian's tenant** — verified 2026-05-22: `ls /home/tagai/tenants/julian/.openclaw/hermes-army/` and `…/workspace/hermes-army/` both return "No such file or directory". `bootstrap-tenant.sh` is supposed to copy them; either it isn't, or Julian's bootstrap predates the skill-copy step. |
+| 100-agent CSV rosters | Generated per-tenant by bootstrap — verified at `/home/tagai/tenants/julian/.openclaw/corp/` (board, c-suite, agent-roster, b2b-sales) |
+| Pulse events → `ubntag.com/ai-corp` dashboard | **Designed, not live.** Dashboard route doesn't exist yet. Per-tenant data feed is produced by bootstrap but no consumer. |
+| Per-tenant Supabase RLS by tenant_id | **Designed.** Bootstrap appends `SUPABASE_TENANT_FILTER=<tid>` to each tenant's env; verified that Julian's RLS policy is in place per the 2026-05-12 v3 session log. |
+
+### Why Hermes is on the wishlist, not the critical path
+
+OpenClaw alone (gateway + channels + LLM tool-use loop) is enough to give a tenant a working assistant. We can ship value to Julian without Hermes. Hermes is the *scale-up* primitive — when a single agent's loop isn't enough and you need 50 things happening in parallel (mass outreach, mass video render, mass data scrape), the kanban-driven fan-out becomes essential. Until a tenant hits that volume, the unhydrated `hermes-army` skills sit harmlessly in the template directory.
+
+### Open Hermes architecture questions (from `HERMES-SWARM-EXTRACTION.md` §8)
+
+1. **Single Telegram bot vs per-tenant bot?** Current: per-tenant (each tenant brings their own BotFather token). Alternative: one bot, allowlist routing. Per-tenant is safer; one-bot is cheaper.
+2. **kanban.db consolidation for cross-tenant analytics?** Currently per-container. A nightly export to a read-only warehouse would enable platform-operator analytics without breaking isolation.
+3. **Worker pool sharing across tenants?** Theoretically possible if you trust the `TenantViolation` gate. NOT recommended until that gate is independently audited.
+4. **LiveKit room concurrency cap?** Shared LiveKit project may have a project-level cap. Hermes would need a global semaphore (Redis counter on host) before voice-mcp allocates a room.
+
 ---
 
-**Last updated:** 2026-05-22 — after the Julian-Telegram heartbeat-starvation fix. Footgun #11 added.
+**Last updated:** 2026-05-22 evening — added §13 Hermes section (you asked), refreshed §4f to reflect the new backup pipeline that actually works (vs. the broken state it described earlier today), updated footgun #9, added scripts/backup.sh + scripts/sync-to-github.sh to the references in §7b and §11.
