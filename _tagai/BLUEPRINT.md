@@ -190,27 +190,29 @@ Two cron jobs run on the VPS:
   - Pushes as an orphan branch to `GusAI40/tagai-cloud-backups` (private GitHub repo)
   - The `age` private key at `~/.openclaw/backups/.age-key.txt` (mode 400) **MUST** be copied to 1Password separately, or all backups are unrecoverable
 
-**Fixed 2026-05-22 evening** — historical context kept here because the fix matters more than once:
+**Fixed 2026-05-22 evening** — and the forensic story matters because my first analysis was wrong about the failure mode. The corrected version:
 
-The original backup pipeline had two compounding bugs that surfaced on 2026-05-22:
+The pipeline had two real bugs:
 
 1. **Per-tenant runtime configs were not captured.** Daily backup tar'd `hindsight/`, `shared-projects/`, `bootstrap-template/`, and `memory.sqlite` — but NOT `~/.openclaw/openclaw.json` (Gus's runtime config) or any `/home/tagai/tenants/<tenant>/.openclaw/` content. Hot-fixes to a tenant's `openclaw.json`, `auth-state.json`, or `sessions.json` lived only on the VPS disk + their in-place `.bak-<ts>` siblings.
 
-2. **The off-site GitHub sync was silently failing.** `shared-projects.tar.gz` was 2.9 GB and GitHub has a ~99 MB per-file soft cap. The sync script detected "exceeds cap" and silently skipped each backup while logging "Sync complete". Last actually-pushed backup was 2026-05-19; nights 05-20, 05-21, 05-22-03:00 shipped zero bytes but cron showed success.
+2. **The off-site sync had been failing for 3 nights with `git push` timeouts.** The cron uses `sync-to-github-split.sh` (a smarter script written in an earlier session that splits encrypted blobs into 90 MB chunks). The split logic worked — each chunk was well under 90 MB. The failure was downstream: `git push origin backup-... ` with 32 × 90 MB chunks repeatedly timed out (`Connection to github.com closed by remote host`). The script's ERR trap caught the failure, logged `push failed for backup-...`, exited non-zero. So cron RECORDED the failure each night — it just wasn't being watched. (Note: an earlier draft of this section incorrectly attributed the failure to silent skips in the plain `sync-to-github.sh` — that script wasn't what the cron was running.)
 
 **The fix that's now live:**
 
 - New `backup.sh` (canonical at `_tagai/scripts/backup.sh`, deployed to `/home/tagai/.openclaw/backups/backup.sh`):
   - REMOVED the 2.9 GB `shared-projects.tar.gz` tier. Those repos live in their own GitHub projects; the code is recoverable; per-tenant `.env` files are reproducible from `~/.openclaw-shared.env` + `bootstrap-tenant.sh`.
-  - ADDED `runtime-configs.tar.gz` (~1.8 MB): `openclaw.json` + `auth-profiles.json` + `auth-state.json` + `models.json` + `sessions.json` + `HEARTBEAT.md` + `devices/` + `identity/` + per-tenant `docker-compose.yml` + per-tenant `.env` + the shared envs (`.openclaw-shared.env`, `.tagai-env`). Captured for Gus AND every `/home/tagai/tenants/*/`.
-- New `sync-to-github.sh` (canonical at `_tagai/scripts/sync-to-github.sh`):
-  - When any backup exceeds the size cap, the script exits **non-zero (rc=4)** instead of silently logging success. Cron records the run as failed.
-  - Tracks per-run skipped-vs-pushed counts in the final summary line.
+  - ADDED `runtime-configs.tar.gz` (~1.8 MB): `openclaw.json` + `auth-profiles.json` + `auth-state.json` + `models.json` + `sessions.json` + `HEARTBEAT.md` + `devices/` + `identity/` + per-tenant `docker-compose.yml` + per-tenant `.env` + the shared envs. Captured for Gus AND every `/home/tagai/tenants/*/`.
+  - Total backup tier now ~82 MB (was ~3 GB). Single chunk, no push timeout risk.
+- `sync-to-github-split.sh` (canonical now also committed at `_tagai/scripts/sync-to-github-split.sh` — was never in the repo before today):
+  - Splits any encrypted blob into 90 MB chunks; handles arbitrary sizes.
+  - Fails non-zero on push errors via the existing ERR trap.
 - Verified by manual run 2026-05-22 22:42 UTC: `backup-20260522-224145` (82 MB local, 49.5 MB encrypted) pushed successfully to `GusAI40/tagai-cloud-backups` as orphan branch `backup-20260522-224145`, commit `64f5311539ca7c58d0d40c1d61a6d945b661d0c1`. The three orphaned 2.9 GB backups (05-20, 05-21, 05-22-030001) were deleted locally because they contained no irreplaceable content.
 
 **What's still on the wishlist (not blockers):**
 
-- Migrate backup blobs from GitHub orphan branches to S3-compatible object storage (Hetzner Storage Box ≈ €3/month, no per-file cap) so the size guard becomes irrelevant.
+- **Cron-failure alerting.** The cron was already failing loudly in its log — but no one was watching the log. Add a Telegram-or-email notification when `sync-to-github-split.sh` exits non-zero. Otherwise the loud failure becomes a silent one to humans.
+- Migrate backup blobs from GitHub orphan branches to S3-compatible object storage (Hetzner Storage Box ≈ €3/month, no per-file cap) so the chunking logic becomes optional polish rather than a load-bearing dependency.
 - Add `~/.openclaw/openclaw.json.bak.*` retention pruning — backup files have started accumulating on disk.
 - Add a "test restore" cron that monthly fetches one random encrypted backup, decrypts to /tmp, verifies sha256, then deletes. Otherwise we won't know recovery is broken until we need it.
 
@@ -455,8 +457,8 @@ A 10-tenant fleet on one CPX21 runs ~$100/month all-in including API usage at mo
 | `_tagai/CHANNEL_STRATEGY.md` | Which channels are priority + why |
 | `_tagai/CAPABILITIES.md` | Skill / tool inventory |
 | `_tagai/HEALTH.md` | Health endpoints + status checks |
-| `_tagai/scripts/backup.sh` | Canonical source for the VPS daily-backup cron (the fixed one) |
-| `_tagai/scripts/sync-to-github.sh` | Canonical source for the VPS off-site-sync cron (fails loud, exits non-zero on skip) |
+| `_tagai/scripts/backup.sh` | Canonical source for the VPS daily-backup cron (drops shared-projects, adds runtime-configs) |
+| `_tagai/scripts/sync-to-github-split.sh` | Canonical source for the VPS off-site-sync cron — splits encrypted blobs into 90 MB chunks, fails loud on push errors |
 | `~/openclaw-bootstrap/README.md` (on the VPS) | The bootstrap script's contract + assumptions |
 | `~/openclaw-bootstrap/HERMES-SWARM-EXTRACTION.md` | The full Hermes 3-layer swarm primitive — read alongside §13 below |
 | `AGENTS.md` (repo root, upstream) | Upstream OpenClaw contributor rules |
@@ -539,4 +541,4 @@ OpenClaw alone (gateway + channels + LLM tool-use loop) is enough to give a tena
 
 ---
 
-**Last updated:** 2026-05-22 evening — added §13 Hermes section (you asked), refreshed §4f to reflect the new backup pipeline that actually works (vs. the broken state it described earlier today), updated footgun #9, added scripts/backup.sh + scripts/sync-to-github.sh to the references in §7b and §11.
+**Last updated:** 2026-05-22 late evening — guru-engineer freshness pass: confirmed Julian's Telegram round-trip works (11+ successful sendMessage post-fix); patched Julian's fallback model IDs `claude-haiku-4.5` → `claude-haiku-4-5` and `claude-sonnet-4.6` → `claude-sonnet-4-6`; corrected §4f forensic story (cron uses `sync-to-github-split.sh`, push timeout NOT silent skip); committed the previously-missing canonical `_tagai/scripts/sync-to-github-split.sh`; dropped redundant plain `sync-to-github.sh`; added §13 Hermes section.

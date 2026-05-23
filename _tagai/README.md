@@ -66,7 +66,7 @@ The repo root `CLAUDE.md` is upstream's. Our Claude instructions live at `_tagai
 | File | Purpose |
 |------|---------|
 | `scripts/backup.sh` | Canonical source for `/home/tagai/.openclaw/backups/backup.sh` on the VPS. Daily agent-memory + runtime-config snapshot. Runs at 03:00 UTC via cron. |
-| `scripts/sync-to-github.sh` | Canonical source for the cron job that age-encrypts + pushes each backup to `GusAI40/tagai-cloud-backups` as an orphan branch. Runs at 03:30 UTC. Fails loudly if any backup exceeds the GitHub 99 MB cap. |
+| `scripts/sync-to-github-split.sh` | Canonical source for `/home/tagai/.openclaw/backups/sync-to-github-split.sh` — THE script the cron actually runs. Age-encrypts each backup, splits into 90 MB chunks (so any size works under GitHub's 100 MB per-file cap), pushes as an orphan branch to `GusAI40/tagai-cloud-backups`. Runs at 03:30 UTC. Fails loudly on push errors. |
 
 ### Investigation & phase notes
 
