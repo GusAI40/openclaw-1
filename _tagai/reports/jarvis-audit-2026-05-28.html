@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jarvis — Repo Audit &amp; Ops Report — 2026-05-28</title>
+<style>
+  :root{
+    --obsidian:#0a0a0c; --ink:#14161a; --slate:#3b4354; --mute:#6b7280;
+    --platinum:#e5e7eb; --paper:#f7f8fa; --line:#dfe3ea; --chrome:#d4d4d8;
+    --navy:#1e3a8a; --navy-soft:#eef2fb;
+    --green:#16a34a; --green-soft:#e9f7ee;
+    --amber:#b45309; --amber-soft:#fdf3e7;
+    --red:#b91c1c; --red-soft:#fbecec;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    color:var(--ink); background:var(--paper); line-height:1.55; padding-bottom:80px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:0 28px}
+  header.hero{
+    background:var(--obsidian); color:var(--platinum); padding:48px 0 40px;
+    border-bottom:3px solid var(--navy);
+  }
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--chrome);font-weight:600}
+  h1{font-family:'Georgia','Cormorant Garamond',serif;font-size:38px;font-weight:600;margin:10px 0 6px;letter-spacing:-.01em}
+  .sub{color:#9aa3b2;font-size:15px}
+  .meta-row{display:flex;gap:28px;flex-wrap:wrap;margin-top:22px}
+  .meta-row .m{font-size:13px;color:#aeb6c4}
+  .meta-row .m b{color:var(--platinum);font-weight:600;display:block;font-size:15px}
+
+  section{padding:38px 0;border-bottom:1px solid var(--line)}
+  h2{font-family:'Georgia',serif;font-size:24px;font-weight:600;color:var(--obsidian);margin-bottom:4px;letter-spacing:-.01em}
+  h2 .num{color:var(--navy);font-size:15px;font-weight:700;margin-right:10px;font-family:'Inter',sans-serif}
+  .lead{color:var(--slate);font-size:15px;margin-bottom:22px;max-width:760px}
+
+  .banner{display:flex;gap:16px;flex-wrap:wrap;margin-top:26px}
+  .stat{flex:1;min-width:200px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 20px;border-left:4px solid var(--green)}
+  .stat .k{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:600}
+  .stat .v{font-size:22px;font-weight:700;color:var(--obsidian);margin-top:4px;font-family:'Georgia',serif}
+  .stat .d{font-size:13px;color:var(--slate);margin-top:3px}
+  .stat.warn{border-left-color:var(--amber)}
+  .stat.navy{border-left-color:var(--navy)}
+
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px}
+  @media(max-width:760px){.cards{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:22px;position:relative}
+  .card h3{font-size:16px;font-weight:700;color:var(--obsidian);margin-bottom:2px;display:flex;align-items:center;gap:10px}
+  .card .who{font-size:12px;color:var(--mute);margin-bottom:14px}
+  .card dl{display:grid;grid-template-columns:84px 1fr;gap:8px 14px;font-size:13.5px}
+  .card dt{color:var(--mute);font-weight:600}
+  .card dd{color:var(--ink)}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;letter-spacing:.03em}
+  .pill.ok{background:var(--green-soft);color:var(--green)}
+  .pill.fixed{background:var(--navy-soft);color:var(--navy)}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  thead th{background:var(--ink);color:var(--platinum);text-align:left;padding:11px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+  tbody td{padding:11px 14px;border-top:1px solid var(--line);vertical-align:top}
+  tbody tr:nth-child(even){background:#fbfcfe}
+  .sev{font-weight:700;font-size:11px;padding:3px 9px;border-radius:6px;white-space:nowrap}
+  .sev.crit{background:var(--red-soft);color:var(--red)}
+  .sev.high{background:var(--amber-soft);color:var(--amber)}
+  .sev.med{background:var(--navy-soft);color:var(--navy)}
+  .sev.low{background:#eef0f3;color:var(--slate)}
+  td.id{font-weight:700;color:var(--obsidian);white-space:nowrap}
+
+  .prov{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:8px}
+  .prov .p{background:#fff;border:1px solid var(--line);border-radius:9px;padding:13px 15px;border-top:3px solid var(--chrome)}
+  .prov .p.green{border-top-color:var(--green)}
+  .prov .p.amber{border-top-color:var(--amber)}
+  .prov .p .pn{font-weight:700;font-size:14px;color:var(--obsidian)}
+  .prov .p .ps{font-size:12.5px;color:var(--slate);margin-top:3px}
+
+  .ladder{counter-reset:step;margin-top:8px}
+  .ladder .step{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .ladder .step:last-child{border-bottom:none}
+  .ladder .step .n{counter-increment:step;flex:0 0 32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .ladder .step .n::before{content:counter(step)}
+  .ladder .step .b b{display:block;font-size:14.5px;color:var(--obsidian)}
+  .ladder .step .b span{font-size:13px;color:var(--slate)}
+  .tag{font-size:11px;font-weight:700;color:var(--green);background:var(--green-soft);padding:2px 8px;border-radius:5px;margin-left:8px}
+  .tag.todo{color:var(--amber);background:var(--amber-soft)}
+
+  .cities{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px}
+  @media(max-width:760px){.cities{grid-template-columns:1fr}}
+  .city{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;border-top:4px solid var(--navy)}
+  .city h4{font-size:15px;color:var(--obsidian);margin-bottom:6px}
+  .city p{font-size:13px;color:var(--slate);margin-bottom:10px}
+  .city ul{list-style:none;font-size:12.5px;color:var(--ink)}
+  .city li{padding:4px 0 4px 16px;position:relative}
+  .city li::before{content:'';position:absolute;left:0;top:11px;width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+  footer{padding:30px 0;color:var(--mute);font-size:12.5px}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  code{background:#eef0f3;padding:1px 6px;border-radius:4px;font-family:'SF Mono',Consolas,monospace;font-size:12.5px;color:var(--navy)}
+  .note{font-size:12.5px;color:var(--mute);margin-top:14px;font-style:italic}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">TAG AI &middot; Jarvis Operations</div>
+    <h1>Repo Audit &amp; Ops Report</h1>
+    <div class="sub">OpenClaw fork &mdash; TAG-owned scope &mdash; single Hetzner fleet, two tenants</div>
+    <div class="meta-row">
+      <div class="m">Report date<b>2026-05-28</b></div>
+      <div class="m">Branch<b>tagai-main</b></div>
+      <div class="m">Host<b>Hetzner CPX21 &middot; 87.99.148.242</b></div>
+      <div class="m">Tenants<b>Gus (main) &middot; Julian</b></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--navy)">Live status</div>
+    <h2 style="margin-top:6px">Fleet health</h2>
+    <div class="banner">
+      <div class="stat"><div class="k">Gus main gateway</div><div class="v">Healthy</div><div class="d">Telegram live &middot; @tagai_jarvis_bot &middot; 0 pending</div></div>
+      <div class="stat"><div class="k">Julian gateway</div><div class="v">Healthy</div><div class="d">Telegram live &middot; @JujuJarvis_bot &middot; 0 stuck</div></div>
+      <div class="stat navy"><div class="k">Primary model</div><div class="v">deepseek-v4-flash</div><div class="d">fallback: gemini &rarr; claude-haiku-4-5 &rarr; claude-sonnet-4-6</div></div>
+      <div class="stat warn"><div class="k">Open risks</div><div class="v">16</div><div class="d">1 Critical fixed today &middot; 6 High &middot; 5 Med &middot; 4 Low</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="num">01</span>Incidents fixed</h2>
+    <p class="lead">Two tenant channel outages, same week, same family of bug: the <code>agent:main:main</code> lane gets wedged and Telegram messages queue behind it forever. Both resolved live on the box.</p>
+    <div class="cards">
+      <div class="card">
+        <h3>Julian Telegram <span class="pill fixed">FIXED 05-27</span></h3>
+        <div class="who">@JujuJarvis_bot &middot; tenant: julian</div>
+        <dl>
+          <dt>Trigger</dt><dd>Julian uploaded a video. Agent ran a long Veo + Cloudflare Pages + git push chain.</dd>
+          <dt>Cause</dt><dd>Lane locked in a delivery-mirror replay loop since 14:08. New messages never processed.</dd>
+          <dt>Fix</dt><dd>Stopped gateway, quarantined the stuck session, restarted via the tenant's own compose.</dd>
+          <dt>Verify</dt><dd>Healthy &middot; poller live &middot; 0 stuck &middot; 0 pending.</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h3>Gus Telegram <span class="pill fixed">FIXED 05-28</span></h3>
+        <div class="who">@tagai_jarvis_bot &middot; tenant: main</div>
+        <dl>
+          <dt>Trigger</dt><dd>A <code>/model deepseek-v4-pro</code> override on the main + slash sessions.</dd>
+          <dt>Cause</dt><dd>That variant routes through the <code>openrouter</code> provider, which has no API key. Every message failed its first attempt (~9.5s), sometimes hard-failed, and jammed the lane.</dd>
+          <dt>Fix</dt><dd>Reverted 4 override fields to <code>deepseek-v4-flash</code>; fixed R-1 dotted Claude IDs; restarted.</dd>
+          <dt>Verify</dt><dd>0 openrouter errors &middot; 0 stuck &middot; override held after reboot.</dd>
+        </dl>
+      </div>
+    </div>
+    <p class="note">Same lane-jam mechanism bit both tenants. The durable fix is an automated watchdog (Risk R-2) so recovery is seconds, not a manual SSH session.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="num">02</span>Risk register</h2>
+    <p class="lead">Severity-graded. Critical R-1 was fixed in today's pass. Full detail in <code>_tagai/audit-2026-05-27/RISK_REGISTER.md</code>.</p>
+    <table>
+      <thead><tr><th>ID</th><th>Severity</th><th>Risk</th><th>Status / action</th></tr></thead>
+      <tbody>
+        <tr><td class="id">R-1</td><td><span class="sev crit">CRITICAL</span></td><td>Gus main had dotted Claude fallback IDs (<code>claude-haiku-4.5</code>) &mdash; Anthropic rejects them.</td><td>Fixed today &rarr; dashed.</td></tr>
+        <tr><td class="id">R-2</td><td><span class="sev high">HIGH</span></td><td>Heartbeat / long tool calls wedge the agent lane; messages silently queue.</td><td>Add auto-quarantine watchdog.</td></tr>
+        <tr><td class="id">R-13</td><td><span class="sev high">HIGH</span></td><td>Image-gen chain dead: Google AI key expired, OpenAI billing limit hit.</td><td>Rotate key / cap or drop OpenAI.</td></tr>
+        <tr><td class="id">R-9</td><td><span class="sev high">HIGH</span></td><td>rescue-websites-sim found 3 live-pipeline bugs; migration written but not applied.</td><td>Run <code>sim:full</code>, apply migration.</td></tr>
+        <tr><td class="id">R-5</td><td><span class="sev high">HIGH</span></td><td>Single VPS, no warm standby.</td><td>Document + test backup recovery drill.</td></tr>
+        <tr><td class="id">R-6</td><td><span class="sev high">HIGH</span></td><td>Tenant bootstrap script lives only on the box, not in the repo.</td><td>Promote into <code>_tagai/scripts/</code>.</td></tr>
+        <tr><td class="id">R-7</td><td><span class="sev high">HIGH</span></td><td>Device-pair auto-approve cron is single-factor (blocks paid tenants).</td><td>Replace with real auth challenge.</td></tr>
+        <tr><td class="id">R-3</td><td><span class="sev med">MEDIUM</span></td><td>Schema clobber on image upgrade if <code>lastTouchedVersion</code> not pinned.</td><td>Pre-flight bump documented.</td></tr>
+        <tr><td class="id">R-4</td><td><span class="sev med">MEDIUM</span></td><td><code>auth-profiles.json</code> not in version control.</td><td>Confirm age key in 1Password.</td></tr>
+        <tr><td class="id">R-10</td><td><span class="sev med">MEDIUM</span></td><td>Julian MCP servers configured but not running.</td><td>Ship files or strip config.</td></tr>
+        <tr><td class="id">R-8</td><td><span class="sev med">MEDIUM</span></td><td>DNS on Vercel (not Cloudflare); credential loss blocks onboarding.</td><td>Document system of record.</td></tr>
+        <tr><td class="id">R-11/12/14/15/16</td><td><span class="sev low">LOW</span></td><td>Stale rescue-patch, dup webhook files, Coolify mentions, diag-telegram v1-4, Maya orphans.</td><td>Cleanup sweep.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="num">03</span>Provider validation</h2>
+    <p class="lead">Checked against live docs and live runtime evidence on 2026-05-27/28. &ldquo;Deferred&rdquo; = honest gap, not validated this pass.</p>
+    <div class="prov">
+      <div class="p green"><div class="pn">DeepSeek</div><div class="ps">deepseek-v4-flash &mdash; primary, both tenants. Balance low, top up.</div></div>
+      <div class="p green"><div class="pn">Anthropic</div><div class="ps">Dashes only. Fallback chain now valid on both tenants.</div></div>
+      <div class="p amber"><div class="pn">Google AI</div><div class="ps">Model OK; image-gen key EXPIRED. Rotate.</div></div>
+      <div class="p amber"><div class="pn">OpenAI</div><div class="ps">gpt-image-2 valid; billing hard limit hit.</div></div>
+      <div class="p green"><div class="pn">Kie.ai</div><div class="ps">veo3_fast works (runtime-proven). Docs sparse.</div></div>
+      <div class="p green"><div class="pn">Telegram</div><div class="ps">Long-poll, both bots live, 0 pending.</div></div>
+      <div class="p green"><div class="pn">Cloudflare Pages</div><div class="ps">Deploy works; upload-only (no git auto-build).</div></div>
+      <div class="p amber"><div class="pn">Microsoft Graph</div><div class="ps">OK for Gus; not running for Julian.</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="num">04</span>Architecture &mdash; three cities</h2>
+    <p class="lead">TAG-owned layers only. Upstream OpenClaw code is out of scope.</p>
+    <div class="cities">
+      <div class="city">
+        <h4>City A &mdash; Jarvis Runtime</h4>
+        <p>The brain. One container per tenant; answers on Telegram, web, voice, CLI.</p>
+        <ul><li>per-tenant gateway + CLI</li><li>deepseek primary + fallback chain</li><li>auth-profiles.json (mode 600)</li><li>telegram poller + heartbeat</li></ul>
+      </div>
+      <div class="city">
+        <h4>City B &mdash; Hetzner Deploy</h4>
+        <p>The building. One VPS, Caddy on host for TLS, Docker for runtime.</p>
+        <ul><li>Caddy &rarr; loopback per tenant</li><li>nightly age-encrypted backups</li><li>shared bind-mounts</li><li>bootstrap-tenant.sh</li></ul>
+      </div>
+      <div class="city">
+        <h4>City C &mdash; Outbound Pipelines</h4>
+        <p>The trucks leaving the state. Email, MCP tools, brand layer.</p>
+        <ul><li>rescue-websites-sim (3 guards)</li><li>microsoft-graph MCP</li><li>Resend / Cloudflare Pages</li><li>Jarvis brand layer</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="num">05</span>Action ladder</h2>
+    <p class="lead">Ordered by leverage. The cheap, high-impact items are at the top.</p>
+    <div class="ladder">
+      <div class="step"><div class="n"></div><div class="b"><b>Fix R-1 dotted Claude IDs on Gus main <span class="tag">DONE</span></b><span>5-minute config fix. Restores the LLM safety net. Applied 2026-05-28.</span></div></div>
+      <div class="step"><div class="n"></div><div class="b"><b>Restore Gus Telegram (model override) <span class="tag">DONE</span></b><span>Reverted deepseek-v4-pro &rarr; deepseek-v4-flash. Verified clean.</span></div></div>
+      <div class="step"><div class="n"></div><div class="b"><b>Rotate Google AI key, cap/drop OpenAI image <span class="tag todo">TODO</span></b><span>R-13. Unblocks any skill that generates images.</span></div></div>
+      <div class="step"><div class="n"></div><div class="b"><b>Build the lane-jam watchdog <span class="tag todo">TODO</span></b><span>R-2. Auto-quarantine a stuck session so recovery is seconds, not manual.</span></div></div>
+      <div class="step"><div class="n"></div><div class="b"><b>Validate sim, apply tenant-isolation migration <span class="tag todo">TODO</span></b><span>R-9. Kills friendly-fire, unsub-vs-snooze, reputation-burn in the live pipeline.</span></div></div>
+      <div class="step"><div class="n"></div><div class="b"><b>Replace device auto-approve + bootstrap into repo <span class="tag todo">TODO</span></b><span>R-7 + R-6. Prerequisites for selling Jarvis as paid per-tenant seats.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Jarvis &mdash; TAG AI Solutions &middot; One brain. Every channel. Always on.</span>
+    <span>Generated 2026-05-28 &middot; source: <code>_tagai/audit-2026-05-27/</code></span>
+  </div>
+</footer>
+
+</body>
+</html>
