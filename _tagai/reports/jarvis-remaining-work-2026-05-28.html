@@ -80,7 +80,7 @@
     <div class="banner">
       <div class="stat"><div class="k">Live now</div><div class="v">Stable</div><div class="d">Both Telegram bots live, image + video generation working</div></div>
       <div class="stat amber"><div class="k">Needs you</div><div class="v">3 items</div><div class="d">1 time-sensitive (Google key, Jun 19)</div></div>
-      <div class="stat navy"><div class="k">I can do</div><div class="v">8 items</div><div class="d">5 contained + 3 that touch production</div></div>
+      <div class="stat navy"><div class="k">I can do</div><div class="v">7 items</div><div class="d">4 contained + 3 that touch production (R-2 done 05-28)</div></div>
       <div class="stat"><div class="k">Urgency</div><div class="v">None on fire</div><div class="d">All remaining work is hardening / improvement</div></div>
     </div>
     <div class="legend">
@@ -114,9 +114,9 @@
   <div class="wrap">
     <h2><span class="num">02</span>I can do &mdash; contained (no production risk)</h2>
     <p class="lead">Self-contained work on the box or in the repo. Low blast radius. Recommended order top-down.</p>
-    <div class="item mine">
+    <div class="item mine" style="border-left-color:var(--green)">
       <div class="tag-id">R-2</div>
-      <div class="body"><b>Lane-jam watchdog <span class="chip easy">NEXT</span></b><span>Auto-quarantine a wedged <code>agent:main:main</code> session so the Telegram jams that hit BOTH tenants this week self-heal in seconds instead of a manual SSH fix.</span></div>
+      <div class="body"><b>Lane-jam watchdog <span class="chip easy">DONE 05-28</span></b><span>Deployed: <code>lane-jam-watchdog.sh</code>, cron */3 on both tenants. Auto-archives a wedged <code>agent:main:main</code> session + restarts the gateway. Guarded (10-min threshold, 2-reading confirm, 20-min cooldown, kill-switch). Verified clean.</span></div>
     </div>
     <div class="item mine">
       <div class="tag-id">R-6</div>
@@ -161,8 +161,8 @@
     <h2><span class="num">04</span>Recommended sequence</h2>
     <p class="lead">Cheap, contained, recurring-pain fixes first. Production-touching work as deliberate sessions after.</p>
     <div class="ladder">
-      <div class="step"><div class="n"></div><div class="b"><b>R-2 &mdash; lane-jam watchdog</b><span>Stops a recurring outage. Fully contained. Start here.</span></div></div>
-      <div class="step"><div class="n"></div><div class="b"><b>R-6, R-8, R-10, cleanup</b><span>Cheap wins. Repo + docs + config hygiene.</span></div></div>
+      <div class="step"><div class="n"></div><div class="b"><b>R-2 &mdash; lane-jam watchdog <span class="chip easy">DONE</span></b><span>Recurring outage now self-heals. Deployed 05-28.</span></div></div>
+      <div class="step"><div class="n"></div><div class="b"><b>R-6, R-8, R-10, cleanup &mdash; next</b><span>Cheap wins. Repo + docs + config hygiene.</span></div></div>
       <div class="step"><div class="n"></div><div class="b"><b>R-9 &mdash; sim migration</b><span>Highest pipeline value. Careful, touches live Supabase.</span></div></div>
       <div class="step"><div class="n"></div><div class="b"><b>R-7 + R-5 &mdash; productization</b><span>Real device auth + backup resilience. Unlocks paid tenants.</span></div></div>
     </div>

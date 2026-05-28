@@ -123,7 +123,7 @@
       <div class="stat"><div class="k">Gus main gateway</div><div class="v">Healthy</div><div class="d">Telegram live &middot; @tagai_jarvis_bot &middot; 0 pending</div></div>
       <div class="stat"><div class="k">Julian gateway</div><div class="v">Healthy</div><div class="d">Telegram live &middot; @JujuJarvis_bot &middot; 0 stuck</div></div>
       <div class="stat navy"><div class="k">Primary model</div><div class="v">deepseek-v4-flash</div><div class="d">fallback: gemini &rarr; claude-haiku-4-5 &rarr; claude-sonnet-4-6</div></div>
-      <div class="stat warn"><div class="k">Open risks</div><div class="v">13</div><div class="d">0 Critical &middot; 5 High &middot; 5 Med &middot; 4 Low. Resolved 05-28: R-1, R-13, Telegram jam.</div></div>
+      <div class="stat warn"><div class="k">Open risks</div><div class="v">12</div><div class="d">0 Critical &middot; 4 High &middot; 5 Med &middot; 4 Low. Resolved 05-28: R-1, R-2, R-13, Telegram jam.</div></div>
     </div>
   </div>
 </section>
@@ -166,7 +166,7 @@
       <thead><tr><th>ID</th><th>Severity</th><th>Risk</th><th>Status / action</th></tr></thead>
       <tbody>
         <tr><td class="id">R-1</td><td><span class="sev crit">CRITICAL</span></td><td>Gus main had dotted Claude fallback IDs (<code>claude-haiku-4.5</code>) &mdash; Anthropic rejects them.</td><td>Fixed today &rarr; dashed.</td></tr>
-        <tr><td class="id">R-2</td><td><span class="sev high">HIGH</span></td><td>Heartbeat / long tool calls wedge the agent lane; messages silently queue.</td><td>Add auto-quarantine watchdog.</td></tr>
+        <tr><td class="id">R-2</td><td><span class="sev med">RESOLVED</span></td><td>Heartbeat / long tool calls wedge the agent lane; messages silently queue.</td><td>Fixed 05-28: lane-jam-watchdog.sh deployed (cron */3, both tenants). Auto-archives stuck session + restarts. Guarded (10-min threshold, cooldown, kill-switch).</td></tr>
         <tr><td class="id">R-13</td><td><span class="sev med">RESOLVED</span></td><td>Image-gen chain was dead (Google key blocked by new policy, OpenAI billing limit). Root cause: media providers read the key from shared-env, not auth-profiles.</td><td>Fixed 05-28: key rotated to env + profiles, gpt-image-2 primary images, veo-3.1-fast video. Proven end-to-end (real PNG + MP4).</td></tr>
         <tr><td class="id">R-9</td><td><span class="sev high">HIGH</span></td><td>rescue-websites-sim found 3 live-pipeline bugs; migration written but not applied.</td><td>Run <code>sim:full</code>, apply migration.</td></tr>
         <tr><td class="id">R-5</td><td><span class="sev high">HIGH</span></td><td>Single VPS, no warm standby.</td><td>Document + test backup recovery drill.</td></tr>
@@ -262,7 +262,7 @@
       <div class="step"><div class="n"></div><div class="b"><b>Fix R-1 dotted Claude IDs on Gus main <span class="tag">DONE</span></b><span>5-minute config fix. Restores the LLM safety net. Applied 2026-05-28.</span></div></div>
       <div class="step"><div class="n"></div><div class="b"><b>Restore Gus Telegram (model override) <span class="tag">DONE</span></b><span>Reverted deepseek-v4-pro &rarr; deepseek-v4-flash. Verified clean.</span></div></div>
       <div class="step"><div class="n"></div><div class="b"><b>Restore image gen + set media providers <span class="tag">DONE</span></b><span>R-13. Key rotated, gpt-image-2 primary images, veo-3.1-fast video. Proven end-to-end 2026-05-28.</span></div></div>
-      <div class="step"><div class="n"></div><div class="b"><b>Build the lane-jam watchdog <span class="tag todo">TODO</span></b><span>R-2. Auto-quarantine a stuck session so recovery is seconds, not manual.</span></div></div>
+      <div class="step"><div class="n"></div><div class="b"><b>Build the lane-jam watchdog <span class="tag">DONE</span></b><span>R-2. Deployed 05-28: cron */3 on both tenants, auto-archives a stuck session + restarts. Verified clean, kill-switch ready.</span></div></div>
       <div class="step"><div class="n"></div><div class="b"><b>Validate sim, apply tenant-isolation migration <span class="tag todo">TODO</span></b><span>R-9. Kills friendly-fire, unsub-vs-snooze, reputation-burn in the live pipeline.</span></div></div>
       <div class="step"><div class="n"></div><div class="b"><b>Replace device auto-approve + bootstrap into repo <span class="tag todo">TODO</span></b><span>R-7 + R-6. Prerequisites for selling Jarvis as paid per-tenant seats.</span></div></div>
     </div>

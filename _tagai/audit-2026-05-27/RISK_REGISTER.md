@@ -20,12 +20,12 @@ Severity scale: **Critical** (active outage / silent revenue loss), **High** (on
 
 ## High
 
-### R-2 — Agent lane jam (heartbeat + long tool calls) silently swallows Telegram messages
+### R-2 — Agent lane jam silently swallows Telegram messages — RESOLVED 2026-05-28
 
-- **What.** Long tool chains (Julian's video gen + Cloudflare deploy today; heartbeat cron storms on 2026-05-22) wedge `agent:main:main` in `processing` state. Telegram poller still runs, getUpdates still consumes messages, but they queue behind the wedged session and never get processed. Diagnostic line `[diagnostic] stuck session: ... state=processing age=Ns queueDepth=K` fires but no action is taken.
-- **Cost.** Tenant looks healthy to the user (bot online, no errors). User messages just disappear. Already burned Julian twice in 6 days.
-- **Fix.** Add a watchdog in the runtime: if `state=processing age>=180s` for the same `sessionKey` is logged twice in 10 minutes, auto-archive the session JSONL + drop the lock, and emit a `session quarantined` event. Manual recovery is what I did today — 5 SSH commands, ~10 minutes. Automated recovery should be seconds.
-- **Reference.** This audit's incident at 14:08 UTC; prior incident 2026-05-22 (memory: `project_session_log_2026_05_22.md`).
+- **What.** Long tool chains / model-failover loops wedge `agent:main:main` in `processing` state. Telegram poller still consumes messages, but they queue behind the wedged session and never get processed. The runtime emits `[diagnostic] stuck session: ... state=processing age=Ns queueDepth=K` but took no recovery action. Burned Julian twice + Gus once.
+- **Fix deployed.** `_tagai/scripts/lane-jam-watchdog.sh` on the box at `/home/tagai/.openclaw/watchdog/`, cron `*/3 * * * *`, both tenants. Detection uses the runtime's OWN diagnostic verdict filtered to real jams: `sessionKey=agent:main:main`, `queueDepth>=1`, `age>=600s` (above any legit long task incl. ~5-min Veo render), confirmed across 2 consecutive runs. Recovery: archive the stuck session (move to `watchdog/quarantine/`, recoverable) + `docker compose restart`. Guardrails: 20-min cooldown, kill-switch (`watchdog/DISABLED`), full audit log (`watchdog/watchdog.log`), DRYRUN mode. Validated: parse self-test passed, DRYRUN + real-mode runs read both lanes clear with no false action, kill-switch confirmed, cron service active.
+- **Tunables.** `ACT_AGE` (default 600s), `COOLDOWN` (1200s), `LOG_WINDOW` (6m). Lower `ACT_AGE` for faster recovery at higher false-positive risk on long renders.
+- **Reference.** Incidents 2026-05-27 (Julian video), 2026-05-28 (Gus openrouter loop), 2026-05-22 (heartbeat storm).
 
 ### R-5 — Single-VPS Hetzner — no warm standby
 
@@ -135,10 +135,10 @@ Severity scale: **Critical** (active outage / silent revenue loss), **High** (on
 | Severity | Count | Open |
 |---|---|---|
 | Critical | 0 | — (R-1 fixed 2026-05-28) |
-| High | 5 | R-2, R-5, R-6, R-7, R-9 |
+| High | 4 | R-5, R-6, R-7, R-9 |
 | Medium | 5 | R-3, R-4, R-8, R-10, R-11 |
 | Low | 4 | R-12, R-14, R-15, R-16 |
 
-**Resolved 2026-05-28:** R-1 (dotted Claude IDs), Gus Telegram model-override jam, R-13 (image+video generation).
+**Resolved 2026-05-28:** R-1 (dotted Claude IDs), Gus Telegram model-override jam, R-13 (image+video generation), R-2 (lane-jam watchdog deployed).
 
-**13 open risks remain.** **Highest leverage next: R-2 (lane-jam watchdog — already bit both tenants) and R-9 (sim migration — kills 3 live-pipeline bugs).**
+**12 open risks remain.** **Highest leverage next: R-9 (sim migration — kills 3 live-pipeline bugs) and R-6 (bootstrap into repo — recovery resilience).**
