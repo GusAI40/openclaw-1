@@ -110,10 +110,11 @@
 | Provider | Live docs validated | Live runtime evidence | TAG verdict |
 |---|---|---|---|
 | DeepSeek | ✅ | ✅ booting today | OK, balance low |
-| Anthropic | ✅ (dashes only) | ✅ Julian, ❌ Gus main | **R-1 critical — Gus main IDs wrong** |
-| Google AI | ❌ deferred | ❌ image gen key expired | **R-13 high — rotate key** |
-| OpenAI | ❌ deferred | ❌ billing hard limit | **R-13 high — limit or remove** |
-| Kie.ai | ⚠ docs 404'd | ✅ Veo 3.1 Fast worked today | OK, docs gap |
+| Anthropic | ✅ (dashes only) | ✅ both tenants | OK (R-1 fixed 05-28) |
+| Google AI (Gemini image) | ✅ docs 05-28 | ✅ key rotated, GA model 200 | OK — `gemini-3.1-flash-image` fallback |
+| Google Veo 3.1 | ✅ docs + pricing 05-28 | ✅ real 4s MP4 rendered via runtime | OK — `veo-3.1-fast` primary video ($0.12/s 1080p) |
+| OpenAI | ✅ web 05-28 | ✅ real PNG via runtime | OK — `gpt-image-2` primary image |
+| Kie.ai | ⚠ docs 404'd | ✅ Veo 3.1 Fast worked | OK — secondary video path |
 | Telegram | ✅ | ✅ both tenants polling | OK |
 | Cloudflare Pages | ❌ deferred | ✅ deploy succeeded today | OK, upload-only by design |
 | Microsoft Graph | ❌ deferred | ⚠ broken for Julian | **R-10 medium** |

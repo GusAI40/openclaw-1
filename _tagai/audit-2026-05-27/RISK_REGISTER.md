@@ -55,12 +55,17 @@ Severity scale: **Critical** (active outage / silent revenue loss), **High** (on
 - **Fix.** Run `npm run sim:full`. Confirm bugs surface. Apply migration to live Supabase. Estimate: 30 minutes of focused work.
 - **Reference.** `rescue-websites-sim/README.md` and `rescue-websites-sim/migrations/001-add-tenant-isolation.sql`.
 
-### R-13 — Image-gen fallback chain is fully broken right now
+### R-13 — Image/video generation broken — RESOLVED 2026-05-28
 
-- **What.** Today's Julian session shows both providers in the image-gen candidate chain are dead: Google AI key **expired** (`API key expired. Please renew.`), OpenAI **billing hard limit reached**. Julian's video pipeline worked because it used Kie.ai/Veo, but anything that hits `image_generate` will fail.
-- **Cost.** Any skill that needs an image (Michelle marketing, blog featured images, thumbnails) fails until rotated.
-- **Fix.** (a) Rotate Google AI Studio API key. (b) Either raise OpenAI billing hard limit or remove `gpt-image-2` from the fallback chain. (c) Add Kie.ai's `nano-banana` model to the chain as a known-cheap fallback that's already working.
-- **Reference.** Today's Julian gateway logs (this audit).
+- **What (original).** Image-gen candidate chain was dead: Google key returned `API key expired`, OpenAI `gpt-image-2` returned `billing hard limit reached`.
+- **Validated root causes (live docs + box, 2026-05-28):**
+  1. The Google key was **not** time-expired. Google's policy (effective 2026-05-07) **blocks unrestricted dormant keys**; all keys must be **restricted by 2026-06-19**. The old unrestricted key got caught by this.
+  2. **The real auth source was the env var, not auth-profiles.json.** OpenClaw media providers read the Google key from `GEMINI_API_KEY`/`GOOGLE_API_KEY` env (sourced from `.openclaw-shared.env`), which still held the dead key. The first rotation only touched `auth-profiles.json`, so it was incomplete.
+  3. `gpt-image-2` is the **current valid** OpenAI model — the only issue was the account billing limit (since cleared). Do NOT drop it.
+- **Fix applied.** `setup-media-providers.py` synced the working keys into BOTH sources (shared env + auth-profiles) on both tenants, and set: images `openai/gpt-image-2` → `google/gemini-3.1-flash-image` → `google/gemini-2.5-flash-image`; video `google/veo-3.1-fast-generate-preview` → `google/veo-3.0-fast-generate-001`. Containers force-recreated (env change needs recreate, not restart).
+- **Proven end-to-end** through `openclaw agent`: real 755 KB PNG (gpt-image-2) and real 3.3 MB MP4 (veo-3.1-fast, header `ftypisom`).
+- **Open follow-up (you-action):** restrict the new Google key to the Generative Language API before **2026-06-19** or it gets blocked like the old one. Tracked as [[validate-against-live-docs]] discipline win.
+- **Reference.** Gemini API key docs, image-generation docs, video-generation docs, pricing — all validated 2026-05-28; this session's runtime tests.
 
 ---
 
@@ -129,9 +134,11 @@ Severity scale: **Critical** (active outage / silent revenue loss), **High** (on
 
 | Severity | Count | Open |
 |---|---|---|
-| Critical | 1 | R-1 |
-| High | 6 | R-2, R-5, R-6, R-7, R-9, R-13 |
+| Critical | 0 | — (R-1 fixed 2026-05-28) |
+| High | 5 | R-2, R-5, R-6, R-7, R-9 |
 | Medium | 5 | R-3, R-4, R-8, R-10, R-11 |
 | Low | 4 | R-12, R-14, R-15, R-16 |
 
-**Total: 16 open risks.** **Highest leverage right now: R-1 (5-minute fix, immediate revenue protection).**
+**Resolved 2026-05-28:** R-1 (dotted Claude IDs), Gus Telegram model-override jam, R-13 (image+video generation).
+
+**13 open risks remain.** **Highest leverage next: R-2 (lane-jam watchdog — already bit both tenants) and R-9 (sim migration — kills 3 live-pipeline bugs).**

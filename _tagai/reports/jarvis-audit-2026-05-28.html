@@ -167,7 +167,7 @@
       <tbody>
         <tr><td class="id">R-1</td><td><span class="sev crit">CRITICAL</span></td><td>Gus main had dotted Claude fallback IDs (<code>claude-haiku-4.5</code>) &mdash; Anthropic rejects them.</td><td>Fixed today &rarr; dashed.</td></tr>
         <tr><td class="id">R-2</td><td><span class="sev high">HIGH</span></td><td>Heartbeat / long tool calls wedge the agent lane; messages silently queue.</td><td>Add auto-quarantine watchdog.</td></tr>
-        <tr><td class="id">R-13</td><td><span class="sev high">HIGH</span></td><td>Image-gen chain dead: Google AI key expired, OpenAI billing limit hit.</td><td>Rotate key / cap or drop OpenAI.</td></tr>
+        <tr><td class="id">R-13</td><td><span class="sev med">RESOLVED</span></td><td>Image-gen chain was dead (Google key blocked by new policy, OpenAI billing limit). Root cause: media providers read the key from shared-env, not auth-profiles.</td><td>Fixed 05-28: key rotated to env + profiles, gpt-image-2 primary images, veo-3.1-fast video. Proven end-to-end (real PNG + MP4).</td></tr>
         <tr><td class="id">R-9</td><td><span class="sev high">HIGH</span></td><td>rescue-websites-sim found 3 live-pipeline bugs; migration written but not applied.</td><td>Run <code>sim:full</code>, apply migration.</td></tr>
         <tr><td class="id">R-5</td><td><span class="sev high">HIGH</span></td><td>Single VPS, no warm standby.</td><td>Document + test backup recovery drill.</td></tr>
         <tr><td class="id">R-6</td><td><span class="sev high">HIGH</span></td><td>Tenant bootstrap script lives only on the box, not in the repo.</td><td>Promote into <code>_tagai/scripts/</code>.</td></tr>
@@ -189,9 +189,10 @@
     <div class="prov">
       <div class="p green"><div class="pn">DeepSeek</div><div class="ps">deepseek-v4-flash &mdash; primary, both tenants. Balance low, top up.</div></div>
       <div class="p green"><div class="pn">Anthropic</div><div class="ps">Dashes only. Fallback chain now valid on both tenants.</div></div>
-      <div class="p amber"><div class="pn">Google AI</div><div class="ps">Model OK; image-gen key EXPIRED. Rotate.</div></div>
-      <div class="p amber"><div class="pn">OpenAI</div><div class="ps">gpt-image-2 valid; billing hard limit hit.</div></div>
-      <div class="p green"><div class="pn">Kie.ai</div><div class="ps">veo3_fast works (runtime-proven). Docs sparse.</div></div>
+      <div class="p green"><div class="pn">Google AI</div><div class="ps">Key rotated (env + profiles). Gemini images + Veo video live. Restrict key before Jun 19.</div></div>
+      <div class="p green"><div class="pn">OpenAI</div><div class="ps">gpt-image-2 = primary image model. Billing cleared, proven end-to-end.</div></div>
+      <div class="p green"><div class="pn">Google Veo 3.1</div><div class="ps">veo-3.1-fast = primary video ($0.12/s 1080p). Real 4s MP4 rendered via runtime.</div></div>
+      <div class="p green"><div class="pn">Kie.ai</div><div class="ps">veo3_fast works (runtime-proven). Secondary video path.</div></div>
       <div class="p green"><div class="pn">Telegram</div><div class="ps">Long-poll, both bots live, 0 pending.</div></div>
       <div class="p green"><div class="pn">Cloudflare Pages</div><div class="ps">Deploy works; upload-only (no git auto-build).</div></div>
       <div class="p amber"><div class="pn">Microsoft Graph</div><div class="ps">OK for Gus; not running for Julian.</div></div>
@@ -230,7 +231,7 @@
     <div class="ladder">
       <div class="step"><div class="n"></div><div class="b"><b>Fix R-1 dotted Claude IDs on Gus main <span class="tag">DONE</span></b><span>5-minute config fix. Restores the LLM safety net. Applied 2026-05-28.</span></div></div>
       <div class="step"><div class="n"></div><div class="b"><b>Restore Gus Telegram (model override) <span class="tag">DONE</span></b><span>Reverted deepseek-v4-pro &rarr; deepseek-v4-flash. Verified clean.</span></div></div>
-      <div class="step"><div class="n"></div><div class="b"><b>Rotate Google AI key, cap/drop OpenAI image <span class="tag todo">TODO</span></b><span>R-13. Unblocks any skill that generates images.</span></div></div>
+      <div class="step"><div class="n"></div><div class="b"><b>Restore image gen + set media providers <span class="tag">DONE</span></b><span>R-13. Key rotated, gpt-image-2 primary images, veo-3.1-fast video. Proven end-to-end 2026-05-28.</span></div></div>
       <div class="step"><div class="n"></div><div class="b"><b>Build the lane-jam watchdog <span class="tag todo">TODO</span></b><span>R-2. Auto-quarantine a stuck session so recovery is seconds, not manual.</span></div></div>
       <div class="step"><div class="n"></div><div class="b"><b>Validate sim, apply tenant-isolation migration <span class="tag todo">TODO</span></b><span>R-9. Kills friendly-fire, unsub-vs-snooze, reputation-burn in the live pipeline.</span></div></div>
       <div class="step"><div class="n"></div><div class="b"><b>Replace device auto-approve + bootstrap into repo <span class="tag todo">TODO</span></b><span>R-7 + R-6. Prerequisites for selling Jarvis as paid per-tenant seats.</span></div></div>
