@@ -202,7 +202,37 @@
 
 <section>
   <div class="wrap">
-    <h2><span class="num">04</span>Architecture &mdash; three cities</h2>
+    <h2><span class="num">04</span>Media generation</h2>
+    <p class="lead">Image and video generation, configured and proven end-to-end on both tenants 2026-05-28. Every model ID validated against live provider docs; cross-provider fallbacks for resilience.</p>
+    <div class="cards">
+      <div class="card">
+        <h3>Images <span class="pill ok">LIVE</span></h3>
+        <div class="who">image_generate tool &middot; both tenants</div>
+        <dl>
+          <dt>Primary</dt><dd><code>openai/gpt-image-2</code> &mdash; near-perfect text rendering, 4K, reasoning. Best for marketing + listing graphics.</dd>
+          <dt>Fallback</dt><dd><code>google/gemini-3.1-flash-image</code> &rarr; <code>google/gemini-2.5-flash-image</code></dd>
+          <dt>Cost</dt><dd>~$0.05 (medium) to $0.21 (high) per 1024&sup2; image</dd>
+          <dt>Proof</dt><dd>Real 755 KB PNG through the runtime, 0 failures</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h3>Video <span class="pill ok">LIVE</span></h3>
+        <div class="who">video_generate tool &middot; both tenants</div>
+        <dl>
+          <dt>Primary</dt><dd><code>google/veo-3.1-fast-generate-preview</code> &mdash; best quality/cost tier</dd>
+          <dt>Fallback</dt><dd><code>google/veo-3.0-fast-generate-001</code> (stable)</dd>
+          <dt>Cost</dt><dd>$0.12/sec 1080p (~$1 per 8s clip) &middot; ~20 clips on $19.88. Standard tier is 4&times; pricier.</dd>
+          <dt>Proof</dt><dd>Real 3.3 MB MP4 through the runtime (4s/720p, valid <code>ftypisom</code> container)</dd>
+        </dl>
+      </div>
+    </div>
+    <p class="note"><b>Auth fix that mattered:</b> media providers read the Google key from the <code>GEMINI_API_KEY</code> / <code>GOOGLE_API_KEY</code> env (via <code>.openclaw-shared.env</code>), not <code>auth-profiles.json</code>. The first rotation missed the env, so the runtime kept using the dead key. Now synced to both sources on both tenants. <b>Action owed:</b> restrict the new Google key to the Generative Language API before <b>June 19, 2026</b>, or Google blocks it under the same policy that killed the old key.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="num">05</span>Architecture &mdash; three cities</h2>
     <p class="lead">TAG-owned layers only. Upstream OpenClaw code is out of scope.</p>
     <div class="cities">
       <div class="city">
@@ -226,7 +256,7 @@
 
 <section>
   <div class="wrap">
-    <h2><span class="num">05</span>Action ladder</h2>
+    <h2><span class="num">06</span>Action ladder</h2>
     <p class="lead">Ordered by leverage. The cheap, high-impact items are at the top.</p>
     <div class="ladder">
       <div class="step"><div class="n"></div><div class="b"><b>Fix R-1 dotted Claude IDs on Gus main <span class="tag">DONE</span></b><span>5-minute config fix. Restores the LLM safety net. Applied 2026-05-28.</span></div></div>
