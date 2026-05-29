@@ -1,46 +1,51 @@
-# DNS Status — Already Configured
+# DNS — System of Record (R-8)
 
-**Status:** `ALREADY_EXISTS`
-**Verified:** 2026-04-26
+**System of record: Vercel DNS.** Not Cloudflare. (Prior version of this doc
+wrongly described Cloudflare + Coolify/Traefik — corrected 2026-05-29.)
 
-## Current resolution (verified via Cloudflare 1.1.1.1)
-
-```
-$ nslookup openclaw.ubntag.com 1.1.1.1
-Name:    openclaw.ubntag.com
-Address: 87.99.148.242
-```
-
-The A record for `openclaw.ubntag.com` -> `87.99.148.242` (Hetzner CPX21 `tagai-cloud`) is already live and resolving correctly. No action needed.
-
-## Apex comparison (for context)
+**Validated live 2026-05-29:**
 
 ```
-$ nslookup ubntag.com 1.1.1.1
-Name:    ubntag.com
-Addresses: 216.150.1.193, 216.150.16.1   (Vercel — main TAG AI website)
+$ dig +short NS ubntag.com
+ns1.vercel-dns.com.
+ns2.vercel-dns.com.
+
+$ dig +short SOA ubntag.com
+ns1.vercel-dns.com. hostmaster.nsone.net. ...
 ```
 
-The apex points to Vercel, the `openclaw` subdomain points to Hetzner. Split-domain setup is intact.
+The `ubntag.com` zone is authoritative on **Vercel DNS**. Manage all records in
+the Vercel dashboard (project domain settings), not Cloudflare. There is no
+Cloudflare account, tunnel, or API token in this stack.
 
-## Credentials audit (for future reference)
+## How resolution splits
 
-Searched the following locations for Cloudflare API access:
+| Host | Resolves to | Purpose |
+|---|---|---|
+| `ubntag.com` (apex) | `216.150.x.x` (Vercel anycast) | The TAG AI website (Vite SPA on Vercel) |
+| `openclaw.ubntag.com` | `87.99.148.242` (Hetzner box) | Gus main Jarvis gateway |
+| `julian.ubntag.com` | `87.99.148.242` | Julian tenant gateway |
+| `brightsmile.ubntag.com` | `87.99.148.242` | Voice demo |
 
-| Location | Result |
-|---|---|
-| `~/.env` | No `CLOUDFLARE_*` / `CF_*` keys present |
-| `~/.cloudflared/` | Directory does not exist |
-| `~/.cloudflare-warp/` | Directory does not exist |
-| `cloudflared` CLI | Installed at `C:\Program Files (x86)\cloudflared\` but NOT authenticated (no `cert.pem`) |
-| `flarectl` | Not installed |
+Split setup: the apex serves the website from Vercel; every Jarvis/tenant
+subdomain is an A record pointing at the Hetzner box, where **Caddy on the host**
+(NOT Cloudflare proxy, NOT Coolify, NOT Traefik) terminates TLS via Let's Encrypt.
+Subdomains resolve directly to `87.99.148.242` (no proxy IP in front), which is
+required for Caddy's Let's Encrypt HTTP-01 challenge to succeed.
 
-If future DNS changes are needed via API, you'll need to either:
-1. Run `cloudflared tunnel login` to generate a `cert.pem` (browser-based auth), OR
-2. Generate a scoped API token at https://dash.cloudflare.com/profile/api-tokens with `Zone:DNS:Edit` permission for `ubntag.com`, then add `CLOUDFLARE_API_TOKEN=...` to `~/.env`.
+## Onboarding prerequisite (do this BEFORE bootstrap-tenant.sh)
 
-## Why proxy is OFF on this record
+A new tenant needs its subdomain pointing at the box first:
 
-Coolify + Traefik on the Hetzner box handle Let's Encrypt SSL termination directly. Cloudflare proxy in front would interfere with the Let's Encrypt HTTP-01 challenge unless Origin Certificates are configured (more complex, not needed for Tier 1 launch).
+1. In **Vercel** → the `ubntag.com` domain → add an **A record**:
+   `<tenant-id>.ubntag.com  →  87.99.148.242`
+2. Wait for it to resolve: `dig +short <tenant-id>.ubntag.com` returns `87.99.148.242`.
+3. Then run `bootstrap-tenant.sh <id> <id>.ubntag.com <owner-email>` on the box.
+   Caddy auto-issues the TLS cert on first request.
 
-The fact that `openclaw.ubntag.com` resolves directly to `87.99.148.242` (not a Cloudflare proxy IP like `104.x.x.x` or `172.x.x.x`) confirms the gray-cloud (DNS-only) configuration is already in place.
+## Credential note
+
+If you ever need to change DNS programmatically, it's the **Vercel** API/CLI
+(`vercel dns`), authenticated with a Vercel token — not Cloudflare. Losing
+access to the Vercel account blocks new-tenant onboarding until restored, so
+keep Vercel login recoverable (1Password).
