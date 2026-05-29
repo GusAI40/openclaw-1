@@ -2,9 +2,19 @@
 -- Migration 001 — Tenant isolation for rescue-websites pipeline
 -- ============================================================
 --
--- STATUS: PROPOSAL — DO NOT APPLY UNTIL SIMULATOR VALIDATES.
+-- STATUS: APPLIED + VALIDATED — verified live 2026-05-29.
+--   Sim gate (the original precondition) PASSED: lock=none -> 322 places
+--   double-claimed / 103 emails double-targeted; lock=advisory and lock=race
+--   -> 0 / 0. The tenant_id + claim-lock mechanism this migration adds is
+--   confirmed effective at eliminating Friendly Fire.
+--   Live schema verified present: tenant_id/claimed_at/sequence_part_sent/
+--   next_send_at on businesses; tenant_id on audits + emails; the three new
+--   tables (suppressions, snoozes, send_quota); all idx_wr_* indexes; the
+--   suppressions shape (7 cols). Idempotent (IF NOT EXISTS) — safe to re-run.
+--   In ACTIVE USE: website_rescue_businesses backfill = gus:4, julian:1440
+--   (tenant isolation working, no collisions observed).
 -- Target Supabase project: bjhjqegqfieyekbffgij (tag-ai-data)
--- Authored: 2026-05-13 (post 2026-05-12 v2 session)
+-- Authored: 2026-05-13 (post 2026-05-12 v2 session) | Applied: on/before 2026-05-29
 -- Author: Claude (under Gus's direction)
 --
 -- WHY THIS EXISTS

@@ -134,11 +134,12 @@ Severity scale: **Critical** (active outage / silent revenue loss), **High** (on
 
 | Severity | Count | Open |
 |---|---|---|
-| Critical | 0 | — (R-1 fixed 2026-05-28) |
-| High | 4 | R-5, R-6, R-7, R-9 |
-| Medium | 5 | R-3, R-4, R-8, R-10, R-11 |
+| Critical | 0 | — |
+| High | 2 | R-5, R-7 |
+| Medium | 2 | R-3, R-11 |
 | Low | 4 | R-12, R-14, R-15, R-16 |
 
 **Resolved 2026-05-28:** R-1 (dotted Claude IDs), Gus Telegram model-override jam, R-13 (image+video generation), R-2 (lane-jam watchdog deployed).
+**Resolved 2026-05-29:** R-6 (bootstrap tooling in repo, secrets excluded), R-8 (DNS system-of-record corrected to Vercel), R-10 (Julian MCP dead-server cleanup), R-9 (tenant-isolation migration — sim-validated, confirmed already applied + active in prod: julian:1440/gus:4 rows, no collisions), R-4 (age backup key confirmed in 1Password by Gus).
 
-**12 open risks remain.** **Highest leverage next: R-9 (sim migration — kills 3 live-pipeline bugs) and R-6 (bootstrap into repo — recovery resilience).**
+**8 open risks remain.** **Highest leverage next: R-7 (device auth — gates paid tenants) and R-5 (backup recovery drill / warm standby). Then the R-11/12/14/15/16 cleanup sweep.**
