@@ -17,6 +17,23 @@ mutation.
 | `research/` | Stores market/provider/offer research used to design verticals and campaigns. |
 | `verticals/` | Holds business-domain overlays: prompts, skills, metadata, and smoke tests. |
 
+## Launch Gates
+
+Run the paid-tenant preflight before any live client deploy:
+
+```bash
+./deploy/preflight-paid-tenant.sh \
+  --vertical construction \
+  --client-id acme-builders \
+  --subdomain acme-builders.ubntag.com \
+  --owner-email owner@acme.com \
+  --owner-telegram 123456789
+```
+
+The preflight is read-only. It validates DNS, the numeric Telegram owner id,
+Docker loopback exposure, Caddy state, backup integrity evidence, and the
+tenant allowlist if the tenant already exists.
+
 ## Current Vertical
 
 | Vertical | Status | Notes |

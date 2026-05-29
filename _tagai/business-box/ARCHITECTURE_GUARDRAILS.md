@@ -18,6 +18,7 @@ wrong.
 |---|---|---|
 | `bootstrap/bootstrap-tenant.sh` | Base tenant provisioning: dirs, ports, token, compose, Caddy block, OpenClaw config, corp roster | Vertical business logic, marketing copy, client-specific pricing |
 | `business-box/deploy/deploy-vertical.sh` | Sold-client orchestration: validate intake, call bootstrap, apply selected vertical overlay, set owner allowlist | Reimplementing Docker/Caddy provisioning, editing shared secrets, running campaigns |
+| `business-box/deploy/preflight-paid-tenant.sh` | Read-only paid-launch gate: DNS, numeric owner id, Docker exposure, Caddy state, backup evidence, existing tenant allowlist | Creating tenants, editing DNS, patching configs, restarting services, printing secrets |
 | `business-box/verticals/<vertical>/` | Vertical identity, system-prompt overlay, vertical skills, required client inputs | Tenant lifecycle, DNS mutation, API key storage |
 | `business-box/intake/` | Client data capture schema and validation | Deployment, secret storage, campaign execution |
 | `business-box/research/` | Market research, offer research, competitor notes, provider-doc evidence | Runtime config, live sends, production mutations |

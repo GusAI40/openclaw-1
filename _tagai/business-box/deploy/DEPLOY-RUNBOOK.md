@@ -61,6 +61,24 @@ The `_tagai/` tree must be present on the box (it is, on the shared host). If
 deploying to a brand-new dedicated box, copy `_tagai/bootstrap` + the secret
 files first (see "Dedicated VPS" below).
 
+### Button 3.5 - Run paid-tenant preflight
+This is read-only and should pass before a paid launch:
+
+```bash
+cd /home/tagai/openclaw/_tagai/business-box
+
+./deploy/preflight-paid-tenant.sh \
+  --vertical construction \
+  --client-id acme-builders \
+  --subdomain acme-builders.ubntag.com \
+  --owner-email owner@acme.com \
+  --owner-telegram 123456789
+```
+
+It blocks on wrong DNS, non-numeric Telegram owner ids, public Docker port
+publishing, inactive Caddy, missing backup evidence, and a missing owner
+allowlist when the tenant already exists.
+
 ### Button 4 — Run the deploy engine
 ```bash
 cd /home/tagai/openclaw/_tagai/business-box/deploy   # path to this repo on the box
