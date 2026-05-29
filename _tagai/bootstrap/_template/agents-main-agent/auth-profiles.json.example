@@ -1,0 +1,12 @@
+{
+  "_comment": "SANITIZED EXAMPLE. The real auth-profiles.json carries live LLM API keys, is mode 600, and is git-ignored. Restore the real one from the encrypted backup on a fresh box, or recreate with valid keys. Without it the runtime fails over deepseek -> gemini forever.",
+  "version": 1,
+  "profiles": {
+    "anthropic:default": { "type": "api_key", "provider": "anthropic", "key": "<FILL: sk-ant-...>" },
+    "openai:default":    { "type": "api_key", "provider": "openai",    "key": "<FILL: sk-proj-...>" },
+    "google:default":    { "type": "api_key", "provider": "google",    "key": "<FILL: AIza...>" },
+    "deepseek:default":  { "type": "api_key", "provider": "deepseek",  "key": "<FILL: sk-...>" },
+    "groq:default":      { "type": "api_key", "provider": "groq",      "key": "<FILL>" },
+    "mistral:default":   { "type": "api_key", "provider": "mistral",   "key": "<FILL>" }
+  }
+}

@@ -1,0 +1,10 @@
+# Never commit live secrets from the bootstrap template.
+# Real values live on the box and in the encrypted off-site backup, not in git.
+# (.example files ARE committed to document structure.)
+
+_template/.env.tpl
+_template/.env
+_template/agents-main-agent/auth-profiles.json
+_template/agents-main-agent/auth-state.json
+*.gateway-token
+.gateway-token
