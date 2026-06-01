@@ -236,8 +236,26 @@ if [ -d "$BACKUP_DIR" ]; then
                 else
                     fail "memory.sqlite integrity_check returned '${SQLITE_RESULT:-<no output>}'"
                 fi
+            elif command -v python3 >/dev/null 2>&1; then
+                SQLITE_RESULT=$(python3 - "$LATEST_BACKUP/memory.sqlite" <<'PY'
+import sqlite3
+import sys
+
+path = sys.argv[1]
+conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+try:
+    print(conn.execute("PRAGMA integrity_check;").fetchone()[0])
+finally:
+    conn.close()
+PY
+                )
+                if [ "$SQLITE_RESULT" = "ok" ]; then
+                    pass "memory.sqlite integrity_check ok via python3"
+                else
+                    fail "memory.sqlite python3 integrity_check returned '${SQLITE_RESULT:-<no output>}'"
+                fi
             else
-                warn "sqlite3 unavailable; memory.sqlite integrity not checked"
+                warn "sqlite3/python3 unavailable; memory.sqlite integrity not checked"
             fi
         fi
     else
