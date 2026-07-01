@@ -388,6 +388,22 @@ export async function incrementTodaysSendCount(fromDomain: string): Promise<void
   const supabase = getSupabase();
   const sendDate = new Date().toISOString().slice(0, 10);
 
+  const { error: rpcErr } = await supabase.rpc(
+    'increment_website_rescue_send_quota',
+    {
+      p_tenant_id: env.TENANT_ID,
+      p_from_domain: fromDomain,
+      p_send_date: sendDate,
+    },
+  );
+
+  if (!rpcErr) return;
+
+  console.error(
+    'incrementTodaysSendCount RPC error; falling back to legacy upsert:',
+    rpcErr.message,
+  );
+
   const { data: existing, error: readErr } = await supabase
     .from(TABLE_SEND_QUOTA)
     .select('sends')
