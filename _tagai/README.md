@@ -21,6 +21,14 @@ Latest city-map audit bundle:
 
 Plain-English summary: this repo is the OpenClaw gateway city plus TAG operating overlay. It is not itself a Vercel website. The immediate blockers are exposed tokens, mixed dirty worktree, Firecrawl provider validation, webhook deletion verification, and rescue-pipeline hardening.
 
+## Current Security 10x Hardening
+
+Latest security rebuild map:
+
+- `_tagai/security-10x-2026-07-03/SECURITY_REENGINEERING_MAP.md`
+
+Plain-English summary: this is the first-principles security rebuild plan for the Jarvis AI/OpenClaw environment. It treats the repo as a city, maps the 11 security streets, records the official docs checked, lists local scan evidence, and defines the sign-off gates required before calling the environment secure.
+
 ## Why Separated
 
 The repo root tracks upstream OpenClaw (`openclaw/openclaw`). Keeping our customization isolated in `_tagai/` lets us:
