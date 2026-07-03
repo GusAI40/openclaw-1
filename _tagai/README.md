@@ -6,6 +6,21 @@
 
 This folder contains all Jarvis-AI-specific customization for the fork (`GusAI40/openclaw-1`). Everything that is **not** part of the upstream OpenClaw project lives here: deployment configs for Hetzner, channel routing strategy, capability inventory, onboarding playbooks, and Claude Code instructions for this repo.
 
+## Current Senior Repo Audit
+
+Latest city-map audit bundle:
+
+- `_tagai/audit-2026-07-03/README.md`
+- `_tagai/audit-2026-07-03/REPO_VISUAL_MAP.md`
+- `_tagai/audit-2026-07-03/TECHNICAL_ARCHITECTURE.md`
+- `_tagai/audit-2026-07-03/PROVIDER_VALIDATION.md`
+- `_tagai/audit-2026-07-03/REVENUE_FLOW.md`
+- `_tagai/audit-2026-07-03/RISK_REGISTER.md`
+- `_tagai/audit-2026-07-03/ACTION_AND_GITHUB_PLAN.md`
+- `_tagai/audit-2026-07-03/GITHUB_SYNC_REPORT.md`
+
+Plain-English summary: this repo is the OpenClaw gateway city plus TAG operating overlay. It is not itself a Vercel website. The immediate blockers are exposed tokens, mixed dirty worktree, Firecrawl provider validation, webhook deletion verification, and rescue-pipeline hardening.
+
 ## Why Separated
 
 The repo root tracks upstream OpenClaw (`openclaw/openclaw`). Keeping our customization isolated in `_tagai/` lets us:
