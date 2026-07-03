@@ -1,5 +1,6 @@
 import { rmSync } from "node:fs";
 import fs from "node:fs/promises";
+import path from "node:path";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loginWeb } from "./login.js";
 import { createWaSocket, formatError, waitForWaConnection } from "./session.js";
@@ -117,7 +118,7 @@ describe("loginWeb coverage", () => {
     await expect(loginWeb(false, waitForWaConnectionMock as never)).rejects.toThrow(
       /cache cleared/i,
     );
-    expect(rmMock).toHaveBeenCalledWith(testState.authDir, {
+    expect(rmMock).toHaveBeenCalledWith(path.resolve(testState.authDir), {
       recursive: true,
       force: true,
     });

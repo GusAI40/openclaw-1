@@ -20,7 +20,7 @@ Confirmed locally:
 
 Blocked or degraded checks:
 
-- `pnpm.cmd docs:list` did not reach docs indexing. It failed during workspace dependency install because `@whiskeysockets/baileys` pulls an exotic `libsignal` subdependency while `blockExoticSubdeps` is enabled. This is a package manager policy issue, not proof that docs are missing.
+- `pnpm.cmd docs:list` initially failed because `@whiskeysockets/baileys@7.0.0-rc.9` pulled an exotic git `libsignal` subdependency while `blockExoticSubdeps` was enabled. Follow-up validation resolved this by moving pnpm settings into `pnpm-workspace.yaml` and upgrading Baileys to `7.0.0-rc13`, which uses npm `libsignal@6.0.0`.
 - Context7 MCP was requested by the repo-audit skill, but no Context7 tool was available in this session. I used official provider documentation by web instead.
 
 ## 1. Visual Repo Map
@@ -260,7 +260,7 @@ Highest-leverage fix:
 | --- | --- | --- | --- |
 | Tokens pasted in chat | Critical | Chat text should be treated as exposed | Rotate Vercel, Supabase, and GitHub tokens after this work window. |
 | Repo is dirty with unrelated work | High | A broad commit could mix docs, Firecrawl code, env changes, deleted files, and audits | Commit only scoped docs/code changes. |
-| `pnpm docs:list` fails before docs index | High | The required repo doc discovery command cannot run | Fix package manager policy issue around exotic subdeps. |
+| `pnpm docs:list` package-manager blocker | Resolved | The required repo doc discovery command could not run until Baileys/libsignal and pnpm settings were fixed | Keep `blockExoticSubdeps` enabled and monitor future dependency changes. |
 | Vercel apps live outside this repo | High | A full Vercel upgrade cannot be proven from this repo alone | Audit each actual Vercel project repo separately. |
 | This repo has Vercel provider configs but no Vercel app config | Medium | Adding `vercel.ts` here would be decorative, not useful | Add `vercel.ts` only to deployable Vercel app repos. |
 | Supabase RLS remains project-wide work | High | Tenant data can leak if policies are permissive or fake | Continue advisors and tenant-claim design. |
@@ -287,7 +287,7 @@ Next GitHub PRs:
 2. Firecrawl SDK v2 cleanup.
 3. Supabase advisor cleanup and RLS design.
 4. Vercel AI Gateway provider-contract plan for OpenClaw.
-5. Package manager policy fix so `pnpm docs:list` and smoke tests can run.
+5. Package manager policy follow-through: keep `pnpm docs:list` and WhatsApp tests green after future dependency upgrades.
 
 ## 10. Plain-English Bottom Line
 

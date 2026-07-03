@@ -18,8 +18,8 @@ This audit is scoped to the local repo at `openclaw-4-25-26`. It does not claim 
 - The repo has `src/`, `extensions/`, `ui/`, `apps/`, `packages/`, `scripts/`, `mcp-servers/`, `rescue-websites-sim/`, and `_tagai/`.
 - The repo has no root `vercel.json`, no `vercel.ts`, and no `next.config.*`.
 - `Vercel CLI 54.18.1` is installed locally.
-- `pnpm docs:list` currently fails before docs indexing because the workspace install hits `@whiskeysockets/baileys@7.0.0-rc.9` pulling a git `libsignal` subdependency while pnpm `blockExoticSubdeps` is enabled.
-- pnpm also warns that the old `package.json` `pnpm` field is ignored by current pnpm settings rules.
+- `pnpm docs:list` initially failed before docs indexing because the workspace install hit `@whiskeysockets/baileys@7.0.0-rc.9` pulling a git `libsignal` subdependency while pnpm `blockExoticSubdeps` was enabled.
+- Follow-up package-manager work resolved the docs blocker by moving pnpm settings into `pnpm-workspace.yaml`, keeping `blockExoticSubdeps` enabled, and upgrading Baileys to `7.0.0-rc13`, which uses npm `libsignal@6.0.0`.
 - The worktree already had unrelated dirty files before this audit bundle was added. This bundle does not modify those files.
 - Julian's rescue website work was previously recovered from a fragile container layer, backed up, and pushed to GitHub. The remaining uncommitted files were deliberate scratch or pending deliverables.
 
@@ -29,7 +29,7 @@ Think of this repo as the city operations center. It is not one storefront. It i
 
 The fastest safe business move is:
 
-1. Fix the package-manager/docs blocker.
+1. Keep the package-manager/docs gate green.
 2. Keep OpenClaw as the gateway city.
 3. Use Vercel for actual web storefront repos.
 4. Use Supabase as the durable record book, with explicit grants and RLS.

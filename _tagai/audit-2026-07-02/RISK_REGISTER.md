@@ -3,8 +3,8 @@
 | Risk | Severity | Evidence | Why it matters | Next fix |
 | --- | --- | --- | --- | --- |
 | Exposed tokens in chat | Critical | Vercel, Supabase, and GitHub PATs were pasted into the conversation | Treat as compromised secrets | Rotate all three tokens after this work window |
-| `pnpm docs:list` blocked | High | Fails on `@whiskeysockets/baileys` transitive git `libsignal` with `blockExoticSubdeps` | Required repo docs discovery cannot complete | Fix pnpm supply-chain policy and Baileys dependency path |
-| pnpm settings drift | High | pnpm warns `package.json` `pnpm` field is ignored | Overrides, patches, package extensions may not apply | Move remaining pnpm config into `pnpm-workspace.yaml` |
+| `pnpm docs:list` package-manager blocker | Resolved | Baileys was upgraded from `7.0.0-rc.9` to `7.0.0-rc13`, moving `libsignal` from git to npm while keeping `blockExoticSubdeps` enabled | Required repo docs discovery now completes | Keep this gate in CI/local validation |
+| pnpm settings drift | Resolved | pnpm settings were moved from the ignored `package.json` `pnpm` field into `pnpm-workspace.yaml` | Overrides, package extensions, peer rules, and build approvals now apply from the supported file | Watch future pnpm release notes before changing settings |
 | Dirty worktree before audit | High | Many unrelated modified/deleted/untracked files already existed | A broad commit could mix unrelated code and docs | Stage/commit only scoped files |
 | This repo is not a Vercel app | High | No `vercel.json`, no `vercel.ts`, no `next.config.*` | A "Vercel upgrade" here can only be docs/provider prep, not a deploy upgrade | Upgrade actual Vercel app repos separately |
 | Adjacent Vercel projects not cloned here | High | Vercel account/project inventory exists, but source repos are separate | Cannot prove app-level Fluid/Workflow/Rolling Release changes from this repo alone | Audit each app repo one by one |
@@ -18,7 +18,7 @@
 ## Critical Calls
 
 1. Rotate exposed PATs. This is not optional if these accounts matter.
-2. Fix pnpm/docs discovery before claiming repo validation is green.
+2. Keep pnpm/docs discovery green before claiming future repo validation is green.
 3. Do not add Vercel app config to this repo just to look upgraded.
 4. Upgrade real Vercel app repos where the websites live.
 5. Treat rescue outreach as a compliance and sender-reputation system, not just a script.

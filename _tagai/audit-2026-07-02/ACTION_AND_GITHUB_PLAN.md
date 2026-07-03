@@ -3,11 +3,12 @@
 ## Priority 1 - Protect Accounts And Unlock Validation
 
 1. Rotate the exposed Vercel, Supabase, and GitHub tokens.
-2. Fix pnpm configuration drift:
-   - Move ignored `package.json` `pnpm` settings into `pnpm-workspace.yaml`.
-   - Decide whether `@whiskeysockets/baileys` should be pinned, patched, replaced, or explicitly allowed without weakening supply-chain policy blindly.
-3. Rerun `pnpm docs:list`.
-4. After docs list works, run the scoped repo gate for documentation-only changes.
+2. Keep the package-manager validation gate green:
+   - pnpm settings now live in `pnpm-workspace.yaml`.
+   - `blockExoticSubdeps` remains enabled.
+   - `@whiskeysockets/baileys` now uses `7.0.0-rc13`, which resolves `libsignal` from npm.
+3. Keep `pnpm docs:list` in the first validation pass.
+4. Run the scoped repo gate before each docs or dependency update.
 
 Business impact: protects the keys to the city and restores the ability to verify work.
 
@@ -94,7 +95,7 @@ Latest TAG AI/OpenClaw audit bundle:
 - `_tagai/audit-2026-07-02/RISK_REGISTER.md`
 - `_tagai/audit-2026-07-02/ACTION_AND_GITHUB_PLAN.md`
 
-Plain-English summary: this repo is the OpenClaw gateway city, not a Vercel app. Vercel upgrades belong in the adjacent customer-facing app repos. The immediate blockers are exposed tokens, pnpm docs-list failure, and rescue pipeline hardening.
+Plain-English summary: this repo is the OpenClaw gateway city, not a Vercel app. Vercel upgrades belong in the adjacent customer-facing app repos. The immediate blockers are exposed tokens, adjacent-app Vercel validation, and rescue pipeline hardening. The pnpm docs-list blocker was resolved in follow-up package-manager work.
 ```
 
 Suggested architecture-doc summary:
@@ -115,7 +116,7 @@ Revenue purpose: automate lead research, customer communication, tenant launch, 
 ## Definition Of Done For The Next Pass
 
 - Tokens rotated.
-- `pnpm docs:list` succeeds.
+- `pnpm docs:list` succeeds and remains a required first check.
 - Latest audit bundle pushed to GitHub.
-- Separate issue/PR opened for pnpm settings drift.
+- Package-manager settings drift stays resolved in `pnpm-workspace.yaml`.
 - Actual Vercel app repo selected for first real Fluid/AI Gateway/Workflow upgrade.

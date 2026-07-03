@@ -18,7 +18,8 @@ Context7 MCP was not available in this session, so official web documentation wa
 | Supabase Data API grants | https://supabase.com/changelog and https://supabase.com/docs/guides/api/securing-your-api | SQL migrations and client access | Supabase is moving toward explicit grants for Data API access. RLS is not the same as grants. | Migrations should include grants plus RLS plus policies. |
 | Supabase MCP | https://supabase.com/docs/guides/ai-tools/mcp | `_tagai/bootstrap/_template/openclaw.json.tpl` | MCP exists for project/database operations. | Keep PATs out of repo; use scoped auth. |
 | GitHub PATs | https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens | Git push, GitHub CLI, CI | PATs pasted in chat are exposed secrets. | Rotate them after this work window. |
-| pnpm settings | https://pnpm.io/settings | monorepo install, docs scripts, tests | Current pnpm warns that `package.json` `pnpm` field is ignored. `blockExoticSubdeps` blocks Baileys transitive git dependency. | Move pnpm settings to `pnpm-workspace.yaml` and decide how to handle Baileys/libsignal safely. |
+| pnpm settings | https://pnpm.io/settings | monorepo install, docs scripts, tests | Follow-up work moved pnpm settings into `pnpm-workspace.yaml`; `blockExoticSubdeps` stays enabled. | Keep settings in `pnpm-workspace.yaml` and verify future pnpm changes against official docs. |
+| WhiskeySockets Baileys | https://github.com/WhiskeySockets/Baileys/releases and package metadata | `extensions/whatsapp/` WhatsApp plugin | `7.0.0-rc13` is the current package used locally; its `libsignal` dependency resolves from npm, not GitHub codeload. | Keep WhatsApp tests in the dependency-upgrade gate. |
 | Node.js ESM | https://nodejs.org/api/esm.html | package `"type": "module"`, TS ESM code | Repo is ESM and targets Node 22+. | Keep explicit extensions and ESM-safe imports. |
 | TypeScript | https://www.typescriptlang.org/docs/ | strict TS build lanes | Repo uses TypeScript and tsgo lanes. | Use repo typecheck commands, not ad-hoc `tsc --noEmit`. |
 | Vitest | https://vitest.dev/guide/ | test lanes | Repo uses Vitest through scripts. | Run repo scripts, not raw `vitest`. |
@@ -38,5 +39,5 @@ Context7 MCP was not available in this session, so official web documentation wa
 
 - I validated this repo directly, but I did not clone every adjacent Vercel project repo in this pass.
 - I did not run live Supabase writes in this pass because the requested scope was mapping and documentation, not schema changes.
-- I did not run full tests because `pnpm docs:list` fails during dependency install before docs indexing.
+- I did not run full repo tests in this pass. Follow-up validation did run `pnpm docs:list`, postinstall tests, and the full WhatsApp plugin test suite after the package-manager fix.
 - I did not add a root `vercel.ts` because this repo is not currently a Vercel app.
