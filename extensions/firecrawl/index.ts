@@ -1,4 +1,9 @@
 import { definePluginEntry, type AnyAgentTool } from "openclaw/plugin-sdk/plugin-entry";
+import {
+  createFirecrawlAgentCancelTool,
+  createFirecrawlAgentStatusTool,
+  createFirecrawlAgentTool,
+} from "./src/firecrawl-agent-tools.js";
 import { createFirecrawlWebFetchProvider } from "./src/firecrawl-fetch-provider.js";
 import { createFirecrawlScrapeTool } from "./src/firecrawl-scrape-tool.js";
 import { createFirecrawlWebSearchProvider } from "./src/firecrawl-search-provider.js";
@@ -13,5 +18,8 @@ export default definePluginEntry({
     api.registerWebSearchProvider(createFirecrawlWebSearchProvider());
     api.registerTool(createFirecrawlSearchTool(api) as AnyAgentTool);
     api.registerTool(createFirecrawlScrapeTool(api) as AnyAgentTool);
+    api.registerTool(createFirecrawlAgentTool(api) as AnyAgentTool);
+    api.registerTool(createFirecrawlAgentStatusTool(api) as AnyAgentTool);
+    api.registerTool(createFirecrawlAgentCancelTool(api) as AnyAgentTool);
   },
 });

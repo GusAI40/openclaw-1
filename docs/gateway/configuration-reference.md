@@ -170,6 +170,10 @@ See [MCP](/cli/mcp#openclaw-as-an-mcp-client-registry) and
   - `onlyMainContent`: extract only the main content from pages (default: `true`).
   - `maxAgeMs`: maximum cache age in milliseconds (default: `172800000` / 2 days).
   - `timeoutSeconds`: scrape request timeout in seconds (default: `60`).
+- `plugins.entries.firecrawl.config.agent`: Firecrawl Agent job settings.
+  - `apiKey`: Firecrawl API key (accepts SecretRef). Falls back to `FIRECRAWL_API_KEY`.
+  - `baseUrl`: Firecrawl API base URL (default: `https://api.firecrawl.dev`).
+  - `timeoutSeconds`: Agent start/status/cancel request timeout in seconds (default: `60`).
 - `plugins.entries.xai.config.xSearch`: xAI X Search (Grok web search) settings.
   - `enabled`: enable the X Search provider.
   - `model`: Grok model to use for search (e.g. `"grok-4-1-fast"`).

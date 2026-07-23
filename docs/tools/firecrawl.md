@@ -12,6 +12,7 @@ OpenClaw can use **Firecrawl** in three ways:
 
 - as the `web_search` provider
 - as explicit plugin tools: `firecrawl_search` and `firecrawl_scrape`
+- as explicit Agent job tools: `firecrawl_agent`, `firecrawl_agent_status`, and `firecrawl_agent_cancel`
 - as a fallback extractor for `web_fetch`
 
 It is a hosted extraction/search service that supports bot circumvention and caching,
@@ -89,6 +90,40 @@ Notes:
 
 `firecrawl_scrape` reuses the same `plugins.entries.firecrawl.config.webFetch.*` settings and env vars.
 
+## Configure Firecrawl Agent
+
+Firecrawl Agent runs agentic extraction jobs through Firecrawl's `/v2/agent`
+API. Use this when the agent needs to gather structured data from the web from a
+natural-language prompt instead of a fixed search or scrape URL.
+
+```json5
+{
+  plugins: {
+    entries: {
+      firecrawl: {
+        enabled: true,
+        config: {
+          agent: {
+            apiKey: "FIRECRAWL_API_KEY_HERE",
+            baseUrl: "https://api.firecrawl.dev",
+            timeoutSeconds: 60,
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+Notes:
+
+- `FIRECRAWL_API_KEY` is the shared env fallback for search, scrape, and Agent jobs.
+- `firecrawl_agent` starts a job and returns a job id.
+- `firecrawl_agent_status` polls that job id and returns data once the job is completed.
+- `firecrawl_agent_cancel` cancels a running job.
+- `maxCredits` should be set for open-ended prompts to cap spend.
+- Firecrawl's current self-hosting docs say `/agent` and `/browser` are not supported in self-hosted instances. On a VPS, use Firecrawl Cloud for Agent jobs unless Firecrawl changes that support.
+
 ## Firecrawl plugin tools
 
 ### `firecrawl_search`
@@ -117,6 +152,38 @@ Core parameters:
 - `maxAgeMs`
 - `proxy`
 - `storeInCache`
+- `timeoutSeconds`
+
+### `firecrawl_agent`
+
+Use this for prompt-driven web data gathering.
+
+Core parameters:
+
+- `prompt`
+- `urls`
+- `schema`
+- `maxCredits`
+- `strictConstrainToURLs`
+- `model`
+- `timeoutSeconds`
+
+### `firecrawl_agent_status`
+
+Use this to poll an Agent job.
+
+Core parameters:
+
+- `jobId`
+- `timeoutSeconds`
+
+### `firecrawl_agent_cancel`
+
+Use this to cancel an Agent job.
+
+Core parameters:
+
+- `jobId`
 - `timeoutSeconds`
 
 ## Stealth / bot circumvention

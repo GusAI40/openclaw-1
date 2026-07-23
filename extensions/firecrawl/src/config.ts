@@ -5,6 +5,7 @@ import { resolveSecretInputString, normalizeSecretInput } from "openclaw/plugin-
 export const DEFAULT_FIRECRAWL_BASE_URL = "https://api.firecrawl.dev";
 export const DEFAULT_FIRECRAWL_SEARCH_TIMEOUT_SECONDS = 30;
 export const DEFAULT_FIRECRAWL_SCRAPE_TIMEOUT_SECONDS = 60;
+export const DEFAULT_FIRECRAWL_AGENT_TIMEOUT_SECONDS = 60;
 export const DEFAULT_FIRECRAWL_MAX_AGE_MS = 172_800_000;
 const FIRECRAWL_API_KEY_ENV_VAR = "FIRECRAWL_API_KEY";
 
@@ -38,6 +39,11 @@ type PluginEntryConfig =
         baseUrl?: string;
         onlyMainContent?: boolean;
         maxAgeMs?: number;
+        timeoutSeconds?: number;
+      };
+      agent?: {
+        apiKey?: unknown;
+        baseUrl?: string;
         timeoutSeconds?: number;
       };
     }
@@ -156,6 +162,10 @@ export function resolveFirecrawlApiKey(cfg?: OpenClawConfig): string | undefined
       path: "plugins.entries.firecrawl.config.webFetch.apiKey",
     },
     {
+      value: pluginConfig?.agent?.apiKey,
+      path: "plugins.entries.firecrawl.config.agent.apiKey",
+    },
+    {
       value: search?.apiKey,
       path: "plugins.entries.firecrawl.config.webSearch.apiKey",
     },
@@ -187,7 +197,9 @@ export function resolveFirecrawlApiKey(cfg?: OpenClawConfig): string | undefined
 export function resolveFirecrawlBaseUrl(cfg?: OpenClawConfig): string {
   const search = resolveFirecrawlSearchConfig(cfg);
   const fetch = resolveFirecrawlFetchConfig(cfg);
+  const pluginConfig = cfg?.plugins?.entries?.firecrawl?.config as PluginEntryConfig;
   const configured =
+    (typeof pluginConfig?.agent?.baseUrl === "string" ? pluginConfig.agent.baseUrl.trim() : "") ||
     (typeof search?.baseUrl === "string" ? search.baseUrl.trim() : "") ||
     (typeof fetch?.baseUrl === "string" ? fetch.baseUrl.trim() : "") ||
     normalizeSecretInput(process.env.FIRECRAWL_BASE_URL) ||
@@ -244,4 +256,19 @@ export function resolveFirecrawlSearchTimeoutSeconds(override?: number): number 
     return Math.floor(override);
   }
   return DEFAULT_FIRECRAWL_SEARCH_TIMEOUT_SECONDS;
+}
+
+export function resolveFirecrawlAgentTimeoutSeconds(
+  cfg?: OpenClawConfig,
+  override?: number,
+): number {
+  if (typeof override === "number" && Number.isFinite(override) && override > 0) {
+    return Math.floor(override);
+  }
+  const pluginConfig = cfg?.plugins?.entries?.firecrawl?.config as PluginEntryConfig;
+  const configured = pluginConfig?.agent?.timeoutSeconds;
+  if (typeof configured === "number" && Number.isFinite(configured) && configured > 0) {
+    return Math.floor(configured);
+  }
+  return DEFAULT_FIRECRAWL_AGENT_TIMEOUT_SECONDS;
 }

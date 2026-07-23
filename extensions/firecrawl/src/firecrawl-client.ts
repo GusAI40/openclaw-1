@@ -15,6 +15,7 @@ import { wrapExternalContent, wrapWebContent } from "openclaw/plugin-sdk/securit
 import {
   resolveFirecrawlApiKey,
   resolveFirecrawlBaseUrl,
+  resolveFirecrawlAgentTimeoutSeconds,
   resolveFirecrawlMaxAgeMs,
   resolveFirecrawlOnlyMainContent,
   resolveFirecrawlScrapeTimeoutSeconds,
@@ -32,6 +33,8 @@ const SCRAPE_CACHE = new Map<
 const DEFAULT_SEARCH_COUNT = 5;
 const DEFAULT_SCRAPE_MAX_CHARS = 50_000;
 const ALLOWED_FIRECRAWL_HOSTS = new Set(["api.firecrawl.dev"]);
+const FIRECRAWL_AGENT_JOB_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type FirecrawlSearchItem = {
   title: string;
@@ -64,7 +67,29 @@ export type FirecrawlScrapeParams = {
   timeoutSeconds?: number;
 };
 
-function resolveEndpoint(baseUrl: string, pathname: "/v2/search" | "/v2/scrape"): string {
+export type FirecrawlAgentModel = "spark-1-mini" | "spark-1-pro";
+
+export type FirecrawlAgentStartParams = {
+  cfg?: OpenClawConfig;
+  prompt: string;
+  urls?: string[];
+  schema?: Record<string, unknown>;
+  maxCredits?: number;
+  strictConstrainToURLs?: boolean;
+  model?: FirecrawlAgentModel;
+  timeoutSeconds?: number;
+};
+
+export type FirecrawlAgentJobParams = {
+  cfg?: OpenClawConfig;
+  jobId: string;
+  timeoutSeconds?: number;
+};
+
+function resolveEndpoint(
+  baseUrl: string,
+  pathname: "/v2/search" | "/v2/scrape" | "/v2/agent",
+): string {
   const url = new URL(baseUrl.trim() || "https://api.firecrawl.dev");
   if (url.protocol !== "https:") {
     throw new Error("Firecrawl baseUrl must use https.");
@@ -77,6 +102,21 @@ function resolveEndpoint(baseUrl: string, pathname: "/v2/search" | "/v2/scrape")
   url.search = "";
   url.hash = "";
   url.pathname = pathname;
+  return url.toString();
+}
+
+function normalizeFirecrawlAgentJobId(jobId: string): string {
+  const normalized = jobId.trim();
+  if (!FIRECRAWL_AGENT_JOB_ID_PATTERN.test(normalized)) {
+    throw new Error("Firecrawl agent jobId must be a UUID.");
+  }
+  return normalized;
+}
+
+function resolveAgentJobEndpoint(baseUrl: string, jobId: string): string {
+  const normalizedJobId = normalizeFirecrawlAgentJobId(jobId);
+  const url = new URL(resolveEndpoint(baseUrl, "/v2/agent"));
+  url.pathname = `/v2/agent/${encodeURIComponent(normalizedJobId)}`;
   return url.toString();
 }
 
@@ -143,6 +183,44 @@ async function postFirecrawlJson<T>(
         }
         const safeDetail = wrapWebContent(detail.slice(0, 1_000), "web_fetch");
         throw new Error(`${params.errorLabel} API error (${response.status}): ${safeDetail}`);
+      }
+      return await parse(response);
+    },
+  );
+}
+
+async function requestFirecrawlJson<T>(
+  params: {
+    method: "GET" | "DELETE";
+    url: string;
+    timeoutSeconds: number;
+    apiKey: string;
+    errorLabel: string;
+  },
+  parse: (response: Response) => Promise<T>,
+): Promise<T> {
+  const apiKey = normalizeSecretInput(params.apiKey);
+  return await withStrictWebToolsEndpoint(
+    {
+      url: params.url,
+      timeoutSeconds: params.timeoutSeconds,
+      init: {
+        method: params.method,
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+      },
+    },
+    async ({ response }) => {
+      if (!response.ok) {
+        const errorBody = await readResponseText(response, { maxBytes: 64_000 });
+        const detail = errorBody.text || response.statusText || "request failed";
+        throw new Error(
+          `${params.errorLabel} API error (${response.status}): ${wrapWebContent(
+            detail.slice(0, 1_000),
+            "web_fetch",
+          )}`,
+        );
       }
       return await parse(response);
     },
@@ -495,9 +573,130 @@ export async function runFirecrawlScrape(
   return result;
 }
 
+function normalizeFirecrawlAgentPayload(payload: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {
+    success: payload.success !== false,
+  };
+  for (const key of ["id", "status", "model", "expiresAt", "creditsUsed"]) {
+    const value = payload[key];
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      result[key] = value;
+    }
+  }
+  if (payload.data && typeof payload.data === "object" && !Array.isArray(payload.data)) {
+    result.data = payload.data;
+  }
+  if (typeof payload.error === "string" && payload.error) {
+    result.error = wrapWebContent(payload.error, "web_fetch");
+  }
+  return result;
+}
+
+export async function startFirecrawlAgent(
+  params: FirecrawlAgentStartParams,
+): Promise<Record<string, unknown>> {
+  const apiKey = resolveFirecrawlApiKey(params.cfg);
+  if (!apiKey) {
+    throw new Error(
+      "firecrawl_agent needs a Firecrawl API key. Set FIRECRAWL_API_KEY in the Gateway environment, or configure plugins.entries.firecrawl.config.webSearch.apiKey.",
+    );
+  }
+  const urls = Array.isArray(params.urls) ? params.urls.filter(Boolean) : [];
+  const body: Record<string, unknown> = {
+    prompt: params.prompt,
+  };
+  if (urls.length > 0) {
+    body.urls = urls;
+  }
+  if (params.schema && Object.keys(params.schema).length > 0) {
+    body.schema = params.schema;
+  }
+  if (
+    typeof params.maxCredits === "number" &&
+    Number.isFinite(params.maxCredits) &&
+    params.maxCredits > 0
+  ) {
+    body.maxCredits = Math.floor(params.maxCredits);
+  }
+  if (typeof params.strictConstrainToURLs === "boolean") {
+    body.strictConstrainToURLs = params.strictConstrainToURLs;
+  }
+  if (params.model === "spark-1-pro" || params.model === "spark-1-mini") {
+    body.model = params.model;
+  }
+
+  const payload = await postFirecrawlJson(
+    {
+      url: resolveEndpoint(resolveFirecrawlBaseUrl(params.cfg), "/v2/agent"),
+      timeoutSeconds: resolveFirecrawlAgentTimeoutSeconds(params.cfg, params.timeoutSeconds),
+      apiKey,
+      body,
+      errorLabel: "Firecrawl Agent",
+    },
+    async (response) => (await response.json()) as Record<string, unknown>,
+  );
+  if (payload.success === false) {
+    const detail =
+      typeof payload.error === "string"
+        ? payload.error
+        : typeof payload.message === "string"
+          ? payload.message
+          : "unknown error";
+    throw new Error(`Firecrawl Agent API error: ${wrapWebContent(detail, "web_fetch")}`);
+  }
+  return normalizeFirecrawlAgentPayload(payload);
+}
+
+export async function getFirecrawlAgentStatus(
+  params: FirecrawlAgentJobParams,
+): Promise<Record<string, unknown>> {
+  const apiKey = resolveFirecrawlApiKey(params.cfg);
+  if (!apiKey) {
+    throw new Error(
+      "firecrawl_agent_status needs a Firecrawl API key. Set FIRECRAWL_API_KEY in the Gateway environment, or configure plugins.entries.firecrawl.config.webSearch.apiKey.",
+    );
+  }
+  const payload = await requestFirecrawlJson(
+    {
+      method: "GET",
+      url: resolveAgentJobEndpoint(resolveFirecrawlBaseUrl(params.cfg), params.jobId),
+      timeoutSeconds: resolveFirecrawlAgentTimeoutSeconds(params.cfg, params.timeoutSeconds),
+      apiKey,
+      errorLabel: "Firecrawl Agent Status",
+    },
+    async (response) => (await response.json()) as Record<string, unknown>,
+  );
+  return normalizeFirecrawlAgentPayload(payload);
+}
+
+export async function cancelFirecrawlAgent(
+  params: FirecrawlAgentJobParams,
+): Promise<Record<string, unknown>> {
+  const apiKey = resolveFirecrawlApiKey(params.cfg);
+  if (!apiKey) {
+    throw new Error(
+      "firecrawl_agent_cancel needs a Firecrawl API key. Set FIRECRAWL_API_KEY in the Gateway environment, or configure plugins.entries.firecrawl.config.webSearch.apiKey.",
+    );
+  }
+  const payload = await requestFirecrawlJson(
+    {
+      method: "DELETE",
+      url: resolveAgentJobEndpoint(resolveFirecrawlBaseUrl(params.cfg), params.jobId),
+      timeoutSeconds: resolveFirecrawlAgentTimeoutSeconds(params.cfg, params.timeoutSeconds),
+      apiKey,
+      errorLabel: "Firecrawl Agent Cancel",
+    },
+    async (response) => (await response.json()) as Record<string, unknown>,
+  );
+  return normalizeFirecrawlAgentPayload(payload);
+}
+
 export const __testing = {
+  normalizeFirecrawlAgentPayload,
   parseFirecrawlScrapePayload,
   postFirecrawlJson,
+  requestFirecrawlJson,
+  resolveAgentJobEndpoint,
   resolveEndpoint,
   resolveSearchItems,
 };

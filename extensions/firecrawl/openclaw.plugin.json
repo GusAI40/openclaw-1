@@ -23,12 +23,28 @@
     "webFetch.baseUrl": {
       "label": "Firecrawl Fetch Base URL",
       "help": "Firecrawl Fetch base URL override."
+    },
+    "agent.apiKey": {
+      "label": "Firecrawl Agent API Key",
+      "help": "Firecrawl API key for Agent jobs (fallback: FIRECRAWL_API_KEY env var).",
+      "sensitive": true,
+      "placeholder": "fc-..."
+    },
+    "agent.baseUrl": {
+      "label": "Firecrawl Agent Base URL",
+      "help": "Firecrawl Agent base URL override."
     }
   },
   "contracts": {
     "webFetchProviders": ["firecrawl"],
     "webSearchProviders": ["firecrawl"],
-    "tools": ["firecrawl_search", "firecrawl_scrape"]
+    "tools": [
+      "firecrawl_search",
+      "firecrawl_scrape",
+      "firecrawl_agent",
+      "firecrawl_agent_status",
+      "firecrawl_agent_cancel"
+    ]
   },
   "configContracts": {
     "compatibilityRuntimePaths": ["tools.web.search.apiKey"]
@@ -64,6 +80,21 @@
           },
           "maxAgeMs": {
             "type": "number"
+          },
+          "timeoutSeconds": {
+            "type": "number"
+          }
+        }
+      },
+      "agent": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "apiKey": {
+            "type": ["string", "object"]
+          },
+          "baseUrl": {
+            "type": "string"
           },
           "timeoutSeconds": {
             "type": "number"

@@ -35,8 +35,12 @@
 | --- | --- | --- |
 | `openclaw-openclaw-gateway-1` | Gus primary OpenClaw gateway | healthy ✅ |
 | `openclaw-julian-gateway` | Julian tenant OpenClaw gateway | healthy ✅ |
-| `michelle-cma` | Michelle CMA report API | healthy ✅ |
-| `tour-book` | Buyer tour-book generator | healthy ✅ |
+| `michelle-cma` | Michelle CMA report API — **KEEP** (OpenClaw backend, see note) | healthy ✅ |
+| `tour-book` | Buyer tour-book generator | **stopped ⏸️ — pending retirement** |
+
+> `michelle-cma` is **load-bearing for OpenClaw**: both Gus and Julian configs point the `tag-ai-functions` MCP at `MICHELLE_CMA_URL=http://172.19.0.1:8080` (this container), and Caddy routes `cma.ubntag.com → :8080`. Do NOT stop/remove — it would break the `/cma` tool for both bots and a public URL.
+
+> `tour-book` stopped 2026-06-11 (stop-and-observe passed): no public route, no host port published, no OpenClaw config reference, no real traffic (self-healthcheck only). Data preserved on host at `/opt/tour-book/tours` (5 generated tour books) — a bind mount, untouched by container stop/removal. Pending permanent retirement after a ~24h observation window. **Do not delete `/opt/tour-book/tours`** when retiring.
 
 > `openclaw-openclaw-cli-1` was a stale interactive REPL (not infrastructure) — removed permanently 2026-06-11.
 
@@ -63,7 +67,9 @@ Container naming = `{project}-{service}-{replica}`.
 | Tenant | MCP servers |
 | --- | --- |
 | **Julian (9)** | github, supabase, vercel, microsoft-graph, resend, telnyx, kie-ai, jarvis-vapi, tag-ai-functions |
-| **Gus (19)** | all of Julian's **+** apify, apollo-io, browserbase, chrome-devtools, cloudflare-browser, cloudflare-docs, exa, minimax, notebooklm, parallel-browser |
+| **Gus (17)** | all of Julian's **+** apify, browserbase, chrome-devtools, cloudflare-docs, exa, minimax, notebooklm, parallel-browser |
+
+> Tier-2 browser/scrape MCPs (chrome-devtools, browserbase, parallel-browser, etc.) are loaded but showed no tool calls in 72h — each costs ~80–180 MB RAM. Candidates for trimming if confirmed unused; see §8.
 
 ## 5. External service providers (by category)
 
@@ -97,6 +103,8 @@ Rule: shared credentials are allowed only for internal TAG tenants. Future **cli
 ## 7. Retired / historical tools
 
 - **n8n** — previously used for workflow automation via `tagaiai.app.n8n.cloud`. Retired 2026-06-11: the cloud workspace was deleted (endpoint returns 404), so the tool was unusable. Removed from Julian (2026-06-10) and Gus (2026-06-11). **Do not restore** unless a new n8n workspace + endpoint is intentionally provisioned.
+- **cloudflare-browser** (Gus) — removed 2026-06-11: failed every boot with `invalid_token` (no valid Cloudflare access token). Re-add only with a working Cloudflare MCP token.
+- **apollo-io** (Gus) — removed 2026-06-11: failed every boot with `MCP error -32000: Connection closed`. Re-add only after fixing the apollo-io MCP server.
 
 ## 8. Open items / forward-looking
 
