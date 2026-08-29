@@ -8,6 +8,19 @@ This folder contains all Jarvis-AI-specific customization for the fork (`GusAI40
 
 ## Current Senior Repo Audit
 
+Latest enterprise VPS and repo audit:
+
+- `_tagai/audit-2026-08-28/README.md`
+- `_tagai/audit-2026-08-28/REPO_VISUAL_MAP.md`
+- `_tagai/audit-2026-08-28/TECHNICAL_ARCHITECTURE.md`
+- `_tagai/audit-2026-08-28/PROVIDER_VALIDATION.md`
+- `_tagai/audit-2026-08-28/REVENUE_FLOW.md`
+- `_tagai/audit-2026-08-28/RISK_REGISTER.md`
+- `_tagai/audit-2026-08-28/ACTION_AND_GITHUB_PLAN.md`
+- `_tagai/audit-2026-08-28/GITHUB_SYNC_REPORT.md`
+
+Plain-English summary: the repo is the OpenClaw/Jarvis AI city; the VPS is live and mostly contained by firewall/Caddy, but it is not A+++ until SSH, secrets, security updates, Caddy routes, Julian permissions, backups, and production drift are remediated and rechecked.
+
 Latest city-map audit bundle:
 
 - `_tagai/audit-2026-07-03/README.md`
