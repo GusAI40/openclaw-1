@@ -1,0 +1,18 @@
+{
+  "name": "rescue-websites-sim",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pure-mock simulator for the rescue-websites pipeline. Surfaces friendly fire, unsub/snooze, and reputation burn blindspots before any live send.",
+  "scripts": {
+    "sim": "tsx src/run.ts",
+    "sim:smoke": "tsx src/run.ts --interactions 10 --tenants gus --industries dentistry --days 30 --seed 1",
+    "sim:full": "tsx src/run.ts --interactions 1000 --tenants gus,julian --industries dentistry,construction,roofing,hvac,legal --lock all --days 90 --seed 42",
+    "report": "tsx src/report.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.0"
+  }
+}

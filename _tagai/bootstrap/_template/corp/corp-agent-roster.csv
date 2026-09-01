@@ -1,0 +1,101 @@
+ID,Role,Department,Lead,Type,Skill
+CORP-001,COO,Jarvis,Executive,Permanent,Orchestration
+CORP-002,COO-Agent,Hermes,Executive,Permanent,WorkerRuntime
+CORP-003,Strategy Analyst,Executive,exec-lead,Subagent,research
+CORP-004,Decision Support,Executive,exec-lead,Subagent,data-analysis
+CORP-005,Risk Assessment,Executive,exec-lead,Subagent,risk-mgmt
+CORP-006,Board Reporting,Executive,exec-lead,Subagent,documentation
+CORP-007,Market Intel,Executive,exec-lead,Subagent,research
+CORP-008,Competitive Analysis,Executive,exec-lead,Subagent,research
+CORP-009,Investor Comms,Executive,exec-lead,Subagent,content
+CORP-010,Corporate Governance,Executive,exec-lead,Subagent,compliance
+CORP-011,Frontend Engineer 1,Engineering,eng-lead,Subagent,software-dev
+CORP-012,Frontend Engineer 2,Engineering,eng-lead,Subagent,software-dev
+CORP-013,Frontend Engineer 3,Engineering,eng-lead,Subagent,software-dev
+CORP-014,Backend Engineer 1,Engineering,eng-lead,Subagent,software-dev
+CORP-015,Backend Engineer 2,Engineering,eng-lead,Subagent,software-dev
+CORP-016,Backend Engineer 3,Engineering,eng-lead,Subagent,software-dev
+CORP-017,DevOps Engineer 1,Engineering,eng-lead,Subagent,devops
+CORP-018,DevOps Engineer 2,Engineering,eng-lead,Subagent,devops
+CORP-019,QA Engineer 1,Engineering,eng-lead,Subagent,testing
+CORP-020,QA Engineer 2,Engineering,eng-lead,Subagent,testing
+CORP-021,LLM Specialist 1,AI & Research,ai-lead,Subagent,mlops
+CORP-022,LLM Specialist 2,AI & Research,ai-lead,Subagent,mlops
+CORP-023,Prompt Engineer 1,AI & Research,ai-lead,Subagent,content
+CORP-024,Prompt Engineer 2,AI & Research,ai-lead,Subagent,content
+CORP-025,Agent Framework 1,AI & Research,ai-lead,Subagent,autonomous-ai-agents
+CORP-026,Agent Framework 2,AI & Research,ai-lead,Subagent,autonomous-ai-agents
+CORP-027,Model Evaluator 1,AI & Research,ai-lead,Subagent,data-science
+CORP-028,Model Evaluator 2,AI & Research,ai-lead,Subagent,data-science
+CORP-029,Training Data 1,AI & Research,ai-lead,Subagent,data-science
+CORP-030,Training Data 2,AI & Research,ai-lead,Subagent,data-science
+CORP-031,SDR 1,Sales & Marketing,sales-lead,Subagent,research
+CORP-032,SDR 2,Sales & Marketing,sales-lead,Subagent,research
+CORP-033,SDR 3,Sales & Marketing,sales-lead,Subagent,research
+CORP-034,Marketing Content 1,Sales & Marketing,sales-lead,Subagent,content
+CORP-035,Marketing Content 2,Sales & Marketing,sales-lead,Subagent,content
+CORP-036,SEO Specialist 1,Sales & Marketing,sales-lead,Subagent,research
+CORP-037,SEO Specialist 2,Sales & Marketing,sales-lead,Subagent,research
+CORP-038,Social Media 1,Sales & Marketing,sales-lead,Subagent,content
+CORP-039,Social Media 2,Sales & Marketing,sales-lead,Subagent,content
+CORP-040,Analytics,Sales & Marketing,sales-lead,Subagent,data-science
+CORP-041,Onboarding 1,Client Success,cs-lead,Subagent,documentation
+CORP-042,Onboarding 2,Client Success,cs-lead,Subagent,documentation
+CORP-043,Support Engineer 1,Client Success,cs-lead,Subagent,software-dev
+CORP-044,Support Engineer 2,Client Success,cs-lead,Subagent,software-dev
+CORP-045,Support Engineer 3,Client Success,cs-lead,Subagent,software-dev
+CORP-046,Account Manager 1,Client Success,cs-lead,Subagent,research
+CORP-047,Account Manager 2,Client Success,cs-lead,Subagent,research
+CORP-048,Training Specialist 1,Client Success,cs-lead,Subagent,content
+CORP-049,Training Specialist 2,Client Success,cs-lead,Subagent,content
+CORP-050,Escalation Handler,Client Success,cs-lead,Subagent,critical
+CORP-051,SysAdmin 1,Operations,ops-lead,Subagent,devops
+CORP-052,SysAdmin 2,Operations,ops-lead,Subagent,devops
+CORP-053,Network Engineer 1,Operations,ops-lead,Subagent,devops
+CORP-054,Network Engineer 2,Operations,ops-lead,Subagent,devops
+CORP-055,Security Analyst 1,Operations,ops-lead,Subagent,security
+CORP-056,Security Analyst 2,Operations,ops-lead,Subagent,security
+CORP-057,Monitoring 1,Operations,ops-lead,Subagent,devops
+CORP-058,Monitoring 2,Operations,ops-lead,Subagent,devops
+CORP-059,Backup/Recovery 1,Operations,ops-lead,Subagent,devops
+CORP-060,Backup/Recovery 2,Operations,ops-lead,Subagent,devops
+CORP-061,Video Producer 1,Creative,creative-lead,Subagent,media
+CORP-062,Video Producer 2,Creative,creative-lead,Subagent,media
+CORP-063,Graphic Designer 1,Creative,creative-lead,Subagent,creative
+CORP-064,Graphic Designer 2,Creative,creative-lead,Subagent,creative
+CORP-065,Copywriter 1,Creative,creative-lead,Subagent,content
+CORP-066,Copywriter 2,Creative,creative-lead,Subagent,content
+CORP-067,Brand Manager 1,Creative,creative-lead,Subagent,domain
+CORP-068,Brand Manager 2,Creative,creative-lead,Subagent,domain
+CORP-069,Content Strategist 1,Creative,creative-lead,Subagent,research
+CORP-070,Content Strategist 2,Creative,creative-lead,Subagent,research
+CORP-071,Data Engineer 1,Data & Analytics,data-lead,Subagent,data-science
+CORP-072,Data Engineer 2,Data & Analytics,data-lead,Subagent,data-science
+CORP-073,Analytics Engineer 1,Data & Analytics,data-lead,Subagent,data-science
+CORP-074,Analytics Engineer 2,Data & Analytics,data-lead,Subagent,data-science
+CORP-075,BI Report Builder 1,Data & Analytics,data-lead,Subagent,data-science
+CORP-076,BI Report Builder 2,Data & Analytics,data-lead,Subagent,data-science
+CORP-077,Web Scraper 1,Data & Analytics,data-lead,Subagent,research
+CORP-078,Web Scraper 2,Data & Analytics,data-lead,Subagent,research
+CORP-079,Data Quality 1,Data & Analytics,data-lead,Subagent,data-science
+CORP-080,Data Quality 2,Data & Analytics,data-lead,Subagent,data-science
+CORP-081,Contract Reviewer 1,Legal & Compliance,legal-lead,Subagent,domain
+CORP-082,Contract Reviewer 2,Legal & Compliance,legal-lead,Subagent,domain
+CORP-083,Compliance Monitor 1,Legal & Compliance,legal-lead,Subagent,compliance
+CORP-084,Compliance Monitor 2,Legal & Compliance,legal-lead,Subagent,compliance
+CORP-085,Privacy Officer 1,Legal & Compliance,legal-lead,Subagent,compliance
+CORP-086,Privacy Officer 2,Legal & Compliance,legal-lead,Subagent,compliance
+CORP-087,E-Rate Specialist 1,Legal & Compliance,legal-lead,Subagent,domain
+CORP-088,E-Rate Specialist 2,Legal & Compliance,legal-lead,Subagent,domain
+CORP-089,IP/Trademark,Legal & Compliance,legal-lead,Subagent,domain
+CORP-090,Legal Ops,Legal & Compliance,legal-lead,Subagent,documentation
+CORP-091,Creative Director 1,Hollywood Studio,studio-lead,Subagent,creative
+CORP-092,Creative Director 2,Hollywood Studio,studio-lead,Subagent,creative
+CORP-093,Cinematographer 1,Hollywood Studio,studio-lead,Subagent,media
+CORP-094,Cinematographer 2,Hollywood Studio,studio-lead,Subagent,media
+CORP-095,Voiceover Director 1,Hollywood Studio,studio-lead,Subagent,media
+CORP-096,Voiceover Director 2,Hollywood Studio,studio-lead,Subagent,media
+CORP-097,Music Producer 1,Hollywood Studio,studio-lead,Subagent,creative
+CORP-098,Music Producer 2,Hollywood Studio,studio-lead,Subagent,creative
+CORP-099,Post-Production 1,Hollywood Studio,studio-lead,Subagent,media
+CORP-100,Post-Production 2,Hollywood Studio,studio-lead,Subagent,media

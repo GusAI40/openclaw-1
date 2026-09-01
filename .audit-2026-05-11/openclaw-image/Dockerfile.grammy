@@ -1,0 +1,23 @@
+# Adds Grammy (Telegram framework) on top of upstream openclaw.
+# Without this layer, Telegram alerts break — openclaw imports `grammy` at runtime
+# from /app/node_modules/grammy, but the upstream image doesn't ship it.
+#
+# Build:  docker build -f Dockerfile.grammy -t openclaw:tagai-grammy .
+# Used:   OPENCLAW_IMAGE in /home/tagai/openclaw/.env (currently aliased as openclaw:tagai)
+#
+# Prerequisite image `openclaw:tagai-pre-grammy` is sourced from the upstream openclaw
+# release. To rebuild from scratch (e.g. after disk wipe):
+#   docker pull openclaw/openclaw:2026.5.6        # or whatever upstream version
+#   docker tag openclaw/openclaw:2026.5.6 openclaw:tagai-pre-grammy
+#   docker build -f Dockerfile.grammy -t openclaw:tagai-grammy .
+#   docker tag openclaw:tagai-grammy openclaw:tagai     # alias used by compose
+#
+# Verify:  docker run --rm openclaw:tagai-grammy sh -c \
+#            'ls /app/node_modules/grammy/package.json && node -e "console.log(require(\"/app/node_modules/grammy/package.json\").version)"'
+
+FROM openclaw:tagai-pre-grammy
+USER node
+WORKDIR /app
+RUN npm install grammy@^1.42.0 --no-save --no-package-lock --omit=dev --legacy-peer-deps && \
+    test -f /app/node_modules/grammy/package.json && \
+    node -e "console.log(\"grammy installed:\", require(\"/app/node_modules/grammy/package.json\").version)"

@@ -1,0 +1,190 @@
+{
+  "generated_at": "2026-05-11T17:30:00Z",
+  "auditor": "drift-auditor atom",
+  "vps": "tagai@87.99.148.242 (Hetzner CPX21)",
+
+  "services": [
+    {
+      "service_id": "openclaw-gateway",
+      "vps_path": "/home/tagai/openclaw/",
+      "vps_owner_uid": 1000,
+      "vps_owner_origin": "tagai:tagai — git-deployed",
+      "canonical_github_repo": "https://github.com/GusAI40/openclaw-1.git (fork of openclaw/openclaw)",
+      "deployed_commit": "cbf11034a2 (VPS HEAD on tagai-main)",
+      "github_main_branch_sha": "tagai-main branch tracked",
+      "local_workspace_path": "C:/Users/gsanc/TAG-Projects-2026/openclaw-4-25-26/",
+      "drift_state": "AHEAD_OF_LOCAL",
+      "drift_details": "VPS tagai-main has 3 commits NOT in local clone: cbf11034a2 (rewrite deploy docs for Caddy reality + CLI restart policy), c6c636dd5a (phase 2 diagnostics + webhook handler telegram alerts), 36d7b2e (TAG AI deployment overlay). Local Windows clone is behind. Both clones have uncommitted dirty state (.env.bak.merge-1777229392 on VPS; CLAUDE.md modified + 8 untracked _tagai/*.sh + .audit + .test_audit folders on Windows). Container runs `openclaw:tagai` image built from this tree.",
+      "remediation": "From Windows: `git -C C:/Users/gsanc/TAG-Projects-2026/openclaw-4-25-26 fetch origin && git pull --rebase origin tagai-main` to pull VPS commits down. Stop editing on VPS once synced — make VPS read-only and deploy via `git pull && docker compose up -d --build`.",
+      "risk_if_left": "Two-way drift. Three VPS-only commits include the Telegram alerting and Caddy deploy docs — losing these on a reset would be a real outage."
+    },
+    {
+      "service_id": "michelle-cma",
+      "vps_path": "/opt/michelle-cma/",
+      "vps_owner_uid": 197609,
+      "vps_owner_origin": "windows_host_uid (gsanc on Windows) — copied/rsynced from laptop, NOT git-deployed (no .git dir)",
+      "canonical_github_repo": "UNKNOWN — no .git directory present on VPS. Likely sourced from C:/Users/gsanc/TAG-Projects-2026/Michelle-CBR-Active-CMA/ on laptop. Needs user confirmation.",
+      "deployed_commit": "UNKNOWN — no git history on deployed copy",
+      "github_main_branch_sha": "n/a until repo identified",
+      "local_workspace_path": "C:/Users/gsanc/TAG-Projects-2026/Michelle-CBR-Active-CMA/ (probable)",
+      "drift_state": "NO_SOURCE",
+      "drift_details": "Container image michelle-cma-cma-server:latest IS running (healthy, 4 days uptime), built from this /opt path via docker-compose.yml + Dockerfile. But the source tree has no git provenance — any change on Windows side can be silently rsynced over. No rollback possible.",
+      "remediation": "1) Confirm canonical repo (likely Michelle-CBR-Active-CMA on Windows). 2) `git init` and push to GitHub as e.g. `GusAI40/Michelle-CMA-Server`. 3) On VPS: `mv /opt/michelle-cma /opt/michelle-cma.uid197609.bak && git clone <repo> /opt/michelle-cma && chown -R tagai:tagai /opt/michelle-cma`. 4) `docker compose -f /opt/michelle-cma/docker-compose.yml up -d --build` to redeploy. 5) Retire UID-197609 backup after 30 days.",
+      "risk_if_left": "HIGH — production service with zero version control. Any laptop edit overwrites VPS silently. No incident-recovery path."
+    },
+    {
+      "service_id": "tour-book",
+      "vps_path": "/opt/tour-book/",
+      "vps_owner_uid": 197609,
+      "vps_owner_origin": "windows_host_uid (gsanc on Windows) — copied, NOT git-deployed (no .git dir)",
+      "canonical_github_repo": "UNKNOWN — no .git on VPS. Likely Michelle-CBR-Home-TOURS on laptop.",
+      "deployed_commit": "UNKNOWN",
+      "github_main_branch_sha": "n/a",
+      "local_workspace_path": "C:/Users/gsanc/TAG-Projects-2026/Michelle-CBR-Home-TOURS/ (probable)",
+      "drift_state": "NO_SOURCE",
+      "drift_details": "Container tour-book-tour-book:latest IS running (healthy, 4 days uptime). Has docker-compose.yml + Dockerfile + SKILL.md. No git history.",
+      "remediation": "Same pattern as michelle-cma: init + push to GitHub, then re-clone into /opt with tagai:tagai ownership.",
+      "risk_if_left": "HIGH — same as michelle-cma. Plus, contains SKILL.md (Claude Code skill) that should be version-controlled for cross-machine consistency."
+    },
+    {
+      "service_id": "voiceai",
+      "vps_path": "/opt/voiceai/",
+      "vps_owner_uid": 197609,
+      "vps_owner_origin": "windows_host_uid (gsanc on Windows) — copied, NOT git-deployed (no .git dir)",
+      "canonical_github_repo": "UNKNOWN — no .git on VPS. Likely TAG-Tools-VoiceAI on laptop.",
+      "deployed_commit": "UNKNOWN",
+      "github_main_branch_sha": "n/a",
+      "local_workspace_path": "C:/Users/gsanc/TAG-Projects-2026/TAG-Tools-VoiceAI/ (probable)",
+      "drift_state": "NO_SOURCE",
+      "drift_details": "Has CLAUDE.md, AGENTS.md, DIRECTORY.md, README.md, agents/, dashboard/, docs/, research/, server/. NOT in docker ps output — runtime is unclear (systemd? pm2? cold?). Owned by Windows UID.",
+      "remediation": "Same: identify canonical repo, push to GitHub, re-clone. ALSO determine runtime (check `systemctl list-units` and `pm2 list`) and document.",
+      "risk_if_left": "HIGH — voice AI is likely a customer-facing surface. Untracked source + unknown runtime = unrecoverable if VPS is rebuilt."
+    },
+    {
+      "service_id": "jarvis-vapi",
+      "vps_path": "/opt/jarvis-vapi/",
+      "vps_owner_uid": 1000,
+      "vps_owner_origin": "tagai:tagai — created on VPS, NOT git-tracked",
+      "canonical_github_repo": "NONE — only 2 files: assistant-config.json + webhook-handler.mjs + .bak. Hand-edited on VPS.",
+      "deployed_commit": "n/a",
+      "github_main_branch_sha": "n/a",
+      "local_workspace_path": "Possibly _tagai/webhook-handler-current.mjs (UNTRACKED in openclaw repo) is the source-of-truth copy",
+      "drift_state": "NO_SOURCE",
+      "drift_details": "Tiny config dir. Backup file .bak.1777324769 indicates someone hand-edited webhook-handler.mjs in place. There's an untracked `_tagai/webhook-handler-current.mjs` in the local openclaw clone that may be related but is NOT committed.",
+      "remediation": "Move both files into the openclaw repo under `_tagai/jarvis-vapi/`, commit, and have the VPS read from the git copy. OR create a dedicated repo `GusAI40/jarvis-vapi-config`. Stop hand-editing in /opt.",
+      "risk_if_left": "MEDIUM — small surface but webhook handler is the Vapi <> Maya bridge. A bad hand-edit could break inbound calls with no rollback."
+    },
+    {
+      "service_id": "michelle-fb",
+      "vps_path": "/home/tagai/clients/michelle-fb/",
+      "vps_owner_uid": 1000,
+      "vps_owner_origin": "tagai:tagai — git-deployed (✓ properly tracked)",
+      "canonical_github_repo": "git@github.com-michelle-fb:GusAI40/Michelle-CBR-FB-Poster.git (SSH via host alias)",
+      "deployed_commit": "35ce0d8 (Fix import-session.js + REFRESH-SESSION.ps1 wrapper bugs)",
+      "github_main_branch_sha": "tracked — clean except 1 untracked hetzner/listings-assets/ folder",
+      "local_workspace_path": "Mirror likely exists at C:/Users/gsanc/TAG-Projects-2026/Michelle-CBR-Active-* or via the FB-Poster repo",
+      "drift_state": "AHEAD",
+      "drift_details": "Properly git-deployed. Only drift is hetzner/listings-assets/ (binary listing photos — likely intentional .gitignore candidate) and 2 .bak session dirs from 2026-04-27 with permission-denied reads (Playwright session dirs).",
+      "remediation": "Add hetzner/listings-assets/ + hetzner/session/*.bak* to .gitignore. Otherwise healthy.",
+      "risk_if_left": "LOW — this is the GOLD STANDARD of how /opt apps SHOULD look. Use it as the template."
+    }
+  ],
+
+  "openclaw_image_drift": {
+    "images_on_disk": [
+      "openclaw:tagai (ID 29571e8eeb29, 4.56GB)",
+      "openclaw:tagai-grammy (ID 29571e8eeb29, 4.56GB) — SAME ID AS tagai, just an alias tag",
+      "openclaw:tagai-pre-grammy (ID 1efbe281ae61, 4.4GB) — predecessor, safe to delete"
+    ],
+    "running_image": "openclaw:tagai (which equals tagai-grammy — verified by identical ID 29571e8eeb29)",
+    "patch_dir": "/home/tagai/openclaw-grammy-patch/",
+    "patch_contents": "Single Dockerfile only. No README.",
+    "patch_purpose": "Installs `grammy@^1.42.0` on top of openclaw:tagai-pre-grammy → produces openclaw:tagai-grammy. `grammy` is the Telegram Bot framework. This patch fixed the 7-day Telegram crash-loop noted in MEMORY.md session log 2026-05-07.",
+    "patch_dockerfile_verbatim": "FROM openclaw:tagai-pre-grammy\\nUSER node\\nWORKDIR /app\\nRUN npm install grammy@^1.42.0 --no-save --no-package-lock --omit=dev --legacy-peer-deps && test -f /app/node_modules/grammy/package.json && node -e \\\"console.log('grammy installed:', require('/app/node_modules/grammy/package.json').version)\\\"",
+    "drift_state": "PATCH_NOT_IN_BASE_IMAGE — the grammy install lives only in this ad-hoc Dockerfile on the VPS, not in the openclaw upstream Dockerfile. If image is rebuilt from `openclaw:tagai` source, grammy will vanish and Telegram will crash again.",
+    "recommended_cleanup": "1) Add `grammy@^1.42.0` to openclaw root package.json and commit to GusAI40/openclaw-1 tagai-main branch. 2) Once verified, delete /home/tagai/openclaw-grammy-patch/ entirely. 3) `docker rmi openclaw:tagai-pre-grammy openclaw:tagai-grammy` to reclaim ~9GB (pre-grammy is 4.4GB, grammy is an alias so removing the tag only).",
+    "risk_if_left": "HIGH — guaranteed regression on next clean rebuild. Grammy is undocumented infra."
+  },
+
+  "local_to_vps_drift": [
+    {
+      "local_dir": "C:/Users/gsanc/TAG-Projects-2026/openclaw-4-25-26/",
+      "vps_dir": "/home/tagai/openclaw/",
+      "in_sync": false,
+      "direction": "VPS_AHEAD",
+      "notes": "VPS has 3 commits not on Windows (cbf1103, c6c636d, 36d7b2e). Windows has 8+ untracked _tagai/ scripts + .audit + .test_audit folders not on VPS. Two-way merge needed."
+    },
+    {
+      "local_dir": "C:/Users/gsanc/TAG-Projects-2026/Michelle-CBR-Active-CMA/ (probable)",
+      "vps_dir": "/opt/michelle-cma/",
+      "in_sync": "UNKNOWN — no git on VPS side, cannot diff",
+      "notes": "UID 197609 = Windows gsanc → file was rsync/scp from Windows. Confirm Windows source dir, then init git on both."
+    },
+    {
+      "local_dir": "C:/Users/gsanc/TAG-Projects-2026/Michelle-CBR-Home-TOURS/ (probable)",
+      "vps_dir": "/opt/tour-book/",
+      "in_sync": "UNKNOWN",
+      "notes": "Same UID-197609 pattern."
+    },
+    {
+      "local_dir": "C:/Users/gsanc/TAG-Projects-2026/TAG-Tools-VoiceAI/ (probable)",
+      "vps_dir": "/opt/voiceai/",
+      "in_sync": "UNKNOWN",
+      "notes": "Same UID-197609 pattern. Runtime also unknown."
+    }
+  ],
+
+  "workspace_repos_on_vps": {
+    "note": "Inside /home/tagai/.openclaw/workspace/ there are 7 git repos cloned with embedded GitHub PATs in remote URLs — these are an active credential leak risk (state-auditor will own this).",
+    "repos": [
+      "SalesEdge-5-11-26 → GusAI40/SalesEdge-5-11-26 (PAT in URL)",
+      "AI-Hybrid-Telemarketer → GusAI40/AI-Hybrid-Telemarketer (PAT in URL)",
+      "Michelle-Sanchez-CB-Realty-v3-NextJS → GusAI40/Michelle-Sanchez-CB-Realty-v3-NextJS (PAT in URL)",
+      "jarvis-infrastructure → no remote (LOCAL ONLY, 1 commit edc113f — orphan)",
+      "ubntag → wrong remote, points to tag-ai-website-openclaw-2026-05-01 (PAT in URL)",
+      "tag-ai-website-openclaw-2026-05-01 → GusAI40/tag-ai-website-openclaw-2026-05-01 (PAT in URL)",
+      "web-app → wrong remote, points to AI-Hybrid-Telemarketer (PAT in URL)"
+    ],
+    "drift_state": "MULTIPLE — orphan repo (jarvis-infrastructure) + 2 misconfigured remotes (ubntag, web-app)"
+  },
+
+  "github_state": {
+    "origin": "https://github.com/GusAI40/openclaw-1.git",
+    "upstream": "https://github.com/openclaw/openclaw.git",
+    "branch_in_use_locally": "tagai-main",
+    "ahead_of_main": 21,
+    "behind_upstream_main": 3,
+    "uncommitted_local_changes": "yes — CLAUDE.md modified + 18 untracked items (_tagai/diag-telegram*.sh, _tagai/lobster/, _tagai/openclaw-healthcheck.sh, _tagai/patch-maya-tools.py, _tagai/resend.json, _tagai/smoke-test-msgraph.sh, _tagai/supabase-snippet.json, _tagai/webhook-handler-current.mjs, mcp-servers/, .audit-2026-05-11/, .test_audit_openclaw/ subfolders)"
+  },
+
+  "top_drift_incidents_ranked": [
+    {
+      "rank": 1,
+      "incident": "Three production services (/opt/michelle-cma, /opt/tour-book, /opt/voiceai) deployed via raw file-copy from Windows with NO git provenance",
+      "urgency": "P0",
+      "why": "Two are actively running healthy containers. Any laptop edit silently overwrites prod. No rollback. No incident recovery if VPS is wiped."
+    },
+    {
+      "rank": 2,
+      "incident": "openclaw-grammy-patch is an out-of-band Dockerfile that adds grammy@^1.42.0 to the image — not in any committed Dockerfile or package.json",
+      "urgency": "P0",
+      "why": "Next clean rebuild from GusAI40/openclaw-1 will drop grammy and crash Telegram again (same bug as 2026-05-07 session). The fix exists only as a 5-line file in one home dir."
+    },
+    {
+      "rank": 3,
+      "incident": "Local Windows clone and VPS /home/tagai/openclaw/ have diverged in BOTH directions — VPS has 3 unique commits, Windows has 18+ untracked files",
+      "urgency": "P1",
+      "why": "Real work is being done on both sides without a sync discipline. The 3 VPS commits include the Telegram alert and Caddy deploy fixes — high-value work that lives only on the VPS."
+    }
+  ],
+
+  "remediation_order": [
+    "1. RIGHT NOW: From Windows, `git fetch origin && git pull --rebase origin tagai-main` to pull the 3 VPS commits into local. Then commit the 18 untracked _tagai/ files in a single 'phase1: snapshot VPS-side scripts' commit. This stops two-way drift bleed.",
+    "2. THIS WEEK: Bake grammy@^1.42.0 into openclaw package.json on tagai-main, commit, rebuild image as openclaw:tagai. Verify Telegram alerts still work. Delete /home/tagai/openclaw-grammy-patch/ and `docker rmi openclaw:tagai-pre-grammy openclaw:tagai-grammy`.",
+    "3. THIS WEEK: For each of michelle-cma, tour-book, voiceai — confirm canonical Windows source dir with user, push to GitHub as GusAI40/<service>, then on VPS: `mv /opt/<service> /opt/<service>.uid197609.bak.2026-05-11 && git clone <repo> /opt/<service> && chown -R tagai:tagai /opt/<service> && docker compose -f /opt/<service>/docker-compose.yml up -d --build`. Validate health, then delete bak after 30 days.",
+    "4. NEXT WEEK: For voiceai — additionally determine runtime (systemctl + pm2 list) and document in service runbook. May be cold and dead.",
+    "5. NEXT WEEK: Move /opt/jarvis-vapi/{assistant-config.json,webhook-handler.mjs} into openclaw repo under _tagai/jarvis-vapi/ and have VPS symlink or sync from git instead of hand-editing.",
+    "6. ONGOING: Add a write-protection convention — treat /opt/* as immutable, all updates via `git pull && docker compose up -d --build` only. Add a .git-watcher cron that alerts if /opt/*/.git HEAD changes outside a pull.",
+    "7. SEPARATELY: Hand off the embedded-PAT-in-workspace-remotes issue to state-auditor — that's a secrets-surface problem, not pure drift."
+  ]
+}

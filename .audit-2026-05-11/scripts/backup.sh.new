@@ -1,0 +1,170 @@
+#!/bin/bash
+# /home/tagai/.openclaw/backups/backup.sh
+# Daily snapshot of agent memory (hindsight + memory/main.sqlite).
+# Idempotent, atomic, WAL-safe, 7-day retention.
+#
+# Canonical source: .audit-2026-05-11/scripts/backup-agent-memory.sh
+#   (in GusAI40/openclaw-1, branch tagai-main)
+#
+# Run manually:  /home/tagai/.openclaw/backups/backup.sh
+# Cron (3am):    0 3 * * * /home/tagai/.openclaw/backups/backup.sh
+#
+# IMPORTANT: This is a LOCAL snapshot. Same-disk failure = both source + backup
+# lost. Off-site sync (S3 / Hetzner Storage Box / private GH repo) is the next
+# step — TODO documented in README.md.
+
+set -euo pipefail
+umask 077  # files created mode 600
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+BACKUP_ROOT="/home/tagai/.openclaw/backups"
+SOURCE_HINDSIGHT="/home/tagai/.openclaw/hindsight"
+SOURCE_DB="/home/tagai/.openclaw/memory/main.sqlite"
+SHARED_DIR="/home/tagai/shared-projects"
+TEMPLATE_DIR="/home/tagai/openclaw-bootstrap/_template"
+LOG="$BACKUP_ROOT/backup.log"
+STAMP="$(date +%Y%m%d-%H%M%S)"
+TARGET_TMP="$BACKUP_ROOT/.backup-$STAMP.tmp"
+TARGET_FINAL="$BACKUP_ROOT/backup-$STAMP"
+
+log() {
+  echo "[$(date -Is)] $*" | tee -a "$LOG"
+}
+
+cleanup_on_error() {
+  rc=$?
+  log "FAILED (rc=$rc) — cleaning up tmp"
+  rm -rf "$TARGET_TMP"
+  exit $rc
+}
+trap cleanup_on_error ERR
+
+log "===== START backup-$STAMP ====="
+
+# Idempotent: skip if a final dir for the same timestamp exists
+if [ -d "$TARGET_FINAL" ]; then
+  log "Already have $TARGET_FINAL — idempotent skip"
+  exit 0
+fi
+
+# Pre-flight: sources must exist
+for src in "$SOURCE_HINDSIGHT" "$SOURCE_DB"; do
+  if [ ! -e "$src" ]; then
+    log "Source missing: $src"
+    exit 2
+  fi
+done
+
+mkdir -p "$TARGET_TMP"
+chmod 700 "$TARGET_TMP"
+
+# 1. hindsight/ → tar.gz
+log "Snapshotting hindsight/ → tar.gz"
+tar -czf "$TARGET_TMP/hindsight.tar.gz" -C /home/tagai/.openclaw hindsight
+HINDSIGHT_BYTES=$(stat -c%s "$TARGET_TMP/hindsight.tar.gz")
+log "  hindsight.tar.gz: $HINDSIGHT_BYTES bytes"
+
+# 1b. shared-projects/ → tar.gz (rescue-websites + awesome-design-md + future shared repos)
+# Exclude node_modules + .git/objects to keep size sane. The .git/refs + config
+# stay so origin/upstream remotes survive restore.
+SHARED_BYTES=0
+if [ -d "$SHARED_DIR" ]; then
+  log "Snapshotting shared-projects/ → tar.gz"
+  tar -czf "$TARGET_TMP/shared-projects.tar.gz" \
+      --exclude='node_modules' --exclude='.git/objects' \
+      -C /home/tagai shared-projects
+  SHARED_BYTES=$(stat -c%s "$TARGET_TMP/shared-projects.tar.gz")
+  log "  shared-projects.tar.gz: $SHARED_BYTES bytes"
+else
+  log "  shared-projects/ absent — skipping"
+fi
+
+# 1c. Bootstrap auth template (CRITICAL — without this, new tenants have no LLM access)
+# Contains agents/main/agent/auth-profiles.json with raw LLM provider tokens.
+# NOT in git for that reason — this is the only off-host record we keep.
+TPL_BYTES=0
+if [ -d "$TEMPLATE_DIR" ]; then
+  log "Snapshotting openclaw-bootstrap/_template/ → tar.gz"
+  tar -czf "$TARGET_TMP/bootstrap-template.tar.gz" \
+      -C /home/tagai/openclaw-bootstrap _template
+  TPL_BYTES=$(stat -c%s "$TARGET_TMP/bootstrap-template.tar.gz")
+  log "  bootstrap-template.tar.gz: $TPL_BYTES bytes"
+else
+  log "  bootstrap-template/ absent — skipping"
+fi
+
+# 2. main.sqlite via Python sqlite3 .backup (online-safe, WAL-aware)
+log "Hot-backup memory/main.sqlite via Python sqlite3 API"
+python3 - <<PYEOF
+import sqlite3, os
+src = "$SOURCE_DB"
+dst = "$TARGET_TMP/memory.sqlite"
+s = sqlite3.connect(src)
+d = sqlite3.connect(dst)
+s.backup(d)
+s.close(); d.close()
+print(f"  memory.sqlite: {os.path.getsize(dst)} bytes (WAL-consistent snapshot)")
+PYEOF
+DB_BYTES=$(stat -c%s "$TARGET_TMP/memory.sqlite")
+
+# 3. Companion files in memory/ dir (small markdown, change rarely)
+log "Including memory/*.md companions"
+shopt -s nullglob
+for f in /home/tagai/.openclaw/memory/*.md; do
+  cp "$f" "$TARGET_TMP/$(basename "$f")"
+done
+shopt -u nullglob
+
+# 4. Manifest with sha256
+log "Writing MANIFEST.txt"
+{
+  echo "# Backup manifest — backup-$STAMP"
+  echo "# Host: $(hostname)  User: $(whoami)  Created: $(date -Is)"
+  echo
+  echo "Files in this backup:"
+  cd "$TARGET_TMP"
+  for f in *; do
+    if [ -f "$f" ]; then
+      printf "  %-32s %14s bytes  sha256=%s\n" \
+        "$f" "$(stat -c%s "$f")" "$(sha256sum "$f" | cut -d' ' -f1)"
+    fi
+  done
+  echo
+  echo "Source state (live, at backup time):"
+  printf "  hindsight/        size=%s  files=%d\n" \
+    "$(du -sh /home/tagai/.openclaw/hindsight | cut -f1)" \
+    "$(find /home/tagai/.openclaw/hindsight -type f 2>/dev/null | wc -l)"
+  printf "  memory/main.sqlite  size=%s bytes (WAL: %s bytes)\n" \
+    "$(stat -c%s /home/tagai/.openclaw/memory/main.sqlite)" \
+    "$(stat -c%s /home/tagai/.openclaw/memory/main.sqlite-wal 2>/dev/null || echo 0)"
+  if [ -d "$SHARED_DIR" ]; then
+    printf "  shared-projects/    size=%s  files=%d\n" \
+      "$(du -sh "$SHARED_DIR" | cut -f1)" \
+      "$(find "$SHARED_DIR" -type f 2>/dev/null | wc -l)"
+  fi
+  if [ -d "$TEMPLATE_DIR" ]; then
+    printf "  bootstrap _template/ size=%s\n" \
+      "$(du -sh "$TEMPLATE_DIR" | cut -f1)"
+  fi
+} > "$TARGET_TMP/MANIFEST.txt"
+
+# 5. Atomic rename: tmp → final
+mv "$TARGET_TMP" "$TARGET_FINAL"
+chmod 700 "$TARGET_FINAL"
+log "Backup ready: $TARGET_FINAL"
+log "  hindsight: $HINDSIGHT_BYTES  shared-projects: $SHARED_BYTES  bootstrap-template: $TPL_BYTES  memory.sqlite: $DB_BYTES"
+
+# 6. Retention: delete backups older than 7 days
+log "Retention sweep — deleting backups older than 7 days"
+DELETED=0
+while IFS= read -r dir; do
+  rm -rf "$dir"
+  DELETED=$((DELETED + 1))
+  log "  deleted: $(basename "$dir")"
+done < <(find "$BACKUP_ROOT" -maxdepth 1 -type d -name 'backup-*' -mtime +7 -print 2>/dev/null)
+log "  retention: deleted $DELETED old backup dir(s)"
+
+# 7. Summary
+TOTAL_BACKUPS=$(find "$BACKUP_ROOT" -maxdepth 1 -type d -name 'backup-*' | wc -l)
+TOTAL_BYTES=$(du -sb "$BACKUP_ROOT" 2>/dev/null | cut -f1)
+log "===== END backup-$STAMP — total backups: $TOTAL_BACKUPS, total backup-root: $TOTAL_BYTES bytes ====="

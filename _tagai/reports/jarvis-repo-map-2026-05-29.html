@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jarvis — Repo Map (State / City / Street) — 2026-05-29</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.mermaid) { mermaid.initialize({ startOnLoad: true, theme: 'neutral' }); }
+  });
+</script>
+<style>
+  :root{
+    --obsidian:#0a0a0c;--ink:#14161a;--slate:#3b4354;--mute:#6b7280;
+    --platinum:#e5e7eb;--paper:#f7f8fa;--line:#dfe3ea;--chrome:#d4d4d8;
+    --navy:#1e3a8a;--navy-soft:#eef2fb;--green:#16a34a;--green-soft:#e9f7ee;
+    --amber:#b45309;--amber-soft:#fdf3e7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--ink);background:var(--paper);line-height:1.6;padding-bottom:80px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 28px}
+  header.hero{background:var(--obsidian);color:var(--platinum);padding:48px 0 40px;border-bottom:3px solid var(--navy)}
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--chrome);font-weight:600}
+  h1{font-family:'Georgia',serif;font-size:38px;font-weight:600;margin:10px 0 8px;letter-spacing:-.01em}
+  .sub{color:#9aa3b2;font-size:15px;max-width:760px}
+  section{padding:38px 0;border-bottom:1px solid var(--line)}
+  h2{font-family:'Georgia',serif;font-size:25px;font-weight:600;color:var(--obsidian);margin-bottom:6px}
+  h2 .num{color:var(--navy);font-size:15px;font-weight:700;margin-right:10px;font-family:'Inter',sans-serif}
+  .lead{color:var(--slate);font-size:15.5px;margin-bottom:20px;max-width:820px}
+  .graph{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;overflow-x:auto;text-align:center}
+  .graph-note{font-size:12.5px;color:var(--mute);margin-top:8px;font-style:italic}
+  /* city district cards */
+  .district{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0;margin-bottom:22px;overflow:hidden;border-top:5px solid var(--navy)}
+  .district.b{border-top-color:var(--amber)} .district.c{border-top-color:var(--green)}
+  .dhead{padding:20px 24px 14px}
+  .dhead .city{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:700}
+  .dhead h3{font-family:'Georgia',serif;font-size:21px;color:var(--obsidian);margin:3px 0 8px}
+  .dhead .analogy{font-size:14.5px;color:var(--slate);background:var(--navy-soft);border-radius:8px;padding:10px 14px;border-left:3px solid var(--navy)}
+  .district.b .dhead .analogy{background:var(--amber-soft);border-left-color:var(--amber)}
+  .district.c .dhead .analogy{background:var(--green-soft);border-left-color:var(--green)}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border-top:1px solid var(--line)}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .cell{padding:14px 24px;border-bottom:1px solid var(--line)}
+  .cell:nth-child(odd){border-right:1px solid var(--line)}
+  .cell .lab{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--navy);font-weight:700;margin-bottom:6px}
+  .district.b .cell .lab{color:var(--amber)} .district.c .cell .lab{color:var(--green)}
+  .cell .plain{font-size:12.5px;color:var(--mute);font-style:italic;margin-bottom:7px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12px;background:#eef0f3;color:var(--ink);border-radius:999px;padding:3px 10px;font-weight:500}
+  .chip.tool{background:var(--navy-soft);color:var(--navy);font-weight:600}
+  .chip.new{background:var(--green-soft);color:var(--green);font-weight:700}
+  .revenue{padding:16px 24px;background:var(--obsidian);color:var(--platinum);font-size:14px}
+  .revenue b{color:#7ee2a8}
+  /* flow strip */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin-top:8px}
+  .flow .node{flex:1;min-width:150px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;position:relative}
+  .flow .arrow{display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--navy);padding:0 6px}
+  .flow .node .t{font-weight:700;font-size:14px;color:var(--obsidian)}
+  .flow .node .d{font-size:12.5px;color:var(--slate);margin-top:3px}
+  .flow .node.money{border-color:var(--green);background:var(--green-soft)}
+  footer{padding:30px 0;color:var(--mute);font-size:12.5px}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  code{background:#eef0f3;padding:1px 6px;border-radius:4px;font-family:'SF Mono',Consolas,monospace;font-size:12px;color:var(--navy)}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">TAG AI &middot; Jarvis Operations</div>
+    <h1>The Repo as a Map</h1>
+    <div class="sub">Your whole system drawn like a country: one state, three cities, with streets, houses, rooms, the workers inside, the tools they use, and how each one helps make or protect money. Plain English, lots of analogies.</div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--navy)">The big picture</div>
+    <h2 style="margin-top:6px">One country, three cities</h2>
+    <p class="lead">Picture TAG AI as a small country that lives on a single piece of land (one rented server). The country exists to make Gus money by doing work across many businesses. It has three cities. Each one has a job.</p>
+    <div class="graph">
+      <pre class="mermaid">
+flowchart TD
+  STATE["TAG AI — the whole country (one server)"]
+  STATE --> A["City A: Jarvis Runtime — the brain"]
+  STATE --> B["City B: Hetzner Deploy — power, roads, night guard"]
+  STATE --> C["City C: Outbound Pipelines — factory and delivery trucks"]
+  A --> A1["Thinks with: DeepSeek"]
+  A --> A2["Draws with: gpt-image-2"]
+  A --> A3["Films with: Veo 3.1"]
+  A --> A4["Talks on: Telegram, voice, web"]
+  B --> B1["Front door + locks: Caddy TLS"]
+  B --> B2["Two homes: Gus + Julian"]
+  B --> B3["Nightly safe-deposit: encrypted backups"]
+  B --> B4["Night guard: lane-jam watchdog"]
+  C --> C1["Mail truck: Resend"]
+  C --> C2["Storefronts: Cloudflare Pages"]
+  C --> C3["Office assistant: Microsoft Graph"]
+  C --> C4["Safety inspector: rescue-websites sim"]
+  A --> MONEY["MAKES money: faster E-Rate, real estate, sales, video"]
+  C --> MONEY
+  B --> PROTECT["PROTECTS money: backups, uptime, no spam-burn"]
+      </pre>
+      <div class="graph-note">If the graph above shows as text, you're offline — the written map below always works.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="num">A</span>City A — Jarvis Runtime (the brain)</h2>
+    <p class="lead">This is downtown, where the thinking happens. When you text the bot, talk to it, or type in the dashboard, this city wakes up, figures out what you want, and answers.</p>
+    <div class="district">
+      <div class="dhead">
+        <div class="city">City A</div>
+        <h3>The Brain District</h3>
+        <div class="analogy"><b>Analogy:</b> Like the headquarters of a company where a very fast assistant sits. You ask, it thinks, it acts, it reports back. Each customer (tenant) gets their own private assistant in their own private office, so one busy office never slows down another.</div>
+      </div>
+      <div class="grid">
+        <div class="cell"><div class="lab">Streets (the roads/modules)</div><div class="plain">The main avenues data drives down.</div><div class="chips"><span class="chip">gateway</span><span class="chip">channels</span><span class="chip">agent runtime</span><span class="chip">reply pipeline</span></div></div>
+        <div class="cell"><div class="lab">Houses (the buildings/services)</div><div class="plain">The actual buildings running 24/7.</div><div class="chips"><span class="chip">gateway container</span><span class="chip">CLI sidecar</span></div></div>
+        <div class="cell"><div class="lab">Rooms (the settings inside)</div><div class="plain">The control panels in each building.</div><div class="chips"><span class="chip">openclaw.json (model chain)</span><span class="chip">auth-profiles.json (keys)</span><span class="chip">sessions.json</span></div></div>
+        <div class="cell"><div class="lab">Workers (the agents/crons)</div><div class="plain">The staff doing jobs on a schedule.</div><div class="chips"><span class="chip">Telegram poller</span><span class="chip">heartbeat</span><span class="chip">health monitor</span><span class="chip new">lane-jam watchdog (new)</span></div></div>
+        <div class="cell" style="grid-column:1/-1;border-right:none"><div class="lab">Tools they use</div><div class="plain">The equipment the brain reaches for.</div><div class="chips"><span class="chip tool">DeepSeek v4-flash — thinking</span><span class="chip tool">gpt-image-2 — pictures</span><span class="chip tool">Veo 3.1 fast — video</span><span class="chip tool">browser</span><span class="chip tool">MCP tools</span><span class="chip">fallbacks: Gemini, Claude</span></div></div>
+      </div>
+      <div class="revenue"><b>Why it exists / how it makes money:</b> It is the force-multiplier. When the brain is up, Gus runs E-Rate proposals, real-estate marketing, and sales outreach far faster than by hand. It is also the live demo of everything TAG sells. Brain down = every money workstream slows down.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="num">B</span>City B — Hetzner Deploy (power, roads, guard)</h2>
+    <p class="lead">This is the land everything sits on, plus the electricity, the front door with locks, and the night watchman. Boring on purpose. Its whole job is to keep the lights on and keep the data safe and cheap.</p>
+    <div class="district b">
+      <div class="dhead">
+        <div class="city">City B</div>
+        <h3>The Infrastructure District</h3>
+        <div class="analogy"><b>Analogy:</b> Like the building a shop rents. There is one front door with a good lock (Caddy), the shop floor (Docker), a safe-deposit box at the bank that gets a fresh copy every night (backups), and a guard who unsticks a jammed door automatically (the watchdog).</div>
+      </div>
+      <div class="grid">
+        <div class="cell"><div class="lab">Streets</div><div class="plain">How visitors find and reach the door.</div><div class="chips"><span class="chip">DNS (Vercel)</span><span class="chip">Caddy TLS front door</span><span class="chip">Docker</span></div></div>
+        <div class="cell"><div class="lab">Houses</div><div class="plain">Who lives on this land.</div><div class="chips"><span class="chip">Gus gateway</span><span class="chip">Julian gateway</span><span class="chip">voice demo</span></div></div>
+        <div class="cell"><div class="lab">Rooms</div><div class="plain">The wiring and address book.</div><div class="chips"><span class="chip">compose files</span><span class="chip">Caddyfiles</span><span class="chip">shared env (keys)</span></div></div>
+        <div class="cell"><div class="lab">Workers</div><div class="plain">The night crew on timers.</div><div class="chips"><span class="chip">backup @ 3 AM</span><span class="chip">GitHub sync @ 3:30</span><span class="chip new">lane-jam watchdog /3 min</span></div></div>
+        <div class="cell" style="grid-column:1/-1;border-right:none"><div class="lab">Tools they use</div><div class="plain">The safety equipment.</div><div class="chips"><span class="chip tool">age encryption</span><span class="chip tool">private GitHub backups</span><span class="chip tool">Let's Encrypt (auto locks)</span></div></div>
+      </div>
+      <div class="revenue"><b>Why it exists / how it protects money:</b> Rent is about &euro;10/month for the whole country. The nightly encrypted backup means one crash never resets the business. And because spinning up a new customer is a single script, this city is the runway to <b>sell Jarvis as paid seats</b> later.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="num">C</span>City C — Outbound Pipelines (factory + trucks)</h2>
+    <p class="lead">City A answers when spoken to. City C goes out and does work for customers on its own: sends email, builds marketing pictures and videos, manages an inbox. This is where Jarvis turns from a helpful assistant into an actual money-maker.</p>
+    <div class="district c">
+      <div class="dhead">
+        <div class="city">City C</div>
+        <h3>The Factory District</h3>
+        <div class="analogy"><b>Analogy:</b> Like a factory with delivery trucks. It builds the product (emails, marketing assets), ships it to customers (trucks = email + web), and has a safety inspector who checks the line for defects before anything ships (the simulator).</div>
+      </div>
+      <div class="grid">
+        <div class="cell"><div class="lab">Streets</div><div class="plain">The production lines.</div><div class="chips"><span class="chip">rescue-websites-sim</span><span class="chip">mcp-servers</span><span class="chip">brand layer</span></div></div>
+        <div class="cell"><div class="lab">Houses</div><div class="plain">The working buildings.</div><div class="chips"><span class="chip">microsoft-graph MCP</span><span class="chip">live rescue-websites pipeline</span></div></div>
+        <div class="cell"><div class="lab">Rooms</div><div class="plain">The recipe cards.</div><div class="chips"><span class="chip">migration SQL</span><span class="chip">Resend snippet</span><span class="chip">Supabase snippet</span></div></div>
+        <div class="cell"><div class="lab">Workers + safety</div><div class="plain">The line crew and the inspector.</div><div class="chips"><span class="chip">3-guard simulator</span><span class="chip">brand enforcer</span></div></div>
+        <div class="cell" style="grid-column:1/-1;border-right:none"><div class="lab">Tools they use</div><div class="plain">The machines and trucks.</div><div class="chips"><span class="chip tool">Resend — email</span><span class="chip tool">Cloudflare Pages — sites</span><span class="chip tool">Supabase — records</span><span class="chip tool">Microsoft Graph — mail/calendar</span><span class="chip tool">Kie.ai — extra video</span></div></div>
+      </div>
+      <div class="revenue"><b>Why it exists / how it makes money:</b> This is the direct revenue engine — outbound email campaigns, marketing assets for listings, and the foundation of an "executive assistant" tier. The safety inspector (simulator) protects the shared email reputation so one bad blast can't burn deliverability for every TAG business.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2><span class="num">$</span>How the money actually flows</h2>
+    <p class="lead">Follow the road from a stranger to a paid outcome. Demand comes in, the brain routes it, the factory does the work, money (or protection) comes out.</p>
+    <div class="flow">
+      <div class="node"><div class="t">Demand comes in</div><div class="d">E-Rate prospects, real-estate sellers, Spectrum cold leads, voice demos</div></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node"><div class="t">Brain routes it (City A)</div><div class="d">Jarvis figures out the job and picks the right skill</div></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node"><div class="t">Factory does the work (City C)</div><div class="d">Proposals, marketing, outreach, follow-ups</div></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node money"><div class="t">Money + protection</div><div class="d">Deals won, fees earned, reputation + backups kept safe</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Jarvis &mdash; TAG AI Solutions &middot; One brain. Every channel. Always on.</span>
+    <span>2026-05-29 &middot; providers validated against live docs &middot; live config: deepseek-v4-flash, gpt-image-2, veo-3.1-fast</span>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+[Unit]
+Description=Jarvis VAPI Webhook Handler
+After=network.target
+
+[Service]
+Type=simple
+User=tagai
+WorkingDirectory=/opt/jarvis-vapi
+ExecStart=/usr/bin/node /opt/jarvis-vapi/webhook-handler.mjs
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/jarvis-vapi/webhook.log
+StandardError=append:/var/log/jarvis-vapi/webhook.log
+
+[Install]
+WantedBy=multi-user.target

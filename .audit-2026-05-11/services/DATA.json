@@ -1,0 +1,106 @@
+{
+  "audit_date": "2026-05-11",
+  "scope": "Persistent state under /home/tagai/.openclaw/ — mounted into the openclaw container at /home/node/.openclaw/",
+  "mount_point_in_container": "/home/node/.openclaw/ (all 36 subdirs mount-bound; container is stateless without this volume)",
+  "total_disk_used_top_level": "~8.2 GB (workspace dominates at 6.7G)",
+
+  "subdirectories": [
+    { "name": ".pnpm-store", "size": "2.1M", "purpose": "pnpm package cache — speeds up plugin/MCP installs in the container", "must_persist_across_redeploy": false, "backup_status": "ephemeral", "mounted_into_container": true, "notes": "Can be wiped freely; will repopulate on next install. NOT a state dir, despite living in .openclaw/." },
+    { "name": "agents", "size": "441M", "purpose": "Per-agent runtime state — large because each agent has node_modules + code checkouts", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "Hot data. Loss = re-bootstrapping every agent from scratch." },
+    { "name": "backups", "size": "4.0K", "purpose": "Intended backup landing zone — currently EMPTY", "must_persist_across_redeploy": false, "backup_status": "not backed up (and not populated)", "mounted_into_container": true, "notes": "BUG: this dir exists but nothing writes to it. Either wire a cron or drop the dir." },
+    { "name": "canvas", "size": "12K", "purpose": "Canvas UI state (drawing/whiteboard plugin)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true },
+    { "name": "corp", "size": "68K", "purpose": "Corporation/tenant config docs (AI corp blueprint, OKRs)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "Critical IP. MUST be backed up." },
+    { "name": "credentials", "size": "12K", "purpose": "Telegram bot pairing + allowlist state (NOT API keys — pairing IDs)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "files": ["telegram-default-allowFrom.json", "telegram-pairing.json"], "notes": "Loss = Telegram bots stop responding until re-paired." },
+    { "name": "cron", "size": "88K", "purpose": "Scheduled task definitions (cron-like) for in-container agents", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true },
+    { "name": "delivery-queue", "size": "8.0K", "purpose": "Outbound message queue (email/SMS waiting to send)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "Loss during downtime = lost outbound messages. Should be on-disk durable (it is)." },
+    { "name": "devices", "size": "16K", "purpose": "Device registration state (phones/SIP endpoints)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true },
+    { "name": "extensions", "size": "4.0K", "purpose": "Browser/plugin extensions", "must_persist_across_redeploy": false, "backup_status": "ephemeral", "mounted_into_container": true, "notes": "Effectively empty." },
+    { "name": "flows", "size": "4.1M", "purpose": "Workflow/automation definitions (multi-step agent flows)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "High-value IP — these are the actual automations." },
+    { "name": "hindsight", "size": "233M", "purpose": "Long-term agent memory/reflection store (conversation history, learned patterns)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "If lost, agents lose all memory of prior runs. PRIORITY backup target." },
+    { "name": "identity", "size": "12K", "purpose": "Agent identity files (names, personas, signing keys)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "Loss = agents lose their 'self'. Critical." },
+    { "name": "jarvis-mcp", "size": "20K", "purpose": "Jarvis MCP server state", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true },
+    { "name": "jarvis-vapi", "size": "48K", "purpose": "VAPI integration state (voice agent config)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true },
+    { "name": "livekit-agent", "size": "419M", "purpose": "LiveKit voice agent — node_modules + recordings", "must_persist_across_redeploy": "partial — node_modules ephemeral, recordings critical", "backup_status": "not backed up", "mounted_into_container": true, "notes": "419M is mostly node_modules. Should split: bind-mount node_modules elsewhere, keep recordings in this dir." },
+    { "name": "lobster", "size": "8.0K", "purpose": "Unknown — name only. Likely a plugin namespace.", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "TODO: identify purpose. Also see /_tagai/lobster/ in local repo." },
+    { "name": "logs", "size": "128K", "purpose": "In-container application logs", "must_persist_across_redeploy": false, "backup_status": "ephemeral", "mounted_into_container": true, "notes": "Should rotate/truncate — not a state dir." },
+    { "name": "maya-vapi", "size": "8.0K", "purpose": "Maya voice agent VAPI state", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true },
+    { "name": "mcp-servers", "size": "244M", "purpose": "MCP server installations (microsoft-graph, supabase, tag-ai-functions, etc.)", "must_persist_across_redeploy": "partial — node_modules ephemeral, configs critical", "backup_status": "not backed up", "mounted_into_container": true, "notes": "244M is mostly node_modules. The .env files inside are the only persist-critical bits." },
+    { "name": "media", "size": "85M", "purpose": "Generated media (images, audio clips, screenshots)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "Output artifacts. Loss = lost generated content." },
+    { "name": "memory", "size": "24M", "purpose": "Hermes SQLite databases (main.sqlite 20MB + WAL/SHM)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "PRIMARY DATABASE. Daily SQLite backup MANDATORY." },
+    { "name": "plugin-runtime-deps", "size": "593M", "purpose": "Shared node_modules for plugins", "must_persist_across_redeploy": false, "backup_status": "ephemeral", "mounted_into_container": true, "notes": "Can rebuild from package.json. 593M is wasted backup space." },
+    { "name": "plugin-skills", "size": "4.0K", "purpose": "Plugin-provided skills (extensions to skill system)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "Effectively empty currently." },
+    { "name": "plugins", "size": "56K", "purpose": "Plugin manifest/registry", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true },
+    { "name": "projects", "size": "600K", "purpose": "User-created project artifacts (e.g., dialer project)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true },
+    { "name": "secrets", "size": "16K", "purpose": "Token store (github.token, resend.token, vercel.token)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "Should be merged into env files — duplicate secret store." },
+    { "name": "session-delivery-queue", "size": "8.0K", "purpose": "Per-session outbound queue (vs delivery-queue which is global)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true },
+    { "name": "skills", "size": "4.0K", "purpose": "User-installed skill markdown files", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "Effectively empty currently." },
+    { "name": "subagents", "size": "8.0K", "purpose": "Subagent definitions (specialized agent configs)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true },
+    { "name": "tasks", "size": "4.4M", "purpose": "Task queue + completed task history", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "Loss = restart from scratch on any in-flight long-running task." },
+    { "name": "telegram", "size": "8.0K", "purpose": "Telegram bot conversation state", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true },
+    { "name": "wiki", "size": "64K", "purpose": "Wiki articles (Karpathy-style knowledge base)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "Core IP — synthesized knowledge from sources. Backup target." },
+    { "name": "workspace", "size": "6.7G", "purpose": "User workspaces — checked-out projects (SalesEdge, signals-engine, hollywood-studio, hybrid-ai-telemarketing, Michelle-Sanchez-CB-Realty, etc.)", "must_persist_across_redeploy": true, "backup_status": "not backed up", "mounted_into_container": true, "notes": "LARGEST CONSUMER. 6.7G is dominated by node_modules in checked-out repos. Real source can be re-cloned from git; .env files cannot." }
+  ],
+
+  "biggest_state_dirs_ranked": [
+    { "rank": 1, "name": "workspace", "size": "6.7G", "advice": "Most is node_modules — backup only source files + .env files, not node_modules" },
+    { "rank": 2, "name": "plugin-runtime-deps", "size": "593M", "advice": "Pure node_modules — exclude from backup" },
+    { "rank": 3, "name": "agents", "size": "441M", "advice": "Mostly node_modules; identify state files and back those" },
+    { "rank": 4, "name": "livekit-agent", "size": "419M", "advice": "node_modules + recordings — split and back up recordings only" },
+    { "rank": 5, "name": "mcp-servers", "size": "244M", "advice": "node_modules — backup only the .env files inside" },
+    { "rank": 6, "name": "hindsight", "size": "233M", "advice": "PURE STATE — full backup MANDATORY" },
+    { "rank": 7, "name": "media", "size": "85M", "advice": "PURE STATE — full backup" },
+    { "rank": 8, "name": "memory", "size": "24M", "advice": "PRIMARY DATABASE — sqlite hot-backup daily" }
+  ],
+
+  "backups_directory_audit": {
+    "path": "/home/tagai/.openclaw/backups/",
+    "current_state": "EMPTY — directory exists but contains no files",
+    "evidence": "ls -la shows only . and .. entries",
+    "problem": "No automated process writes to this directory; no openclaw.json backup, no sqlite snapshot, no env file copy",
+    "recommendation": "Wire up an hourly+daily backup cron — see retention policy below"
+  },
+
+  "recommended_backup_retention_policy": {
+    "tier_1_critical_hourly": {
+      "paths": ["/home/tagai/.openclaw/memory/main.sqlite", "/home/tagai/.openclaw/openclaw.json", "/home/tagai/.openclaw/credentials/", "/home/tagai/.openclaw/identity/", "/home/tagai/.openclaw/secrets/"],
+      "frequency": "every hour",
+      "retention": "last 24 hourly + 7 daily + 4 weekly",
+      "destination": "/home/tagai/.openclaw/backups/ AND off-VPS (Hetzner Storage Box or Backblaze B2)",
+      "estimated_size": "~50MB per snapshot (mostly sqlite)"
+    },
+    "tier_2_state_daily": {
+      "paths": ["/home/tagai/.openclaw/hindsight/", "/home/tagai/.openclaw/flows/", "/home/tagai/.openclaw/tasks/", "/home/tagai/.openclaw/wiki/", "/home/tagai/.openclaw/corp/", "/home/tagai/.openclaw/media/", "/home/tagai/.openclaw/projects/"],
+      "frequency": "daily 03:00 CST",
+      "retention": "last 7 daily + 4 weekly + 3 monthly",
+      "destination": "off-VPS only (S3/B2/Storage Box)",
+      "estimated_size": "~350MB per snapshot"
+    },
+    "tier_3_workspace_weekly": {
+      "paths": ["/home/tagai/.openclaw/workspace/ (excluding node_modules)"],
+      "frequency": "weekly Sunday",
+      "retention": "last 4 weekly",
+      "destination": "off-VPS only",
+      "estimated_size": "~500MB per snapshot (workspace minus node_modules)",
+      "note": "Use --exclude='**/node_modules' --exclude='**/.next' --exclude='**/dist' on rsync"
+    },
+    "exclude_from_all_backups": [
+      "/home/tagai/.openclaw/.pnpm-store/",
+      "/home/tagai/.openclaw/plugin-runtime-deps/",
+      "/home/tagai/.openclaw/logs/",
+      "/home/tagai/.openclaw/extensions/",
+      "any node_modules under workspace/, agents/, mcp-servers/, livekit-agent/"
+    ]
+  },
+
+  "consolidation_findings": {
+    "duplicate_purpose_dirs": [
+      { "pair": ["delivery-queue", "session-delivery-queue"], "advice": "Document scoping clearly OR merge under one root" },
+      { "pair": ["plugins", "plugin-skills"], "advice": "plugin-skills is empty; redundant with skills/" },
+      { "pair": ["skills", "subagents"], "advice": "Both empty/tiny — clarify naming" },
+      { "pair": ["secrets", "credentials"], "advice": "secrets/ holds API tokens, credentials/ holds telegram pairing — should rename to clarify" }
+    ],
+    "empty_or_near_empty": ["backups", "extensions", "plugin-skills", "skills", "telegram", "delivery-queue", "session-delivery-queue", "subagents", "lobster", "maya-vapi"]
+  },
+
+  "biggest_state_dir_summary": "workspace at 6.7G — but real persistent value is hindsight (233M, agent long-term memory) + memory (24M sqlite). Workspace can be re-cloned from git; hindsight cannot be regenerated."
+}

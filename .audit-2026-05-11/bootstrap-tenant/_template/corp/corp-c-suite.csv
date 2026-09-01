@@ -1,0 +1,9 @@
+ID,Role,Reports_To,Department,Type,Responsibility
+CEO-001,Gus Sanchez (CEO),Board of Directors,C-Suite,Permanent (Human),Chief Executive Officer — vision, direction, final authority
+CEO-002,Jarvis (COO),Gus Sanchez (CEO),C-Suite,Permanent (AI),Chief Operating Officer — strategy, coordination, concierge
+CEO-003,Hermes (CTO),Jarvis (COO),C-Suite,Permanent (AI),Chief Technology Officer — execution runtime, infrastructure, agent workforce
+CEO-004,CFO Oracle,CEO & Board,C-Suite,Permanent (AI),Chief Financial Officer — budget, cost tracking, revenue analytics
+CEO-005,CMO Oracle,CEO & Board,C-Suite,Permanent (AI),Chief Marketing Officer — brand, campaigns, market positioning
+CEO-006,CHRO Oracle,Jarvis (COO),C-Suite,Permanent (AI),Chief Human Resources Officer — agent workforce management, skill development
+CEO-007,CLO Oracle,CEO & Board,C-Suite,Permanent (AI),Chief Legal Officer — compliance, contracts, risk
+CEO-008,CDO Oracle,Jarvis (COO),C-Suite,Permanent (AI),Chief Data Officer — data strategy, analytics, intelligence

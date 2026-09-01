@@ -1,0 +1,31 @@
+ID,Role,Title,Department,Reports_To,Type
+B2B-001,Sales Ops Lead,VP of Sales Operations,B2B Sales,CMO Oracle,Subagent
+B2B-002,Revenue Ops,Revenue Operations Manager,B2B Sales,Sales Ops Lead,Subagent
+B2B-003,CRM Admin,CRM & Pipeline Administrator,B2B Sales,Sales Ops Lead,Subagent
+B2B-004,Forecasting Analyst,Sales Forecasting & Analytics,B2B Sales,Sales Ops Lead,Subagent
+B2B-005,SDR Team Lead,SDR Team Lead,B2B Sales,CMO Oracle,Subagent
+B2B-006,SDR 1 — Enterprise,SDR — Enterprise Accounts,B2B Sales,SDR Team Lead,Subagent
+B2B-007,SDR 2 — Mid-Market,SDR — Mid-Market Accounts,B2B Sales,SDR Team Lead,Subagent
+B2B-008,SDR 3 — SMB,SDR — Small Business Accounts,B2B Sales,SDR Team Lead,Subagent
+B2B-009,SDR 4 — Inbound,SDR — Inbound Lead Response,B2B Sales,SDR Team Lead,Subagent
+B2B-010,SDR 5 — Vertical,SDR — Vertical Specialists (PI Law, Telecom, Healthcare),B2B Sales,SDR Team Lead,Subagent
+B2B-011,AE Team Lead,VP of Account Executives,B2B Sales,CMO Oracle,Subagent
+B2B-012,AE 1 — Enterprise,Account Executive — Enterprise,B2B Sales,AE Team Lead,Subagent
+B2B-013,AE 2 — Enterprise,Account Executive — Enterprise,B2B Sales,AE Team Lead,Subagent
+B2B-014,AE 3 — Mid-Market,Account Executive — Mid-Market,B2B Sales,AE Team Lead,Subagent
+B2B-015,AE 4 — Mid-Market,Account Executive — Mid-Market,B2B Sales,AE Team Lead,Subagent
+B2B-016,AE 5 — SMB,Account Executive — Small Business,B2B Sales,AE Team Lead,Subagent
+B2B-017,Sales Engineer Lead,Sales Engineering Lead,B2B Sales,CTO (Hermes),Subagent
+B2B-018,Sales Engineer 1,Sales Engineer — Technical Demos,B2B Sales,Sales Engineer Lead,Subagent
+B2B-019,Sales Engineer 2,Sales Engineer — POC & Integration,B2B Sales,Sales Engineer Lead,Subagent
+B2B-020,Sales Engineer 3,Sales Engineer — Proposal Support,B2B Sales,Sales Engineer Lead,Subagent
+B2B-021,Channel Lead,VP of Channel & Partnerships,B2B Sales,CMO Oracle,Subagent
+B2B-022,Partner Manager 1,Partner Manager — VARs,B2B Sales,Channel Lead,Subagent
+B2B-023,Partner Manager 2,Partner Manager — Agencies,B2B Sales,Channel Lead,Subagent
+B2B-024,Partner Manager 3,Partner Manager — Technology Partners,B2B Sales,Channel Lead,Subagent
+B2B-025,Enablement Lead,Sales Enablement Manager,B2B Sales,CMO Oracle,Subagent
+B2B-026,Enablement 1,Sales Training — Product Knowledge,B2B Sales,Enablement Lead,Subagent
+B2B-027,Enablement 2,Sales Training — Objection Handling,B2B Sales,Enablement Lead,Subagent
+B2B-028,Proposal Lead,Proposal & Pitch Deck Lead,B2B Sales,AE Team Lead,Subagent
+B2B-029,Proposal Writer,Proposal Writer — Custom Responses,B2B Sales,Proposal Lead,Subagent
+B2B-030,Contracts Specialist,Sales Contracts & Negotiation Support,B2B Sales,CLO Oracle,Subagent

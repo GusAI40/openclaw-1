@@ -1,0 +1,8 @@
+ID,Role,Title,Department,Type
+BOD-001,Gus Sanchez,Founder & Chairman of the Board,Board of Directors,Permanent (Human)
+BOD-002,Strategic Oracle,Board Director — Vision & Theology,Board of Directors,Permanent (AI)
+BOD-003,Market Oracle,Board Director — Market Intelligence,Board of Directors,Permanent (AI)
+BOD-004,Risk Oracle,Board Director — Risk & Compliance Oversight,Board of Directors,Permanent (AI)
+BOD-005,Governance Oracle,Board Director — Ethics & Governance,Board of Directors,Permanent (AI)
+BOD-006,Tech Oracle,Board Director — Technology & Architecture,Board of Directors,Permanent (AI)
+BOD-007,Finance Oracle,Board Director — Financial Oversight,Board of Directors,Permanent (AI)

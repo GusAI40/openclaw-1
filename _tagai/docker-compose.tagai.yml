@@ -1,0 +1,95 @@
+# =============================================================================
+# TAG AI overlay for OpenClaw — Hetzner CPX21 deployment
+# =============================================================================
+#
+# Topology (verified 2026-04-26 — see _tagai/HETZNER_PREFLIGHT.md +
+#                                    _tagai/CADDY_AUDIT.md):
+#
+#   Internet (443/TCP)
+#       |
+#       v
+#   Caddy v2.11.2 on the HOST (systemd, /etc/caddy/Caddyfile)
+#       |  - Terminates TLS (Let's Encrypt, automatic)
+#       |  - Routes openclaw.ubntag.com -> localhost:18789
+#       |  - Routes /vapi/webhook* + /vapi/tool* -> 127.0.0.1:18792 (host node)
+#       v
+#   docker-proxy (host) -> openclaw-gateway container (port 18789)
+#       |
+#       +-- openclaw-cli  (network_mode: service:openclaw-gateway)
+#
+# This is NOT a Coolify deploy. There is NO Traefik. Do not add Traefik labels
+# or external networks here — Caddy on the host handles all reverse proxying
+# and TLS termination. The upstream docker-compose.yml already binds the
+# gateway to host port 18789, which is exactly where Caddy expects it.
+#
+# Apply this overlay on the server with:
+#   cd /home/tagai/openclaw
+#   docker compose -f docker-compose.yml -f _tagai/docker-compose.tagai.yml up -d
+#
+# NOTE: The server today uses a sibling file `docker-compose.override.yml`
+# that only injects env_file. This overlay is more comprehensive — when
+# adopting it, decide whether to keep, replace, or layer on top of the
+# existing override. The two are compatible (same service names, no key
+# collisions on memory limits or restart policy) but applying both with
+# `-f` flags will merge them in the order given.
+#
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Gateway — long-running HTTP/WS server, fronted by Caddy on the host
+  # ---------------------------------------------------------------------------
+  openclaw-gateway:
+    # Restart policy is already declared upstream (`unless-stopped`).
+    # Re-declared here defensively in case upstream changes.
+    restart: unless-stopped
+
+    environment:
+      # Force timezone — host is UTC, business clock is Central.
+      OPENCLAW_TZ: America/Chicago
+      TZ: America/Chicago
+
+    # CPX21 has 4 GB RAM total and runs 4 other containers (michelle-fb-*).
+    # Memory pressure is the #1 cause of OOM kills on this host.
+    # Gateway = the heavy process: 1.5 GiB hard limit, 1.0 GiB soft reservation.
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+        reservations:
+          memory: 1024M
+
+  # ---------------------------------------------------------------------------
+  # CLI — interactive REPL container, shares network namespace with gateway
+  # ---------------------------------------------------------------------------
+  #
+  # KNOWN BUG (see _tagai/CLI_HEALTH_INVESTIGATION.md):
+  # Upstream docker-compose.yml does NOT set a restart policy on this service.
+  # Because `network_mode: service:openclaw-gateway` resolves to the gateway
+  # container ID at start time, recreating the gateway orphans the CLI in a
+  # dead network namespace until the CLI is also recreated. Adding
+  # `restart: unless-stopped` ensures Docker auto-restarts the CLI when its
+  # network peer is recreated, fixing the orphan-namespace problem.
+  #
+  # `depends_on: condition: service_healthy` ensures the CLI does not boot
+  # until the gateway's healthcheck passes — preventing the CLI from
+  # discovering an empty namespace on the very first start.
+  # ---------------------------------------------------------------------------
+  openclaw-cli:
+    restart: unless-stopped
+
+    depends_on:
+      openclaw-gateway:
+        condition: service_healthy
+
+    environment:
+      OPENCLAW_TZ: America/Chicago
+      TZ: America/Chicago
+
+    # CLI is mostly idle (interactive REPL). 512 MiB hard, 256 MiB soft.
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+        reservations:
+          memory: 768M

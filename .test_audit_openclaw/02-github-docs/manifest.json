@@ -1,0 +1,2013 @@
+{
+  "tree_truncated": false,
+  "total_files": 552,
+  "markdown_files": [
+    {
+      "path": "docs/.generated/README.md",
+      "size": 851
+    },
+    {
+      "path": "docs/.i18n/README.md",
+      "size": 4482
+    },
+    {
+      "path": "docs/AGENTS.md",
+      "size": 1993
+    },
+    {
+      "path": "docs/CLAUDE.md",
+      "size": 9
+    },
+    {
+      "path": "docs/auth-credential-semantics.md",
+      "size": 2970
+    },
+    {
+      "path": "docs/automation/auth-monitoring.md",
+      "size": 254
+    },
+    {
+      "path": "docs/automation/clawflow.md",
+      "size": 246
+    },
+    {
+      "path": "docs/automation/cron-jobs.md",
+      "size": 22682
+    },
+    {
+      "path": "docs/automation/cron-vs-heartbeat.md",
+      "size": 257
+    },
+    {
+      "path": "docs/automation/gmail-pubsub.md",
+      "size": 370
+    },
+    {
+      "path": "docs/automation/hooks.md",
+      "size": 12289
+    },
+    {
+      "path": "docs/automation/index.md",
+      "size": 6962
+    },
+    {
+      "path": "docs/automation/poll.md",
+      "size": 295
+    },
+    {
+      "path": "docs/automation/standing-orders.md",
+      "size": 9645
+    },
+    {
+      "path": "docs/automation/taskflow.md",
+      "size": 7279
+    },
+    {
+      "path": "docs/automation/tasks.md",
+      "size": 19049
+    },
+    {
+      "path": "docs/automation/troubleshooting.md",
+      "size": 399
+    },
+    {
+      "path": "docs/automation/webhook.md",
+      "size": 335
+    },
+    {
+      "path": "docs/brave-search.md",
+      "size": 4015
+    },
+    {
+      "path": "docs/channels/bluebubbles.md",
+      "size": 29805
+    },
+    {
+      "path": "docs/channels/broadcast-groups.md",
+      "size": 12258
+    },
+    {
+      "path": "docs/channels/channel-routing.md",
+      "size": 5413
+    },
+    {
+      "path": "docs/channels/discord.md",
+      "size": 42824
+    },
+    {
+      "path": "docs/channels/feishu.md",
+      "size": 14441
+    },
+    {
+      "path": "docs/channels/googlechat.md",
+      "size": 11016
+    },
+    {
+      "path": "docs/channels/group-messages.md",
+      "size": 5556
+    },
+    {
+      "path": "docs/channels/groups.md",
+      "size": 17007
+    },
+    {
+      "path": "docs/channels/imessage.md",
+      "size": 12059
+    },
+    {
+      "path": "docs/channels/index.md",
+      "size": 3828
+    },
+    {
+      "path": "docs/channels/irc.md",
+      "size": 6694
+    },
+    {
+      "path": "docs/channels/line.md",
+      "size": 6683
+    },
+    {
+      "path": "docs/channels/location.md",
+      "size": 2407
+    },
+    {
+      "path": "docs/channels/matrix-migration.md",
+      "size": 21680
+    },
+    {
+      "path": "docs/channels/matrix-push-rules.md",
+      "size": 5803
+    },
+    {
+      "path": "docs/channels/matrix.md",
+      "size": 42699
+    },
+    {
+      "path": "docs/channels/mattermost.md",
+      "size": 21226
+    },
+    {
+      "path": "docs/channels/msteams.md",
+      "size": 41656
+    },
+    {
+      "path": "docs/channels/nextcloud-talk.md",
+      "size": 6009
+    },
+    {
+      "path": "docs/channels/nostr.md",
+      "size": 6831
+    },
+    {
+      "path": "docs/channels/pairing.md",
+      "size": 6255
+    },
+    {
+      "path": "docs/channels/qa-channel.md",
+      "size": 2513
+    },
+    {
+      "path": "docs/channels/qqbot.md",
+      "size": 8249
+    },
+    {
+      "path": "docs/channels/signal.md",
+      "size": 13615
+    },
+    {
+      "path": "docs/channels/slack.md",
+      "size": 30438
+    },
+    {
+      "path": "docs/channels/synology-chat.md",
+      "size": 7297
+    },
+    {
+      "path": "docs/channels/telegram.md",
+      "size": 36752
+    },
+    {
+      "path": "docs/channels/tlon.md",
+      "size": 7754
+    },
+    {
+      "path": "docs/channels/troubleshooting.md",
+      "size": 9958
+    },
+    {
+      "path": "docs/channels/twitch.md",
+      "size": 11741
+    },
+    {
+      "path": "docs/channels/wechat.md",
+      "size": 5164
+    },
+    {
+      "path": "docs/channels/whatsapp.md",
+      "size": 24527
+    },
+    {
+      "path": "docs/channels/zalo.md",
+      "size": 11719
+    },
+    {
+      "path": "docs/channels/zalouser.md",
+      "size": 6779
+    },
+    {
+      "path": "docs/ci.md",
+      "size": 35324
+    },
+    {
+      "path": "docs/cli/acp.md",
+      "size": 15451
+    },
+    {
+      "path": "docs/cli/agent.md",
+      "size": 3500
+    },
+    {
+      "path": "docs/cli/agents.md",
+      "size": 5942
+    },
+    {
+      "path": "docs/cli/approvals.md",
+      "size": 5858
+    },
+    {
+      "path": "docs/cli/backup.md",
+      "size": 4304
+    },
+    {
+      "path": "docs/cli/browser.md",
+      "size": 10569
+    },
+    {
+      "path": "docs/cli/channels.md",
+      "size": 7005
+    },
+    {
+      "path": "docs/cli/clawbot.md",
+      "size": 533
+    },
+    {
+      "path": "docs/cli/completion.md",
+      "size": 1282
+    },
+    {
+      "path": "docs/cli/config.md",
+      "size": 15805
+    },
+    {
+      "path": "docs/cli/configure.md",
+      "size": 3318
+    },
+    {
+      "path": "docs/cli/crestodian.md",
+      "size": 10219
+    },
+    {
+      "path": "docs/cli/cron.md",
+      "size": 8905
+    },
+    {
+      "path": "docs/cli/daemon.md",
+      "size": 3031
+    },
+    {
+      "path": "docs/cli/dashboard.md",
+      "size": 1069
+    },
+    {
+      "path": "docs/cli/devices.md",
+      "size": 7198
+    },
+    {
+      "path": "docs/cli/directory.md",
+      "size": 2170
+    },
+    {
+      "path": "docs/cli/dns.md",
+      "size": 1555
+    },
+    {
+      "path": "docs/cli/docs.md",
+      "size": 627
+    },
+    {
+      "path": "docs/cli/doctor.md",
+      "size": 4781
+    },
+    {
+      "path": "docs/cli/flows.md",
+      "size": 575
+    },
+    {
+      "path": "docs/cli/gateway.md",
+      "size": 23641
+    },
+    {
+      "path": "docs/cli/health.md",
+      "size": 1084
+    },
+    {
+      "path": "docs/cli/hooks.md",
+      "size": 7924
+    },
+    {
+      "path": "docs/cli/index.md",
+      "size": 10792
+    },
+    {
+      "path": "docs/cli/infer.md",
+      "size": 12497
+    },
+    {
+      "path": "docs/cli/logs.md",
+      "size": 2003
+    },
+    {
+      "path": "docs/cli/mcp.md",
+      "size": 19299
+    },
+    {
+      "path": "docs/cli/memory.md",
+      "size": 8268
+    },
+    {
+      "path": "docs/cli/message.md",
+      "size": 10467
+    },
+    {
+      "path": "docs/cli/migrate.md",
+      "size": 7943
+    },
+    {
+      "path": "docs/cli/models.md",
+      "size": 7585
+    },
+    {
+      "path": "docs/cli/node.md",
+      "size": 6081
+    },
+    {
+      "path": "docs/cli/nodes.md",
+      "size": 2529
+    },
+    {
+      "path": "docs/cli/onboard.md",
+      "size": 9182
+    },
+    {
+      "path": "docs/cli/pairing.md",
+      "size": 1992
+    },
+    {
+      "path": "docs/cli/plugins.md",
+      "size": 19542
+    },
+    {
+      "path": "docs/cli/proxy.md",
+      "size": 1406
+    },
+    {
+      "path": "docs/cli/qr.md",
+      "size": 3214
+    },
+    {
+      "path": "docs/cli/reset.md",
+      "size": 1110
+    },
+    {
+      "path": "docs/cli/sandbox.md",
+      "size": 5775
+    },
+    {
+      "path": "docs/cli/secrets.md",
+      "size": 7593
+    },
+    {
+      "path": "docs/cli/security.md",
+      "size": 5688
+    },
+    {
+      "path": "docs/cli/sessions.md",
+      "size": 3929
+    },
+    {
+      "path": "docs/cli/setup.md",
+      "size": 1925
+    },
+    {
+      "path": "docs/cli/skills.md",
+      "size": 2085
+    },
+    {
+      "path": "docs/cli/status.md",
+      "size": 3178
+    },
+    {
+      "path": "docs/cli/system.md",
+      "size": 2123
+    },
+    {
+      "path": "docs/cli/tasks.md",
+      "size": 2726
+    },
+    {
+      "path": "docs/cli/tui.md",
+      "size": 2431
+    },
+    {
+      "path": "docs/cli/uninstall.md",
+      "size": 1218
+    },
+    {
+      "path": "docs/cli/voicecall.md",
+      "size": 1843
+    },
+    {
+      "path": "docs/cli/webhooks.md",
+      "size": 2133
+    },
+    {
+      "path": "docs/cli/wiki.md",
+      "size": 5544
+    },
+    {
+      "path": "docs/concepts/active-memory.md",
+      "size": 22427
+    },
+    {
+      "path": "docs/concepts/agent-loop.md",
+      "size": 9901
+    },
+    {
+      "path": "docs/concepts/agent-runtimes.md",
+      "size": 13109
+    },
+    {
+      "path": "docs/concepts/agent-workspace.md",
+      "size": 9213
+    },
+    {
+      "path": "docs/concepts/agent.md",
+      "size": 5882
+    },
+    {
+      "path": "docs/concepts/architecture.md",
+      "size": 5835
+    },
+    {
+      "path": "docs/concepts/compaction.md",
+      "size": 7702
+    },
+    {
+      "path": "docs/concepts/context-engine.md",
+      "size": 13150
+    },
+    {
+      "path": "docs/concepts/context.md",
+      "size": 8009
+    },
+    {
+      "path": "docs/concepts/delegate-architecture.md",
+      "size": 13051
+    },
+    {
+      "path": "docs/concepts/dreaming.md",
+      "size": 9122
+    },
+    {
+      "path": "docs/concepts/experimental-features.md",
+      "size": 3326
+    },
+    {
+      "path": "docs/concepts/features.md",
+      "size": 3069
+    },
+    {
+      "path": "docs/concepts/markdown-formatting.md",
+      "size": 4837
+    },
+    {
+      "path": "docs/concepts/memory-builtin.md",
+      "size": 4867
+    },
+    {
+      "path": "docs/concepts/memory-honcho.md",
+      "size": 5486
+    },
+    {
+      "path": "docs/concepts/memory-qmd.md",
+      "size": 8777
+    },
+    {
+      "path": "docs/concepts/memory-search.md",
+      "size": 5842
+    },
+    {
+      "path": "docs/concepts/memory.md",
+      "size": 7097
+    },
+    {
+      "path": "docs/concepts/messages.md",
+      "size": 8111
+    },
+    {
+      "path": "docs/concepts/model-failover.md",
+      "size": 18320
+    },
+    {
+      "path": "docs/concepts/model-providers.md",
+      "size": 31667
+    },
+    {
+      "path": "docs/concepts/models.md",
+      "size": 15716
+    },
+    {
+      "path": "docs/concepts/multi-agent.md",
+      "size": 20858
+    },
+    {
+      "path": "docs/concepts/oauth.md",
+      "size": 6930
+    },
+    {
+      "path": "docs/concepts/presence.md",
+      "size": 3623
+    },
+    {
+      "path": "docs/concepts/qa-e2e-automation.md",
+      "size": 14393
+    },
+    {
+      "path": "docs/concepts/queue.md",
+      "size": 4673
+    },
+    {
+      "path": "docs/concepts/retry.md",
+      "size": 2181
+    },
+    {
+      "path": "docs/concepts/session-pruning.md",
+      "size": 3895
+    },
+    {
+      "path": "docs/concepts/session-tool.md",
+      "size": 8064
+    },
+    {
+      "path": "docs/concepts/session.md",
+      "size": 5506
+    },
+    {
+      "path": "docs/concepts/soul.md",
+      "size": 3766
+    },
+    {
+      "path": "docs/concepts/streaming.md",
+      "size": 10823
+    },
+    {
+      "path": "docs/concepts/system-prompt.md",
+      "size": 10918
+    },
+    {
+      "path": "docs/concepts/timezone.md",
+      "size": 2588
+    },
+    {
+      "path": "docs/concepts/typebox.md",
+      "size": 9430
+    },
+    {
+      "path": "docs/concepts/typing-indicators.md",
+      "size": 2588
+    },
+    {
+      "path": "docs/concepts/usage-tracking.md",
+      "size": 3298
+    },
+    {
+      "path": "docs/date-time.md",
+      "size": 3540
+    },
+    {
+      "path": "docs/debug/node-issue.md",
+      "size": 2966
+    },
+    {
+      "path": "docs/diagnostics/flags.md",
+      "size": 2095
+    },
+    {
+      "path": "docs/gateway/authentication.md",
+      "size": 7705
+    },
+    {
+      "path": "docs/gateway/background-process.md",
+      "size": 5453
+    },
+    {
+      "path": "docs/gateway/bonjour.md",
+      "size": 11204
+    },
+    {
+      "path": "docs/gateway/bridge-protocol.md",
+      "size": 3512
+    },
+    {
+      "path": "docs/gateway/cli-backends.md",
+      "size": 14559
+    },
+    {
+      "path": "docs/gateway/config-agents.md",
+      "size": 59728
+    },
+    {
+      "path": "docs/gateway/config-channels.md",
+      "size": 36713
+    },
+    {
+      "path": "docs/gateway/config-tools.md",
+      "size": 28594
+    },
+    {
+      "path": "docs/gateway/configuration-examples.md",
+      "size": 16425
+    },
+    {
+      "path": "docs/gateway/configuration-reference.md",
+      "size": 55852
+    },
+    {
+      "path": "docs/gateway/configuration.md",
+      "size": 27478
+    },
+    {
+      "path": "docs/gateway/diagnostics.md",
+      "size": 4260
+    },
+    {
+      "path": "docs/gateway/discovery.md",
+      "size": 7240
+    },
+    {
+      "path": "docs/gateway/doctor.md",
+      "size": 36259
+    },
+    {
+      "path": "docs/gateway/gateway-lock.md",
+      "size": 1825
+    },
+    {
+      "path": "docs/gateway/health.md",
+      "size": 5566
+    },
+    {
+      "path": "docs/gateway/heartbeat.md",
+      "size": 21578
+    },
+    {
+      "path": "docs/gateway/index.md",
+      "size": 14111
+    },
+    {
+      "path": "docs/gateway/local-models.md",
+      "size": 12320
+    },
+    {
+      "path": "docs/gateway/logging.md",
+      "size": 4518
+    },
+    {
+      "path": "docs/gateway/multiple-gateways.md",
+      "size": 5602
+    },
+    {
+      "path": "docs/gateway/network-model.md",
+      "size": 1959
+    },
+    {
+      "path": "docs/gateway/openai-http-api.md",
+      "size": 9728
+    },
+    {
+      "path": "docs/gateway/openresponses-http-api.md",
+      "size": 11401
+    },
+    {
+      "path": "docs/gateway/openshell.md",
+      "size": 9846
+    },
+    {
+      "path": "docs/gateway/opentelemetry.md",
+      "size": 18490
+    },
+    {
+      "path": "docs/gateway/pairing.md",
+      "size": 8258
+    },
+    {
+      "path": "docs/gateway/prometheus.md",
+      "size": 11326
+    },
+    {
+      "path": "docs/gateway/protocol.md",
+      "size": 33841
+    },
+    {
+      "path": "docs/gateway/remote-gateway-readme.md",
+      "size": 4264
+    },
+    {
+      "path": "docs/gateway/remote.md",
+      "size": 10566
+    },
+    {
+      "path": "docs/gateway/sandbox-vs-tool-policy-vs-elevated.md",
+      "size": 6564
+    },
+    {
+      "path": "docs/gateway/sandboxing.md",
+      "size": 23871
+    },
+    {
+      "path": "docs/gateway/secrets-plan-contract.md",
+      "size": 3911
+    },
+    {
+      "path": "docs/gateway/secrets.md",
+      "size": 21020
+    },
+    {
+      "path": "docs/gateway/security/audit-checks.md",
+      "size": 29647
+    },
+    {
+      "path": "docs/gateway/security/index.md",
+      "size": 69783
+    },
+    {
+      "path": "docs/gateway/tailscale.md",
+      "size": 5822
+    },
+    {
+      "path": "docs/gateway/tools-invoke-http-api.md",
+      "size": 7065
+    },
+    {
+      "path": "docs/gateway/troubleshooting.md",
+      "size": 31529
+    },
+    {
+      "path": "docs/gateway/trusted-proxy-auth.md",
+      "size": 15896
+    },
+    {
+      "path": "docs/help/debugging.md",
+      "size": 11283
+    },
+    {
+      "path": "docs/help/environment.md",
+      "size": 6818
+    },
+    {
+      "path": "docs/help/faq-first-run.md",
+      "size": 38579
+    },
+    {
+      "path": "docs/help/faq-models.md",
+      "size": 21304
+    },
+    {
+      "path": "docs/help/faq.md",
+      "size": 84205
+    },
+    {
+      "path": "docs/help/gpt55-codex-agentic-parity-maintainers.md",
+      "size": 7555
+    },
+    {
+      "path": "docs/help/gpt55-codex-agentic-parity.md",
+      "size": 13127
+    },
+    {
+      "path": "docs/help/index.md",
+      "size": 1559
+    },
+    {
+      "path": "docs/help/scripts.md",
+      "size": 1745
+    },
+    {
+      "path": "docs/help/testing-live.md",
+      "size": 32035
+    },
+    {
+      "path": "docs/help/testing.md",
+      "size": 60662
+    },
+    {
+      "path": "docs/help/troubleshooting.md",
+      "size": 15847
+    },
+    {
+      "path": "docs/index.md",
+      "size": 6770
+    },
+    {
+      "path": "docs/install/ansible.md",
+      "size": 7047
+    },
+    {
+      "path": "docs/install/azure.md",
+      "size": 10163
+    },
+    {
+      "path": "docs/install/bun.md",
+      "size": 1752
+    },
+    {
+      "path": "docs/install/clawdock.md",
+      "size": 4095
+    },
+    {
+      "path": "docs/install/development-channels.md",
+      "size": 4835
+    },
+    {
+      "path": "docs/install/digitalocean.md",
+      "size": 3610
+    },
+    {
+      "path": "docs/install/docker-vm-runtime.md",
+      "size": 5098
+    },
+    {
+      "path": "docs/install/docker.md",
+      "size": 19623
+    },
+    {
+      "path": "docs/install/exe-dev.md",
+      "size": 4566
+    },
+    {
+      "path": "docs/install/fly.md",
+      "size": 14284
+    },
+    {
+      "path": "docs/install/gcp.md",
+      "size": 12531
+    },
+    {
+      "path": "docs/install/hetzner.md",
+      "size": 8364
+    },
+    {
+      "path": "docs/install/hostinger.md",
+      "size": 3780
+    },
+    {
+      "path": "docs/install/index.md",
+      "size": 6325
+    },
+    {
+      "path": "docs/install/installer.md",
+      "size": 19063
+    },
+    {
+      "path": "docs/install/kubernetes.md",
+      "size": 6544
+    },
+    {
+      "path": "docs/install/macos-vm.md",
+      "size": 6760
+    },
+    {
+      "path": "docs/install/migrating-claude.md",
+      "size": 6572
+    },
+    {
+      "path": "docs/install/migrating-hermes.md",
+      "size": 7064
+    },
+    {
+      "path": "docs/install/migrating.md",
+      "size": 5496
+    },
+    {
+      "path": "docs/install/nix.md",
+      "size": 3637
+    },
+    {
+      "path": "docs/install/node.md",
+      "size": 4067
+    },
+    {
+      "path": "docs/install/northflank.mdx",
+      "size": 1826
+    },
+    {
+      "path": "docs/install/oracle.md",
+      "size": 5414
+    },
+    {
+      "path": "docs/install/podman.md",
+      "size": 8587
+    },
+    {
+      "path": "docs/install/railway.mdx",
+      "size": 2743
+    },
+    {
+      "path": "docs/install/raspberry-pi.md",
+      "size": 5097
+    },
+    {
+      "path": "docs/install/render.mdx",
+      "size": 5881
+    },
+    {
+      "path": "docs/install/uninstall.md",
+      "size": 3430
+    },
+    {
+      "path": "docs/install/updating.md",
+      "size": 8960
+    },
+    {
+      "path": "docs/logging.md",
+      "size": 9235
+    },
+    {
+      "path": "docs/network.md",
+      "size": 2651
+    },
+    {
+      "path": "docs/nodes/audio.md",
+      "size": 8149
+    },
+    {
+      "path": "docs/nodes/camera.md",
+      "size": 5794
+    },
+    {
+      "path": "docs/nodes/images.md",
+      "size": 4043
+    },
+    {
+      "path": "docs/nodes/index.md",
+      "size": 16163
+    },
+    {
+      "path": "docs/nodes/location-command.md",
+      "size": 2830
+    },
+    {
+      "path": "docs/nodes/media-understanding.md",
+      "size": 17689
+    },
+    {
+      "path": "docs/nodes/talk.md",
+      "size": 4489
+    },
+    {
+      "path": "docs/nodes/troubleshooting.md",
+      "size": 5102
+    },
+    {
+      "path": "docs/nodes/voicewake.md",
+      "size": 2828
+    },
+    {
+      "path": "docs/perplexity.md",
+      "size": 6024
+    },
+    {
+      "path": "docs/pi-dev.md",
+      "size": 2576
+    },
+    {
+      "path": "docs/pi.md",
+      "size": 21492
+    },
+    {
+      "path": "docs/plan/codex-context-engine-harness.md",
+      "size": 22693
+    },
+    {
+      "path": "docs/plan/ui-channels.md",
+      "size": 10517
+    },
+    {
+      "path": "docs/platforms/android.md",
+      "size": 11306
+    },
+    {
+      "path": "docs/platforms/digitalocean.md",
+      "size": 6755
+    },
+    {
+      "path": "docs/platforms/index.md",
+      "size": 2158
+    },
+    {
+      "path": "docs/platforms/ios.md",
+      "size": 9773
+    },
+    {
+      "path": "docs/platforms/linux.md",
+      "size": 3979
+    },
+    {
+      "path": "docs/platforms/mac/bundled-gateway.md",
+      "size": 2226
+    },
+    {
+      "path": "docs/platforms/mac/canvas.md",
+      "size": 3732
+    },
+    {
+      "path": "docs/platforms/mac/child-process.md",
+      "size": 2466
+    },
+    {
+      "path": "docs/platforms/mac/dev-setup.md",
+      "size": 3179
+    },
+    {
+      "path": "docs/platforms/mac/health.md",
+      "size": 1567
+    },
+    {
+      "path": "docs/platforms/mac/icon.md",
+      "size": 2095
+    },
+    {
+      "path": "docs/platforms/mac/logging.md",
+      "size": 2645
+    },
+    {
+      "path": "docs/platforms/mac/menu-bar.md",
+      "size": 3192
+    },
+    {
+      "path": "docs/platforms/mac/peekaboo.md",
+      "size": 2192
+    },
+    {
+      "path": "docs/platforms/mac/permissions.md",
+      "size": 2292
+    },
+    {
+      "path": "docs/platforms/mac/remote.md",
+      "size": 5698
+    },
+    {
+      "path": "docs/platforms/mac/signing.md",
+      "size": 3673
+    },
+    {
+      "path": "docs/platforms/mac/skills.md",
+      "size": 1718
+    },
+    {
+      "path": "docs/platforms/mac/voice-overlay.md",
+      "size": 3893
+    },
+    {
+      "path": "docs/platforms/mac/voicewake.md",
+      "size": 4209
+    },
+    {
+      "path": "docs/platforms/mac/webchat.md",
+      "size": 1972
+    },
+    {
+      "path": "docs/platforms/mac/xpc.md",
+      "size": 2925
+    },
+    {
+      "path": "docs/platforms/macos.md",
+      "size": 8314
+    },
+    {
+      "path": "docs/platforms/oracle.md",
+      "size": 9831
+    },
+    {
+      "path": "docs/platforms/raspberry-pi.md",
+      "size": 10682
+    },
+    {
+      "path": "docs/platforms/windows.md",
+      "size": 6427
+    },
+    {
+      "path": "docs/plugins/agent-tools.md",
+      "size": 402
+    },
+    {
+      "path": "docs/plugins/architecture-internals.md",
+      "size": 56754
+    },
+    {
+      "path": "docs/plugins/architecture.md",
+      "size": 26921
+    },
+    {
+      "path": "docs/plugins/building-extensions.md",
+      "size": 333
+    },
+    {
+      "path": "docs/plugins/building-plugins.md",
+      "size": 15908
+    },
+    {
+      "path": "docs/plugins/bundles.md",
+      "size": 11334
+    },
+    {
+      "path": "docs/plugins/codex-harness.md",
+      "size": 41293
+    },
+    {
+      "path": "docs/plugins/community.md",
+      "size": 6108
+    },
+    {
+      "path": "docs/plugins/compatibility.md",
+      "size": 6100
+    },
+    {
+      "path": "docs/plugins/google-meet.md",
+      "size": 47196
+    },
+    {
+      "path": "docs/plugins/hooks.md",
+      "size": 11634
+    },
+    {
+      "path": "docs/plugins/manifest.md",
+      "size": 69778
+    },
+    {
+      "path": "docs/plugins/memory-wiki.md",
+      "size": 12073
+    },
+    {
+      "path": "docs/plugins/message-presentation.md",
+      "size": 11129
+    },
+    {
+      "path": "docs/plugins/sdk-agent-harness.md",
+      "size": 13286
+    },
+    {
+      "path": "docs/plugins/sdk-channel-plugins.md",
+      "size": 30278
+    },
+    {
+      "path": "docs/plugins/sdk-entrypoints.md",
+      "size": 13201
+    },
+    {
+      "path": "docs/plugins/sdk-migration.md",
+      "size": 44050
+    },
+    {
+      "path": "docs/plugins/sdk-overview.md",
+      "size": 18638
+    },
+    {
+      "path": "docs/plugins/sdk-provider-plugins.md",
+      "size": 33434
+    },
+    {
+      "path": "docs/plugins/sdk-runtime.md",
+      "size": 20056
+    },
+    {
+      "path": "docs/plugins/sdk-setup.md",
+      "size": 24623
+    },
+    {
+      "path": "docs/plugins/sdk-subpaths.md",
+      "size": 29273
+    },
+    {
+      "path": "docs/plugins/sdk-testing.md",
+      "size": 8008
+    },
+    {
+      "path": "docs/plugins/skill-workshop.md",
+      "size": 20730
+    },
+    {
+      "path": "docs/plugins/voice-call.md",
+      "size": 22017
+    },
+    {
+      "path": "docs/plugins/webhooks.md",
+      "size": 4319
+    },
+    {
+      "path": "docs/plugins/zalouser.md",
+      "size": 2075
+    },
+    {
+      "path": "docs/prose.md",
+      "size": 3848
+    },
+    {
+      "path": "docs/providers/alibaba.md",
+      "size": 3774
+    },
+    {
+      "path": "docs/providers/anthropic.md",
+      "size": 10670
+    },
+    {
+      "path": "docs/providers/arcee.md",
+      "size": 5195
+    },
+    {
+      "path": "docs/providers/azure-speech.md",
+      "size": 6358
+    },
+    {
+      "path": "docs/providers/bedrock-mantle.md",
+      "size": 7147
+    },
+    {
+      "path": "docs/providers/bedrock.md",
+      "size": 14145
+    },
+    {
+      "path": "docs/providers/cerebras.md",
+      "size": 3012
+    },
+    {
+      "path": "docs/providers/chutes.md",
+      "size": 5250
+    },
+    {
+      "path": "docs/providers/claude-max-api-proxy.md",
+      "size": 6384
+    },
+    {
+      "path": "docs/providers/cloudflare-ai-gateway.md",
+      "size": 3812
+    },
+    {
+      "path": "docs/providers/comfy.md",
+      "size": 12409
+    },
+    {
+      "path": "docs/providers/deepgram.md",
+      "size": 6663
+    },
+    {
+      "path": "docs/providers/deepseek.md",
+      "size": 4966
+    },
+    {
+      "path": "docs/providers/elevenlabs.md",
+      "size": 4034
+    },
+    {
+      "path": "docs/providers/fal.md",
+      "size": 4720
+    },
+    {
+      "path": "docs/providers/fireworks.md",
+      "size": 4496
+    },
+    {
+      "path": "docs/providers/github-copilot.md",
+      "size": 6938
+    },
+    {
+      "path": "docs/providers/glm.md",
+      "size": 3327
+    },
+    {
+      "path": "docs/providers/google.md",
+      "size": 15157
+    },
+    {
+      "path": "docs/providers/gradium.md",
+      "size": 1445
+    },
+    {
+      "path": "docs/providers/groq.md",
+      "size": 4161
+    },
+    {
+      "path": "docs/providers/huggingface.md",
+      "size": 9916
+    },
+    {
+      "path": "docs/providers/index.md",
+      "size": 3943
+    },
+    {
+      "path": "docs/providers/inferrs.md",
+      "size": 6274
+    },
+    {
+      "path": "docs/providers/inworld.md",
+      "size": 4772
+    },
+    {
+      "path": "docs/providers/kilocode.md",
+      "size": 5004
+    },
+    {
+      "path": "docs/providers/litellm.md",
+      "size": 6024
+    },
+    {
+      "path": "docs/providers/lmstudio.md",
+      "size": 6528
+    },
+    {
+      "path": "docs/providers/minimax.md",
+      "size": 19548
+    },
+    {
+      "path": "docs/providers/mistral.md",
+      "size": 6687
+    },
+    {
+      "path": "docs/providers/models.md",
+      "size": 2485
+    },
+    {
+      "path": "docs/providers/moonshot.md",
+      "size": 13574
+    },
+    {
+      "path": "docs/providers/nvidia.md",
+      "size": 3194
+    },
+    {
+      "path": "docs/providers/ollama.md",
+      "size": 37745
+    },
+    {
+      "path": "docs/providers/openai.md",
+      "size": 37899
+    },
+    {
+      "path": "docs/providers/opencode-go.md",
+      "size": 4053
+    },
+    {
+      "path": "docs/providers/opencode.md",
+      "size": 4598
+    },
+    {
+      "path": "docs/providers/openrouter.md",
+      "size": 5540
+    },
+    {
+      "path": "docs/providers/perplexity-provider.md",
+      "size": 4840
+    },
+    {
+      "path": "docs/providers/qianfan.md",
+      "size": 4704
+    },
+    {
+      "path": "docs/providers/qwen.md",
+      "size": 12463
+    },
+    {
+      "path": "docs/providers/runway.md",
+      "size": 2813
+    },
+    {
+      "path": "docs/providers/senseaudio.md",
+      "size": 2434
+    },
+    {
+      "path": "docs/providers/sglang.md",
+      "size": 4189
+    },
+    {
+      "path": "docs/providers/stepfun.md",
+      "size": 7627
+    },
+    {
+      "path": "docs/providers/synthetic.md",
+      "size": 6247
+    },
+    {
+      "path": "docs/providers/tencent.md",
+      "size": 3909
+    },
+    {
+      "path": "docs/providers/together.md",
+      "size": 5353
+    },
+    {
+      "path": "docs/providers/venice.md",
+      "size": 15783
+    },
+    {
+      "path": "docs/providers/vercel-ai-gateway.md",
+      "size": 3682
+    },
+    {
+      "path": "docs/providers/vllm.md",
+      "size": 11594
+    },
+    {
+      "path": "docs/providers/volcengine.md",
+      "size": 7581
+    },
+    {
+      "path": "docs/providers/vydra.md",
+      "size": 4657
+    },
+    {
+      "path": "docs/providers/xai.md",
+      "size": 17895
+    },
+    {
+      "path": "docs/providers/xiaomi.md",
+      "size": 6198
+    },
+    {
+      "path": "docs/providers/zai.md",
+      "size": 5691
+    },
+    {
+      "path": "docs/reference/AGENTS.default.md",
+      "size": 5801
+    },
+    {
+      "path": "docs/reference/RELEASING.md",
+      "size": 27265
+    },
+    {
+      "path": "docs/reference/api-usage-costs.md",
+      "size": 9127
+    },
+    {
+      "path": "docs/reference/application-modernization-plan.md",
+      "size": 8415
+    },
+    {
+      "path": "docs/reference/credits.md",
+      "size": 1228
+    },
+    {
+      "path": "docs/reference/device-models.md",
+      "size": 2020
+    },
+    {
+      "path": "docs/reference/memory-config.md",
+      "size": 28197
+    },
+    {
+      "path": "docs/reference/prompt-caching.md",
+      "size": 16137
+    },
+    {
+      "path": "docs/reference/rich-output-protocol.md",
+      "size": 2722
+    },
+    {
+      "path": "docs/reference/rpc.md",
+      "size": 1426
+    },
+    {
+      "path": "docs/reference/secretref-credential-surface.md",
+      "size": 6898
+    },
+    {
+      "path": "docs/reference/session-management-compaction.md",
+      "size": 18052
+    },
+    {
+      "path": "docs/reference/templates/AGENTS.dev.md",
+      "size": 2815
+    },
+    {
+      "path": "docs/reference/templates/AGENTS.md",
+      "size": 7981
+    },
+    {
+      "path": "docs/reference/templates/BOOT.md",
+      "size": 415
+    },
+    {
+      "path": "docs/reference/templates/BOOTSTRAP.md",
+      "size": 1664
+    },
+    {
+      "path": "docs/reference/templates/CLAUDE.md",
+      "size": 9
+    },
+    {
+      "path": "docs/reference/templates/HEARTBEAT.md",
+      "size": 363
+    },
+    {
+      "path": "docs/reference/templates/IDENTITY.dev.md",
+      "size": 1688
+    },
+    {
+      "path": "docs/reference/templates/IDENTITY.md",
+      "size": 815
+    },
+    {
+      "path": "docs/reference/templates/SOUL.dev.md",
+      "size": 3860
+    },
+    {
+      "path": "docs/reference/templates/SOUL.md",
+      "size": 1933
+    },
+    {
+      "path": "docs/reference/templates/TOOLS.dev.md",
+      "size": 728
+    },
+    {
+      "path": "docs/reference/templates/TOOLS.md",
+      "size": 1049
+    },
+    {
+      "path": "docs/reference/templates/USER.dev.md",
+      "size": 696
+    },
+    {
+      "path": "docs/reference/templates/USER.md",
+      "size": 650
+    },
+    {
+      "path": "docs/reference/test.md",
+      "size": 14732
+    },
+    {
+      "path": "docs/reference/token-use.md",
+      "size": 9953
+    },
+    {
+      "path": "docs/reference/transcript-hygiene.md",
+      "size": 8320
+    },
+    {
+      "path": "docs/reference/wizard.md",
+      "size": 13328
+    },
+    {
+      "path": "docs/security/CONTRIBUTING-THREAT-MODEL.md",
+      "size": 4953
+    },
+    {
+      "path": "docs/security/THREAT-MODEL-ATLAS.md",
+      "size": 39362
+    },
+    {
+      "path": "docs/security/formal-verification.md",
+      "size": 6205
+    },
+    {
+      "path": "docs/start/bootstrapping.md",
+      "size": 1441
+    },
+    {
+      "path": "docs/start/docs-directory.md",
+      "size": 2113
+    },
+    {
+      "path": "docs/start/getting-started.md",
+      "size": 4070
+    },
+    {
+      "path": "docs/start/hubs.md",
+      "size": 6259
+    },
+    {
+      "path": "docs/start/lore.md",
+      "size": 7364
+    },
+    {
+      "path": "docs/start/onboarding-overview.md",
+      "size": 2569
+    },
+    {
+      "path": "docs/start/onboarding.md",
+      "size": 3435
+    },
+    {
+      "path": "docs/start/openclaw.md",
+      "size": 8761
+    },
+    {
+      "path": "docs/start/quickstart.md",
+      "size": 630
+    },
+    {
+      "path": "docs/start/setup.md",
+      "size": 6167
+    },
+    {
+      "path": "docs/start/showcase.md",
+      "size": 15091
+    },
+    {
+      "path": "docs/start/wizard-cli-automation.md",
+      "size": 6793
+    },
+    {
+      "path": "docs/start/wizard-cli-reference.md",
+      "size": 14327
+    },
+    {
+      "path": "docs/start/wizard.md",
+      "size": 6306
+    },
+    {
+      "path": "docs/superpowers/specs/2026-04-22-tweakcn-custom-theme-import-design.md",
+      "size": 11339
+    },
+    {
+      "path": "docs/tools/acp-agents-setup.md",
+      "size": 10448
+    },
+    {
+      "path": "docs/tools/acp-agents.md",
+      "size": 49958
+    },
+    {
+      "path": "docs/tools/agent-send.md",
+      "size": 4002
+    },
+    {
+      "path": "docs/tools/apply-patch.md",
+      "size": 1639
+    },
+    {
+      "path": "docs/tools/brave-search.md",
+      "size": 4142
+    },
+    {
+      "path": "docs/tools/browser-control.md",
+      "size": 16264
+    },
+    {
+      "path": "docs/tools/browser-linux-troubleshooting.md",
+      "size": 7189
+    },
+    {
+      "path": "docs/tools/browser-login.md",
+      "size": 2348
+    },
+    {
+      "path": "docs/tools/browser-wsl2-windows-remote-cdp-troubleshooting.md",
+      "size": 7281
+    },
+    {
+      "path": "docs/tools/browser.md",
+      "size": 34460
+    },
+    {
+      "path": "docs/tools/btw.md",
+      "size": 3912
+    },
+    {
+      "path": "docs/tools/capability-cookbook.md",
+      "size": 4707
+    },
+    {
+      "path": "docs/tools/clawhub.md",
+      "size": 12827
+    },
+    {
+      "path": "docs/tools/code-execution.md",
+      "size": 2271
+    },
+    {
+      "path": "docs/tools/creating-skills.md",
+      "size": 3920
+    },
+    {
+      "path": "docs/tools/diffs.md",
+      "size": 15692
+    },
+    {
+      "path": "docs/tools/duckduckgo-search.md",
+      "size": 2909
+    },
+    {
+      "path": "docs/tools/elevated.md",
+      "size": 4356
+    },
+    {
+      "path": "docs/tools/exa-search.md",
+      "size": 4281
+    },
+    {
+      "path": "docs/tools/exec-approvals-advanced.md",
+      "size": 16313
+    },
+    {
+      "path": "docs/tools/exec-approvals.md",
+      "size": 15896
+    },
+    {
+      "path": "docs/tools/exec.md",
+      "size": 14251
+    },
+    {
+      "path": "docs/tools/firecrawl.md",
+      "size": 4035
+    },
+    {
+      "path": "docs/tools/gemini-search.md",
+      "size": 2642
+    },
+    {
+      "path": "docs/tools/grok-search.md",
+      "size": 2643
+    },
+    {
+      "path": "docs/tools/image-generation.md",
+      "size": 18478
+    },
+    {
+      "path": "docs/tools/index.md",
+      "size": 12780
+    },
+    {
+      "path": "docs/tools/kimi-search.md",
+      "size": 2815
+    },
+    {
+      "path": "docs/tools/llm-task.md",
+      "size": 2802
+    },
+    {
+      "path": "docs/tools/lobster.md",
+      "size": 11034
+    },
+    {
+      "path": "docs/tools/loop-detection.md",
+      "size": 3418
+    },
+    {
+      "path": "docs/tools/media-overview.md",
+      "size": 7102
+    },
+    {
+      "path": "docs/tools/minimax-search.md",
+      "size": 2663
+    },
+    {
+      "path": "docs/tools/multi-agent-sandbox-tools.md",
+      "size": 11972
+    },
+    {
+      "path": "docs/tools/music-generation.md",
+      "size": 12690
+    },
+    {
+      "path": "docs/tools/ollama-search.md",
+      "size": 3732
+    },
+    {
+      "path": "docs/tools/pdf.md",
+      "size": 5966
+    },
+    {
+      "path": "docs/tools/perplexity-search.md",
+      "size": 6218
+    },
+    {
+      "path": "docs/tools/plugin.md",
+      "size": 26398
+    },
+    {
+      "path": "docs/tools/reactions.md",
+      "size": 2716
+    },
+    {
+      "path": "docs/tools/searxng-search.md",
+      "size": 3783
+    },
+    {
+      "path": "docs/tools/skills-config.md",
+      "size": 5207
+    },
+    {
+      "path": "docs/tools/skills.md",
+      "size": 19131
+    },
+    {
+      "path": "docs/tools/slash-commands.md",
+      "size": 26011
+    },
+    {
+      "path": "docs/tools/subagents.md",
+      "size": 27269
+    },
+    {
+      "path": "docs/tools/tavily.md",
+      "size": 4893
+    },
+    {
+      "path": "docs/tools/thinking.md",
+      "size": 11983
+    },
+    {
+      "path": "docs/tools/tokenjuice.md",
+      "size": 2077
+    },
+    {
+      "path": "docs/tools/trajectory.md",
+      "size": 5837
+    },
+    {
+      "path": "docs/tools/tts.md",
+      "size": 44457
+    },
+    {
+      "path": "docs/tools/video-generation.md",
+      "size": 25967
+    },
+    {
+      "path": "docs/tools/web-fetch.md",
+      "size": 4699
+    },
+    {
+      "path": "docs/tools/web.md",
+      "size": 18649
+    },
+    {
+      "path": "docs/tts.md",
+      "size": 185
+    },
+    {
+      "path": "docs/vps.md",
+      "size": 4973
+    },
+    {
+      "path": "docs/web/control-ui.md",
+      "size": 26225
+    },
+    {
+      "path": "docs/web/dashboard.md",
+      "size": 5431
+    },
+    {
+      "path": "docs/web/index.md",
+      "size": 3807
+    },
+    {
+      "path": "docs/web/tui.md",
+      "size": 8234
+    },
+    {
+      "path": "docs/web/webchat.md",
+      "size": 4304
+    }
+  ],
+  "config_files": [
+    {
+      "path": "docs/.i18n/ar-navigation.json",
+      "size": 333
+    },
+    {
+      "path": "docs/.i18n/de-navigation.json",
+      "size": 313
+    },
+    {
+      "path": "docs/.i18n/es-navigation.json",
+      "size": 310
+    },
+    {
+      "path": "docs/.i18n/fr-navigation.json",
+      "size": 316
+    },
+    {
+      "path": "docs/.i18n/glossary.ar.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.de.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.es.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.fr.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.id.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.it.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.ja-JP.json",
+      "size": 1494
+    },
+    {
+      "path": "docs/.i18n/glossary.ko.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.pl.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.pt-BR.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.th.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.tr.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.uk.json",
+      "size": 1089
+    },
+    {
+      "path": "docs/.i18n/glossary.zh-CN.json",
+      "size": 9362
+    },
+    {
+      "path": "docs/.i18n/id-navigation.json",
+      "size": 310
+    },
+    {
+      "path": "docs/.i18n/it-navigation.json",
+      "size": 308
+    },
+    {
+      "path": "docs/.i18n/ja-navigation.json",
+      "size": 332
+    },
+    {
+      "path": "docs/.i18n/ko-navigation.json",
+      "size": 309
+    },
+    {
+      "path": "docs/.i18n/pl-navigation.json",
+      "size": 308
+    },
+    {
+      "path": "docs/.i18n/pt-BR-navigation.json",
+      "size": 329
+    },
+    {
+      "path": "docs/.i18n/tr-navigation.json",
+      "size": 312
+    },
+    {
+      "path": "docs/.i18n/zh-Hans-navigation.json",
+      "size": 15756
+    },
+    {
+      "path": "docs/docs.json",
+      "size": 47816
+    },
+    {
+      "path": "docs/nav-tabs-underline.js",
+      "size": 2820
+    },
+    {
+      "path": "docs/reference/secretref-user-supplied-credentials-matrix.json",
+      "size": 19569
+    },
+    {
+      "path": "docs/snippets/plugin-publish/minimal-openclaw.plugin.json",
+      "size": 179
+    },
+    {
+      "path": "docs/snippets/plugin-publish/minimal-package.json",
+      "size": 360
+    },
+    {
+      "path": "docs/style.css",
+      "size": 3687
+    }
+  ],
+  "skipped_binaries": []
+}

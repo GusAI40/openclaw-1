@@ -1,0 +1,252 @@
+{
+  "generated_at": "2026-05-11T00:00:00Z",
+  "vps": {
+    "host": "tagai-cloud",
+    "ip": "87.99.148.242",
+    "ram_gb": 7.6,
+    "disk_used_pct": 29,
+    "provider": "Hetzner CPX21"
+  },
+  "services": [
+    {
+      "id": "openclaw-gateway",
+      "runtime": "docker",
+      "container_name": "openclaw-openclaw-gateway-1",
+      "image": "openclaw:tagai",
+      "image_sha256": "29571e8eeb297a42c13a0584e0bf24d586d3b7221f4583e5869bf7d03ef8d29a",
+      "compose_project": "openclaw",
+      "compose_file": "/home/tagai/openclaw/docker-compose.yml",
+      "compose_override": "/home/tagai/openclaw/docker-compose.override.yml",
+      "working_dir": "/home/tagai/openclaw",
+      "command": ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"],
+      "ports": [
+        {"host": 18789, "container": 18789, "bind": "0.0.0.0", "protocol": "tcp"},
+        {"host": 18790, "container": 18790, "bind": "0.0.0.0", "protocol": "tcp"}
+      ],
+      "mounts": [
+        {"host": "/home/tagai/.openclaw", "container": "/home/node/.openclaw", "mode": "rw"},
+        {"host": "/home/tagai/.openclaw/workspace", "container": "/home/node/.openclaw/workspace", "mode": "rw"}
+      ],
+      "env_file": "/home/tagai/openclaw/.env",
+      "env_var_names": [
+        "ANTHROPIC_API_KEY", "APOLLO_API_KEY", "CLAUDE_AI_SESSION_KEY", "CLAUDE_WEB_COOKIE",
+        "CLAUDE_WEB_SESSION_KEY", "FIRECRAWL_API_KEY", "GROQ_API_KEY", "MISTRAL_API_KEY",
+        "MS_CLIENT_ID", "MS_CLIENT_SECRET", "MS_DEFAULT_USER", "MS_TENANT_ID",
+        "OPENAI_API_KEY", "OPENCLAW_ALLOW_INSECURE_PRIVATE_WS", "OPENCLAW_BRIDGE_PORT",
+        "OPENCLAW_CONFIG_DIR", "OPENCLAW_GATEWAY_BIND", "OPENCLAW_GATEWAY_PORT",
+        "OPENCLAW_GATEWAY_TOKEN", "OPENCLAW_IMAGE", "OPENCLAW_TZ", "OPENCLAW_WORKSPACE_DIR",
+        "RESEND_API_KEY", "SUPABASE_ACCESS_TOKEN", "SUPABASE_KEY", "SUPABASE_PROJECT_REF",
+        "SUPABASE_URL", "TAVILY_API_KEY", "TELEGRAM_BOT_TOKEN"
+      ],
+      "depends_on": [],
+      "network_mode": "bridge",
+      "restart_policy": "unless-stopped",
+      "healthcheck": "node fetch http://127.0.0.1:18789/healthz (30s interval, 5s timeout, 5 retries)",
+      "health_status": "healthy",
+      "state": "running",
+      "uptime_seen": "4 hours (healthy)",
+      "log_path": "/var/lib/docker/containers/b946e4598df1.../...-json.log",
+      "exposed_via_caddy": "openclaw.ubntag.com",
+      "purpose": "OpenClaw gateway — Jarvis brain, multi-MCP orchestrator; primary cognitive endpoint"
+    },
+    {
+      "id": "openclaw-cli",
+      "runtime": "docker",
+      "container_name": "openclaw-openclaw-cli-1",
+      "image": "openclaw:tagai",
+      "image_short_id": "1efbe281ae61",
+      "compose_project": "openclaw",
+      "compose_file": "/home/tagai/openclaw/docker-compose.yml",
+      "command": ["node", "dist/index.js"],
+      "ports": [],
+      "mounts": [
+        {"host": "/home/tagai/.openclaw", "container": "/home/node/.openclaw", "mode": "rw"},
+        {"host": "/home/tagai/.openclaw/workspace", "container": "/home/node/.openclaw/workspace", "mode": "rw"}
+      ],
+      "env_file": "/home/tagai/openclaw/.env",
+      "depends_on": ["openclaw-gateway"],
+      "network_mode": "service:openclaw-gateway",
+      "restart_policy": "unless-stopped",
+      "healthcheck": null,
+      "health_status": null,
+      "state": "exited",
+      "exit_code": 0,
+      "uptime_seen": "Exited (0) 4 days ago",
+      "exposed_via_caddy": null,
+      "purpose": "OpenClaw CLI sidecar — on-demand interactive shell against the gateway; expected to exit when not in use"
+    },
+    {
+      "id": "tour-book",
+      "runtime": "docker",
+      "container_name": "tour-book",
+      "image": "tour-book-tour-book",
+      "image_sha256": "4459e03e8be2da884cfb9ad55555159ff6e011b1b4d68a0953962060965adfec",
+      "compose_project": "tour-book",
+      "compose_file": "/opt/tour-book/docker-compose.yml",
+      "working_dir": "/opt/tour-book",
+      "command": ["uvicorn", "scripts.server:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "1"],
+      "ports": [
+        {"host": null, "container": 8001, "bind": null, "protocol": "tcp", "note": "container port exposed but NOT bound to host — only reachable via openclaw_default Docker network at 172.19.0.2:8001"}
+      ],
+      "mounts": [
+        {"host": "/opt/tour-book/tours", "container": "/app/tours", "mode": "rw"}
+      ],
+      "env_file": "/opt/tour-book/.env (presumed)",
+      "env_var_names": [
+        "ALLOWED_SENDERS", "ANTHROPIC_API_KEY", "AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET",
+        "AZURE_TENANT_ID", "DELIVERY_EMAILS", "PLAYWRIGHT_BROWSERS_PATH", "SHOWINGS_EMAIL",
+        "SIMPLYRETS_API_KEY", "SIMPLYRETS_API_SECRET", "SUPABASE_SERVICE_KEY", "SUPABASE_URL",
+        "TOURS_DIR", "WEBHOOK_SECRET"
+      ],
+      "depends_on": [],
+      "network_mode": "openclaw_default",
+      "container_ip": "172.19.0.2",
+      "restart_policy": "unless-stopped",
+      "healthcheck": "configured (healthy)",
+      "health_status": "healthy",
+      "state": "running",
+      "uptime_seen": "Up 4 days (healthy)",
+      "log_path": "/var/lib/docker/containers/81493e08d16e.../...-json.log",
+      "exposed_via_caddy": "michelle-fb-status.ubntag.com (BROKEN — Caddy points to localhost:8001 but port not host-bound)",
+      "purpose": "Michelle tour book API (FastAPI/uvicorn) — generates buyer tour packets from SimplyRETS MLS data; intended dashboard for michelle-fb-status"
+    },
+    {
+      "id": "michelle-cma",
+      "runtime": "docker",
+      "container_name": "michelle-cma",
+      "image": "michelle-cma-cma-server",
+      "image_sha256": "9a8e9c62f5ccf2487f19d06944a41ba5c651a47fcd6419c218597a10f7fcb70a",
+      "compose_project": "michelle-cma",
+      "compose_service": "cma-server",
+      "compose_file": "/opt/michelle-cma/docker-compose.yml",
+      "working_dir": "/opt/michelle-cma",
+      "entrypoint": ["/entrypoint.sh"],
+      "command": ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"],
+      "ports": [
+        {"host": 8080, "container": 8080, "bind": "0.0.0.0", "protocol": "tcp"}
+      ],
+      "mounts": [
+        {"host": "/opt/michelle-cma/cache", "container": "/app/cache", "mode": "rw"},
+        {"host": "/opt/michelle-cma/outputs", "container": "/app/outputs", "mode": "rw"}
+      ],
+      "env_file": "/opt/michelle-cma/.env (presumed)",
+      "env_var_names": [
+        "ALLOWED_SENDERS", "ANTHROPIC_API_KEY", "AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET",
+        "AZURE_TENANT_ID", "CMA_API_KEY", "GITHUB_PAT", "GIT_AUTHOR_EMAIL", "GIT_AUTHOR_NAME",
+        "GOOGLE_STREETVIEW_API_KEY", "HCLOUD_TOKEN", "HETZNER_HOST", "HETZNER_REMOTE_DIR",
+        "MICHELLE_EMAILS", "MICHELLE_HEADSHOT_URL", "PLAYWRIGHT_BROWSERS_PATH", "SHOWINGS_EMAIL",
+        "SIMPLYRETS_API_KEY", "SIMPLYRETS_API_SECRET", "SIMPLYRETS_BASE_URL", "SIMPLYRETS_VENDOR",
+        "SUPABASE_SERVICE_KEY", "SUPABASE_URL", "TAVILY_API_KEY", "WEBHOOK_SECRET",
+        "WEBSITE_LIVE_HOST", "WEBSITE_REPO_URL"
+      ],
+      "depends_on": [],
+      "network_mode": "bridge",
+      "restart_policy": "unless-stopped",
+      "healthcheck": "configured (healthy)",
+      "health_status": "healthy",
+      "state": "running",
+      "uptime_seen": "Up 4 days (healthy)",
+      "log_path": "/var/lib/docker/containers/1dd21818c9f0.../...-json.log",
+      "exposed_via_caddy": "cma.ubntag.com",
+      "purpose": "Michelle CMA report server (FastAPI/uvicorn) — generates Comparative Market Analysis reports for North Texas properties; integrates SimplyRETS + Supabase + GitHub deploy"
+    },
+    {
+      "id": "jarvis-vapi-webhook",
+      "runtime": "systemd",
+      "unit_name": "jarvis-vapi-webhook.service",
+      "unit_path": "/etc/systemd/system/jarvis-vapi-webhook.service",
+      "exec_start": "/usr/bin/node /opt/jarvis-vapi/webhook-handler.mjs",
+      "working_dir": "/opt/jarvis-vapi",
+      "user": "tagai",
+      "pid": 877,
+      "ports": [
+        {"host": 18792, "bind": "127.0.0.1", "protocol": "tcp", "note": "loopback-only — fronted by Caddy"}
+      ],
+      "mounts": [],
+      "env_file": "presumed /opt/jarvis-vapi/.env (not enumerated by this audit)",
+      "depends_on": ["openclaw-gateway (logical — webhook calls 18789)"],
+      "restart_policy": "Restart=on-failure, RestartSec=5",
+      "healthcheck": null,
+      "health_status": "running (no formal healthcheck)",
+      "state": "active",
+      "log_path": "/var/log/jarvis-vapi/webhook.log",
+      "exposed_via_caddy": "openclaw.ubntag.com (path /vapi/webhook* and /vapi/tool*)",
+      "purpose": "VAPI voice-agent webhook handler — receives tool/webhook calls from Vapi and dispatches into the OpenClaw gateway"
+    },
+    {
+      "id": "voiceai-server",
+      "runtime": "pm2",
+      "pm2_owner": "root",
+      "pm2_id": 0,
+      "pm2_name": "voiceai-server",
+      "pm2_namespace": "default",
+      "pm2_mode": "fork",
+      "script_path": "/opt/voiceai/server/server.js",
+      "working_dir": "/opt/voiceai/server",
+      "pid": 1098,
+      "ports": [
+        {"host": 3000, "bind": "0.0.0.0", "protocol": "tcp"}
+      ],
+      "mounts": [],
+      "env_file": "presumed /opt/voiceai/server/.env (not enumerated)",
+      "depends_on": [],
+      "restart_policy": "pm2 (auto-restart via pm2-root.service systemd unit)",
+      "healthcheck": null,
+      "health_status": "online",
+      "state": "online",
+      "uptime_seen": "4 days, 0 restarts, 38.7MB RAM, 0% CPU",
+      "pid_path": "/root/.pm2/pids/voiceai-server-0.pid",
+      "exposed_via_caddy": "voiceai.ubntag.com (and http://87.99.148.242 direct-IP diagnostic)",
+      "purpose": "VoiceAI server — Node.js voice-agent backend (LiveKit/SIP bridge presumed); the original Maya/voice runtime"
+    }
+  ],
+  "exited_containers": [
+    {
+      "container_name": "openclaw-openclaw-cli-1",
+      "image_short_id": "1efbe281ae61",
+      "exit_code": 0,
+      "status": "Exited (0) 4 days ago",
+      "note": "Expected — CLI sidecar exits when not actively in use"
+    }
+  ],
+  "systemd_units_other": [
+    "pm2-root.service (manages voiceai-server above)",
+    "dbus-org.freedesktop.resolve1.service",
+    "dbus-org.freedesktop.timesync1.service",
+    "iscsi.service",
+    "syslog.service",
+    "vmtoolsd.service"
+  ],
+  "listening_ports_summary": [
+    {"port": 22, "process": "sshd", "bind": "0.0.0.0/::"},
+    {"port": 53, "process": "systemd-resolve", "bind": "127.0.0.x (loopback)"},
+    {"port": 80, "process": "caddy", "bind": "*"},
+    {"port": 443, "process": "caddy", "bind": "*"},
+    {"port": 2019, "process": "caddy admin API", "bind": "127.0.0.1"},
+    {"port": 3000, "process": "node /opt/voiceai/server", "bind": "*", "service_id": "voiceai-server"},
+    {"port": 8080, "process": "docker-proxy", "bind": "0.0.0.0/::", "service_id": "michelle-cma"},
+    {"port": 18789, "process": "docker-proxy", "bind": "0.0.0.0/::", "service_id": "openclaw-gateway"},
+    {"port": 18790, "process": "docker-proxy", "bind": "0.0.0.0/::", "service_id": "openclaw-gateway"},
+    {"port": 18792, "process": "node /opt/jarvis-vapi/webhook-handler.mjs", "bind": "127.0.0.1", "service_id": "jarvis-vapi-webhook"}
+  ],
+  "anomalies": [
+    {
+      "severity": "high",
+      "type": "orphan_caddy_route",
+      "host": "michelle-fb.ubntag.com",
+      "issue": "Caddy reverse-proxies to localhost:8000 but NOTHING is listening on port 8000. This route returns 502 to any caller."
+    },
+    {
+      "severity": "high",
+      "type": "broken_caddy_route",
+      "host": "michelle-fb-status.ubntag.com",
+      "issue": "Caddy reverse-proxies to localhost:8001 but tour-book container's port 8001 is NOT host-bound (only on Docker network 172.19.0.2:8001). Route is unreachable from the host's localhost. Either bind the port in compose OR point Caddy at 172.19.0.2:8001 or the container hostname inside a shared Docker network."
+    },
+    {
+      "severity": "info",
+      "type": "exited_sidecar",
+      "container": "openclaw-openclaw-cli-1",
+      "issue": "Sidecar has been exited 4 days. Expected behavior for an on-demand CLI but worth noting."
+    }
+  ]
+}

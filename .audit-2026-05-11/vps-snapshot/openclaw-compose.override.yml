@@ -1,0 +1,7 @@
+services:
+  openclaw-gateway:
+    env_file:
+      - /home/tagai/openclaw/.env
+  openclaw-cli:
+    env_file:
+      - /home/tagai/openclaw/.env
